@@ -25,7 +25,8 @@
 
 #define pumpPin                     PB0 //Output
 #define sensorPin                   PB1 //Output
-#define solarPin                    PB2 //Output (also can be used as LED for empty indicator)
+//#define solarPin                    PB2 //Output
+#define ledPin                      PB2 //Output
 #define moistureSensorPin           PB4 //Input
 #define delayBetweenWaterings       10  //8seconds x 10
 #define delayBetweenSolarDischarge  4   //8seconds x 4
@@ -51,6 +52,7 @@ uint16_t EEMEM NonVolatileInt;
 Moisture analog sensor:
   - Pull-up Resistor 0(dry)-1023(wet)
   - MH Sensor Series 0(wet)-1023(dry)
+  Note: Change line: 221/222
 */
 int suitableMoisture = 250; //780
 //================
@@ -167,9 +169,9 @@ void process()
 
         if(suitableMoisture == 1023) { //Low Water LED
             for(int i = 0; i < 10; i++) {
-                PORTB |= (1<<solarPin); //ON
+                PORTB |= (1<<ledPin); //ON
                 _delay_ms(800);
-                PORTB &= ~(1<<solarPin); //OFF
+                PORTB &= ~(1<<ledPin); //OFF
                 _delay_ms(800);
             }
         }else{
@@ -201,7 +203,6 @@ void process()
                 uart_puts("soil=");
                 uart_putu(suitableMoisture);
                 uart_puts("\r\n");
-            
                 //Read from UART and save to EEPROM
                 /*
                 char c, *p, buff[3];
@@ -217,7 +218,8 @@ void process()
                 uart_putu(suitableMoisture);
                 uart_puts("\r\n");
                 */
-            }else if (moisture < suitableMoisture) { //Water Plant
+            }else if (moisture < suitableMoisture) { //Water Plant (Pull-up Resistor)
+            //}else if (moisture > suitableMoisture) { //Water Plant (MH Sensor Series)
                 //===================
                 //Detect empty Bottle
                 //===================
