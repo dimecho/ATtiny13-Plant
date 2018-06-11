@@ -17,6 +17,7 @@ Optional Pin7 (PB2) can be used to "burst" charge solar **or** as LED to indicat
 Install "avr-gcc" and run "make".
 ```
 avr-gcc -std=c99 -Wall -g -Os -mmcu=attiny13a -DF_CPU=1200000 -I. -I.. -DUART_BAUDRATE=19200 main.c uart.c -o main.o
+avr-objcopy -R .eeprom -O binary main.o main.bin
 ```
 
 ## Download
