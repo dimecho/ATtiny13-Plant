@@ -30,7 +30,7 @@
 #define moistureSensorPin           PB4 //Input
 #define delayBetweenWaterings       12  //8seconds x 12
 #define delayBetweenSolarDischarge  4   //8seconds x 4
-#define delayBetweenLogReset        120 //8seconds x 120
+#define delayBetweenLogReset        60  //8seconds x 12 x 60
 
 static void powerSave();
 static void powerWakeup();
@@ -55,9 +55,9 @@ uint16_t EEMEM NonVolatileInt;
 Moisture analog sensor:
   - Pull-up Resistor 0(dry)-1023(wet)
   - MH Sensor Series 0(wet)-1023(dry)
-  Note: Change line: 221/222
+  Note: Change line: 243/244
 */
-int suitableMoisture = 350; //780
+int suitableMoisture = 380; //700
 //================
 
 ISR(WDT_vect)
