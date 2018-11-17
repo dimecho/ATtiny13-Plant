@@ -28,9 +28,10 @@
 //#define solarPin                    PB2 //Output
 #define ledPin                      PB2 //Output
 #define moistureSensorPin           PB4 //Input
-#define delayBetweenWaterings       12  //8seconds x 12
-#define delayBetweenSolarDischarge  4   //8seconds x 4
-#define delayBetweenLogReset        60  //8seconds x 12 x 60
+#define delayBetweenWaterings       12  //8seconds x 12 = 1.5 min
+#define delayBetweenSolarDischarge  4   //8seconds x 4 = .5 min
+#define delayBetweenLogReset        60  //8seconds x 12 x 60 = 1.5hours
+#define delayBetweenRefillReset     900 //8seconds x 12 x 900 = 24hours
 
 static void powerSave();
 static void powerWakeup();
@@ -42,14 +43,15 @@ static int ReadADC();
 //Global variable, set to volatile if used with ISR
 volatile unsigned int sleepLoop = 0;  //Track the passage of time
 volatile unsigned int sleepLogReset = 0; //Reset logs once in a while
+volatile unsigned int sleepOneDay = 0; //24 hour auto-check for refill
 
 //Collect past logs for empty detection
 volatile unsigned int moistureLog1 = 0;
 volatile unsigned int moistureLog2 = 0;
 volatile unsigned int moistureLog3 = 0;
 
-//EEPROM for correcting with UART
-uint16_t EEMEM NonVolatileInt;
+//EEPROM for adjusting with UART
+//uint16_t EEMEM NonVolatileInt;
 
 /*
 Moisture analog sensor:
@@ -156,6 +158,7 @@ int main(void)
 void resetLog()
 {
     sleepLogReset = 0;
+    sleepOneDay = 0;
     moistureLog1 = 0;
     moistureLog2 = 0;
     moistureLog3 = 0;
@@ -187,12 +190,19 @@ void process()
                 PORTB &= ~(1<<ledPin); //OFF
                 _delay_ms(800);
             }
+            //Retry every 24 hours ...when someone refilled the bottle but did not cycle power.
+            if(sleepOneDay > delayBetweenRefillReset)
+            {
+                resetLog();
+            }else{
+                sleepOneDay++;
+            }
         }else{
             //======================
             //Prevents false-pisitive (empty detection)
             //Moisture sensor (too accurate) triggers exactly same value when dry
             //======================
-            if (sleepLogReset == delayBetweenLogReset) {
+            if (sleepLogReset > delayBetweenLogReset) {
                 resetLog();
             }else{
                 sleepLogReset++;
