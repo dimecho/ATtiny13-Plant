@@ -57,7 +57,7 @@ volatile unsigned int moistureLog3 = 0;
 Moisture analog sensor:
   - Pull-up Resistor 0(dry)-1023(wet)
   - MH Sensor Series 0(wet)-1023(dry)
-  Note: Change line: 243/244
+  Note: Change line: 253/254
 */
 int suitableMoisture = 380; //700
 //================
