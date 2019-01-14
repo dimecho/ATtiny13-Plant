@@ -1,6 +1,6 @@
 MCU=attiny13
 FUSE_L=0x6A
-FUSE_H=0xFF
+FUSE_H=0xFF #0xFE
 F_CPU=1200000
 CC=avr-gcc
 LD=avr-ld

@@ -6,11 +6,44 @@ Monitor soil moisture and water plant. Portable and high efficiency with lithium
 
 ![Photo](img/photo.jpg?raw=true)
 
+## PCB
+
+![Screenshot](img/pcb.png?raw=true)
+
+## BOM (Bill of Materials)
+
+| Part  | Value      | Package             | Function |
+| ----- |:----------:| -------------------:|---------:|
+| IC1   | ATTINY13A  | SOP-8 or DIP-8      | CPU      |
+| T1A/B | 2N4401 NPN | TO-92 or SOT-23     | Pump     |
+| R1    | 510R       | 0805 or 0603 (511)  | Pump     |
+| R2    | 10k        | 0805 or 0603 (103)  | Pump     |
+| LED1  | Red        | 0805 or DIP-2       | LED      |
+| R3    | 510R       | 0805 or 0603 (511)  | LED      |
+| R4    | 10k        | 0805 or 0603 (103)  | LED      |
+| T2A/B | 2N4401 NPN | TO-92 or SOT-23     | Solar    |
+| REG1  | 7805L (5V) | TO-92               | Solar    |
+| C2    | 1000uF     | 7x7 mm              | Solar    |
+| R5    | 510R       | 0805 or 0603 (511)  | Solar    |
+| R6    | 10k        | 0805 or 0603 (103)  | Solar    |
+| R7    | 510R       | 0805 or 0603 (511)  | Sensor   |
+| R8    | 10k        | 0805 or 0603 (103)  | Sensor   |
+| -     | 3.7-4.2V   | Lithium Cell 18650  | Battery  |
+| -     | TP4056     | Lithium Charger     | Charger  |
+| -     | 10V+       | 2x 5V Solar Cells   | Solar    |
+
+## Logic
+
 ![Screenshot](img/main.png?raw=true)
 
 ## Solar
 
-Optional Pin7 (PB2) can be used to "burst" charge solar **or** as LED to indicate empty bottle.
+Optional Pin7 (PB2) used to "burst" charge from solar panel.
+
+## LED
+
+Empty container detection **Cation** LED uses RESET Pin1 (PB5) requires HFuse 0xFE, if enabled ATTiny13 can only be flashed once.
+Future flashing requires "High-Voltage programmer" to clear the fuse.
 
 ## Compile
 

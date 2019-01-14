@@ -1,13 +1,17 @@
 /*  
-    FUSE_L=0x6A
-    FUSE_H=0xFF
-    F_CPU=1200000
+    FUSE_L=0x6A (Clock divide fuse enabled = 8Mhz CPU frequency is actually 1MHz)
+    FUSE_H=0xFF (0xFE = RSTDISBL -> CATION: If enabled chip can only be programmed once)
+    F_CPU=8000000 (8Mhz)
+
+    Slowing down CPU to save power
+    CPU @ 1.2Mhz / 8 = 150 Khz
 */
+#define F_CPU 1200000L
 /*
              [ATtiny13A]
               +------+
-        PB5  1| O    |8  VCC
-(TX)    PB3  2|      |7  PB2 (Solar/LED)
+(LED)   PB5  1| O    |8  VCC
+(TX)    PB3  2|      |7  PB2 (Solar)
 (RX/A0) PB4  3|      |6  PB1 (Sensor)
         GND  4|      |5  PB0 (Pump)
               +------+
@@ -25,13 +29,13 @@
 
 #define pumpPin                     PB0 //Output
 #define sensorPin                   PB1 //Output
-//#define solarPin                    PB2 //Output
-#define ledPin                      PB2 //Output
+#define solarPin                    PB2 //Output
+//#define ledPin                      PB5 //Output
 #define moistureSensorPin           PB4 //Input
 #define delayBetweenWaterings       12  //8seconds x 12 = 1.5 min
 #define delayBetweenSolarDischarge  4   //8seconds x 4 = .5 min
-#define delayBetweenLogReset        60  //8seconds x 12 x 60 = 1.5hours
-#define delayBetweenRefillReset     900 //8seconds x 12 x 900 = 24hours
+#define delayBetweenLogReset        60  //8seconds x 12 x 60 = 1.5 hours
+#define delayBetweenRefillReset     900 //8seconds x 12 x 900 = 24 hours
 
 static void powerSave();
 static void powerWakeup();
@@ -74,8 +78,12 @@ int main(void)
     //================
     DDRB |= (1<<DDB0);   // Pin 5 Digital OUTPUT
     DDRB |= (1<<DDB1);   // Pin 6 Digital OUTPUT
-    DDRB |= (1<<DDB2);   // Pin 7 Digital OUTPUT
-
+    #ifdef solarPin
+        DDRB |= (1<<DDB2);   // Pin 7 Digital OUTPUT
+    #endif
+    #ifdef ledPin
+        DDRB |= (1<<DDB5);   // Pin 1 RESET Pin as Digital OUTPUT
+    #endif
     //================
     //ANALOG SENSOR
     //================
@@ -171,25 +179,27 @@ void process()
     uart_puts("\r\n");
     */
 
-    /*
-    if (sleepLoop == delayBetweenSolarDischarge)
-    {
-        uart_puts("solar\r\n");
-        PORTB |= (1<<solarPin); //ON
-        _delay_ms(1000);
-        PORTB &= ~(1<<solarPin); //OFF
-    }
-    */
+    #ifdef solarPin
+        if (sleepLoop == delayBetweenSolarDischarge)
+        {
+            uart_puts("solar\r\n");
+            PORTB |= (1<<solarPin); //ON
+            _delay_ms(1000);
+            PORTB &= ~(1<<solarPin); //OFF
+        }
+    #endif
 
     if (sleepLoop == delayBetweenWaterings) {
 
         if(suitableMoisture == 1023) { //Low Water LED
-            for(int i = 0; i < 10; i++) {
-                PORTB |= (1<<ledPin); //ON
-                _delay_ms(800);
-                PORTB &= ~(1<<ledPin); //OFF
-                _delay_ms(800);
-            }
+            #ifdef ledPin
+                for(int i = 0; i < 100; i++) {
+                    PORTB |= (1<<ledPin); //ON
+                    _delay_ms(800);
+                    PORTB &= ~(1<<ledPin); //OFF
+                    _delay_ms(800);
+                }
+            #endif
             //Retry every 24 hours ...when someone refilled the bottle but did not cycle power.
             if(sleepOneDay > delayBetweenRefillReset)
             {
