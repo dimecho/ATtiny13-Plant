@@ -15,6 +15,7 @@ Monitor soil moisture and water plant. Portable and high efficiency with lithium
 | Part  | Value      | Package             | Function |
 | ----- |:----------:| -------------------:|---------:|
 | IC1   | ATTINY13A  | SOP-8 or DIP-8      | CPU      |
+| C1    | 100nF      | 0805 or 0603 (104)  | CPU      |
 | T1A/B | 2N4401 NPN | TO-92 or SOT-23     | Pump     |
 | R1    | 510R       | 0805 or 0603 (511)  | Pump     |
 | R2    | 10k        | 0805 or 0603 (103)  | Pump     |
@@ -42,7 +43,7 @@ Optional Pin7 (PB2) used to "burst" charge from solar panel.
 
 ## LED
 
-Empty container detection **Cation** LED uses RESET Pin1 (PB5) requires HFuse 0xFE, if enabled ATTiny13 can only be flashed once.
+Empty container detection **Caution:** LED uses RESET Pin1 (PB5) requires HFuse 0xFE, if enabled ATTiny13 can only be flashed once.
 Future flashing requires "High-Voltage programmer" to clear the fuse.
 
 ## Compile
