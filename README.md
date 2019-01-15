@@ -27,8 +27,7 @@ Monitor soil moisture and water plant. Portable and high efficiency with lithium
 | C2    | 1000uF     | 7x7 mm              | Solar    |
 | R5    | 510R       | 0805 or 0603 (511)  | Solar    |
 | R6    | 10k        | 0805 or 0603 (103)  | Solar    |
-| R7    | 510R       | 0805 or 0603 (511)  | Sensor   |
-| R8    | 10k        | 0805 or 0603 (103)  | Sensor   |
+| R7    | 10k        | 0805 or 0603 (511)  | Sensor   |
 | -     | 3.7-4.2V   | Lithium Cell 18650  | Battery  |
 | -     | TP4056     | Lithium Charger     | Charger  |
 | -     | 10V+       | 2x 5V Solar Cells   | Solar    |
@@ -50,7 +49,7 @@ Future flashing requires "High-Voltage programmer" to clear the fuse.
 
 Install "avr-gcc" and run "make".
 ```
-avr-gcc -std=c99 -Wall -g -Os -mmcu=attiny13a -DF_CPU=1200000 -I. -I.. -DUART_BAUDRATE=19200 main.c uart.c -o main.o
+avr-gcc -std=c99 -Wall -Os -mmcu=attiny13a -DF_CPU=1200000 -I. -I.. -DUART_BAUDRATE=19200 main.c uart.c -o main.o
 avr-objcopy -R .eeprom -O binary main.o main.bin
 ```
 
