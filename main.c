@@ -228,7 +228,7 @@ void process()
                 uart_puts("solar\r\n");
             #endif
             PORTB |= (1<<solarPin); //ON
-            _delay_ms(1000);
+            _delay_ms(1800); //Depends on Capacitor
             PORTB &= ~(1<<solarPin); //OFF
         }
     #endif

@@ -32,9 +32,9 @@ Monitor soil moisture and water plant. Portable and high efficiency with lithium
 | -     | TP4056     | Lithium Charger     | Charger  |
 | -     | 10V+       | 2x 5V Solar Cells   | Solar    |
 
-## Logic
+## Diagram
 
-![Screenshot](img/main.png?raw=true)
+![Screenshot](img/diagram.png?raw=true)
 
 ## Solar
 
