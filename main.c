@@ -19,14 +19,12 @@
               +------+
 */
 
-
-
+//#include <avr/pgmspace.h>
 //#include <avr/eeprom.h>
 //#include <avr/wdt.h>
 //#include <stdio.h>
 //#include <string.h>
 #include <avr/io.h>
-//#include <avr/pgmspace.h>
 #include <util/delay.h>
 #include <avr/interrupt.h>
 #include <avr/sleep.h>
@@ -143,7 +141,7 @@ int main(void)
 
     //Alive Test
     blink(400,3);
-    pump(500);
+    pump(800);
 
     for (;;) {
 
@@ -228,7 +226,22 @@ void process()
                 uart_puts("solar\r\n");
             #endif
             PORTB |= (1<<solarPin); //ON
-            _delay_ms(1800); //Depends on Capacitor
+			//-------------------
+			//Depends on Capacitor
+			//_delay_ms(1800);
+			//-------------------
+			//Sense with voltage feedback wire from regulator
+			uint8_t timeout = 40;
+			uint16_t voltage = 1024;
+			while(timeout-- && voltage > 100) {
+				_delay_ms(100);
+				voltage = ReadADC();
+				#ifdef UART_TX_ENABLED
+				    uart_putu(voltage);
+                    uart_puts(",");
+				#endif
+			}
+			//-------------------
             PORTB &= ~(1<<solarPin); //OFF
         }
     #endif
@@ -248,7 +261,7 @@ void process()
             }
         }else{
             //======================
-            //Prevents false-pisitive (empty detection)
+            //Prevents false-positive (empty detection)
             //Moisture sensor (too accurate) triggers exactly same value when dry
             //======================
             if (sleepLogReset > delayBetweenLogReset) {
@@ -374,9 +387,9 @@ uint16_t ReadADC()
     ADMUX |= (0 << REFS0); // VCC as Reference
     //ADMUX |= (1 << MUX0) |= (1 << MUX1); //ADC3 PB3
     ADMUX |= (1 << MUX1) | (0 << MUX0); // ADC2 PB4
-    ADCSRA |= (1 << ADSC); // Start Converstion
+    ADCSRA |= (1 << ADSC); // Start Conversion
 
-    while((ADCSRA & 0x40) !=0){}; //Wait for Converstion Complete
+    while((ADCSRA & 0x40) !=0){}; //Wait for Conversion Complete
 
     return ADC;
 }

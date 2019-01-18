@@ -20374,13 +20374,6 @@ http://www.fairchildsemi.com/ds/LM/LM7805.pdf</description>
 <junction x="111.76" y="73.66"/>
 </segment>
 </net>
-<net name="N$6" class="0">
-<segment>
-<pinref part="REG1" gate="A1" pin="VO"/>
-<pinref part="IN+" gate="1" pin="P"/>
-<wire x1="132.08" y1="91.44" x2="132.08" y2="81.28" width="0.1524" layer="91"/>
-</segment>
-</net>
 <net name="LED" class="0">
 <segment>
 <pinref part="PAD10" gate="P" pin="P"/>
@@ -20406,6 +20399,14 @@ http://www.fairchildsemi.com/ds/LM/LM7805.pdf</description>
 <pinref part="SENSOR-" gate="P" pin="P"/>
 <wire x1="132.08" y1="33.02" x2="121.92" y2="33.02" width="0.1524" layer="91"/>
 <junction x="121.92" y="33.02"/>
+<pinref part="IN+" gate="1" pin="P"/>
+<pinref part="REG1" gate="A1" pin="VO"/>
+<wire x1="132.08" y1="91.44" x2="132.08" y2="81.28" width="0.1524" layer="91"/>
+<junction x="132.08" y="81.28"/>
+<wire x1="132.08" y1="81.28" x2="139.7" y2="81.28" width="0.1524" layer="91"/>
+<wire x1="139.7" y1="81.28" x2="139.7" y2="99.06" width="0.1524" layer="91"/>
+<wire x1="139.7" y1="99.06" x2="53.34" y2="99.06" width="0.1524" layer="91"/>
+<wire x1="53.34" y1="99.06" x2="53.34" y2="58.42" width="0.1524" layer="91"/>
 </segment>
 </net>
 </nets>

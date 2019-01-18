@@ -26,12 +26,14 @@
 #endif  /* !UART_BAUDRATE */
 
 #define	TXDELAY         	(int)(((F_CPU/UART_BAUDRATE)-7 +1.5)/3)
+/*
 #define RXDELAY         	(int)(((F_CPU/UART_BAUDRATE)-5 +1.5)/3)
 #define RXDELAY2        	(int)((RXDELAY*1.5)-2.5)
 #define RXROUNDED       	(((F_CPU/UART_BAUDRATE)-5 +2)/3)
 #if RXROUNDED > 127
 # error Low baud rates are not supported - use higher, UART_BAUDRATE
 #endif
+*/
 
 char uart_getc(void);
 void uart_putc(char c);

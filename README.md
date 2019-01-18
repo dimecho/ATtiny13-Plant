@@ -48,9 +48,12 @@ Future flashing requires "High-Voltage programmer" to clear the fuse.
 ## Compile
 
 Install "avr-gcc" and run "make".
+> [Windows](http://ww1.microchip.com/downloads/en/DeviceDoc/avr8-gnu-toolchain-3.6.2.1759-win32.any.x86.zip)
+> [Mac](http://ww1.microchip.com/downloads/en/DeviceDoc/avr8-gnu-toolchain-osx-3.6.2.503-darwin.any.x86_64.tar.gz)
 ```
-avr-gcc -std=c99 -Wall -Os -mmcu=attiny13a -DF_CPU=1200000 -I. -I.. -DUART_BAUDRATE=19200 main.c uart.c -o main.o
-avr-objcopy -R .eeprom -O binary main.o main.bin
+avr-gcc -std=gnu99 -Wall -Os -mmcu=attiny13a -DF_CPU=1200000 -DUART_BAUDRATE=19200 main.c uart.c -o main.o
+avr-objcopy -O binary main.o main.bin
+avr-objcopy -O ihex main.o main.hex
 ```
 
 ## Download
