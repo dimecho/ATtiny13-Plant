@@ -39,6 +39,13 @@
 #define delayBetweenSolarDischarge  4   //8seconds x 4 = .5 min
 #define delayBetweenLogReset        60  //8seconds x 12 x 60 = 1.5 hours
 #define delayBetweenRefillReset     450 //8seconds x 12 x 450 = 12 hours
+/*
+Moisture analog sensor:
+  - Pull-up Resistor 0(dry)-1023(wet)
+  - MH Sensor Series 0(wet)-1023(dry)
+  Note: Change line: 327/328
+*/
+#define suitableMoisture 380 //700
 
 static void powerSave();
 static void powerWakeup();
@@ -56,18 +63,15 @@ https://ww1.microchip.com/downloads/en/AppNotes/doc8453.pdf
 */
 
 //Global variable, set to volatile if used with ISR
-volatile uint8_t sleepLoop = 0;  //Track the passage of time
-volatile uint8_t sleepLogReset = 0; //Reset logs once in a while
-volatile uint16_t sleepOneDay = 0; //24 hour auto-check for refill
+uint8_t sleepLoop = 0;  //Track the passage of time
+uint8_t sleepLogReset = 0; //Reset logs once in a while
+uint16_t sleepOneDay = 0; //24 hour auto-check for refill
 
 //Collect past logs for empty detection
-/*
-volatile uint16_t moistureLog1 = 0;
-volatile uint16_t moistureLog2 = 0;
-volatile uint16_t moistureLog3 = 0;
-*/
-volatile uint16_t moistureLog[3] = {0,0,0};
+uint16_t moistureLog[3] = {0,0,0};
+uint8_t emptyBottle = 0;
 
+//================
 //EEPROM for adjusting with UART
 //uint16_t EEMEM NonVolatileInt;
 //================
@@ -168,7 +172,6 @@ int main(void)
             //-------------
         powerWakeup();
 
-        //_delay_ms(2000);
         process();
     }
 }
@@ -177,14 +180,10 @@ void resetLog()
 {
     sleepLogReset = 0;
     sleepOneDay = 0;
+	emptyBottle = 0;
     moistureLog[0] = 0;
     moistureLog[1] = 0;
     moistureLog[2] = 0;
-    /*
-    moistureLog1 = 0;
-    moistureLog2 = 0;
-    moistureLog3 = 0;
-    */
 }
 
 void blink(uint16_t time, uint8_t duration)
@@ -193,8 +192,7 @@ void blink(uint16_t time, uint8_t duration)
         do {
             PORTB |= (1<<ledPin); //ON
             delay_ms(time);
-            PORTB &= ~(1<<ledPin); //OFF  
-            delay_ms(time);
+            PORTB &= ~(1<<ledPin); //OFF
             duration--;
         } while (duration);
     #endif
@@ -204,21 +202,28 @@ void pump(uint16_t time)
 {
     PORTB |= (1<<PB0); //ON
     delay_ms(time);
+	//===================
+	//Detect Empty Bottle (Sensored)
+	//===================
+	/*
+	loopback wire from water jug to Pin3 (PB4)
+	given power from Pin5 (PB0) while turning on NPN transistor
+	more accurate than sensor-less detection
+	*/
+	uint16_t water = ReadADC();
+	#ifdef UART_TX_ENABLED
+		uart_puts("jug=");
+		uart_putu(water);
+		uart_puts("\r\n");
+	#endif
+	if (water > 0 && water < 100) { //avoid 0 detection if wire not connected
+        emptyBottle = 1;
+	}
     PORTB &= ~(1<<PB0); //OFF
 }
 
 void process()
 {
-    //================
-    /*
-    Moisture analog sensor:
-      - Pull-up Resistor 0(dry)-1023(wet)
-      - MH Sensor Series 0(wet)-1023(dry)
-      Note: Change line: 253/254
-    */
-    uint16_t suitableMoisture = 380; //700
-    //================
-
     #ifdef solarPin
         if (sleepLoop > delayBetweenSolarDischarge)
         {
@@ -248,7 +253,7 @@ void process()
 
     if (sleepLoop > delayBetweenWaterings) {
 
-        if(suitableMoisture == 1023) { //Low Water LED
+        if(emptyBottle == 1) { //Low Water LED
 
             blink(800,99);
 
@@ -321,26 +326,17 @@ void process()
                 */
             }else if (moisture < suitableMoisture) { //Water Plant (Pull-up Resistor)
             //}else if (moisture > suitableMoisture) { //Water Plant (MH Sensor Series)
+				//===================
+                //Detect Empty Bottle (Sensor-less)
                 //===================
-                //Detect empty Bottle
-                //===================
-                uint8_t emptyBottle = 0;
-
                 if(moistureLog[0] == 0) {
-                //if(moistureLog1 == 0) {
-                    //moistureLog1 = moisture;
                     moistureLog[0] = moisture;
                 }else if(moistureLog[1] == 0) {
-                //}else if(moistureLog2 == 0) {
-                    //moistureLog2 = moisture;
                     moistureLog[1] = moisture;
                 }else if(moistureLog[2] == 0) {
-                //}else if(moistureLog3 == 0) {
-                    //moistureLog3 = moisture;
                     moistureLog[2] = moisture;
                 }else{
                     uint16_t m = (moistureLog[0] + moistureLog[1] + moistureLog[2]) / 3; //Average
-                    //uint16_t m = (moistureLog1 + moistureLog2 + moistureLog3) / 3; //Average
                     if (m >= (moisture - 2) && m <= (moisture + 2)) {
                         emptyBottle = 1; //Pump ran but no change in moisture
                     }else{
@@ -354,7 +350,6 @@ void process()
                     #ifdef UART_TX_ENABLED
                         uart_puts("empty\r\n");
                     #endif
-                    suitableMoisture = 1023; //Lock until manually reset
                 }else{
                     #ifdef UART_TX_ENABLED
                         uart_puts("pump\r\n");

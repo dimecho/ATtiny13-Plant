@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE eagle SYSTEM "eagle.dtd">
-<eagle version="9.2.2">
+<eagle version="9.3.0">
 <drawing>
 <settings>
 <setting alwaysvectorfont="no"/>
@@ -96,6 +96,30 @@
 <wire x1="-0.3048" y1="2.4892" x2="-1.3716" y2="2.4892" width="0.1524" layer="21"/>
 <wire x1="0.3048" y1="2.4892" x2="-0.3048" y2="2.4892" width="0.1524" layer="21" curve="-180"/>
 </package>
+<package name="SOT230P700X180-4N">
+<description>&lt;b&gt;DCY (R-PDSO-G4)&lt;/b&gt;&lt;br&gt;
+</description>
+<smd name="1" x="-3.15" y="2.3" dx="1.75" dy="0.95" layer="1"/>
+<smd name="2" x="-3.15" y="0" dx="1.75" dy="0.95" layer="1"/>
+<smd name="3" x="-3.15" y="-2.3" dx="1.75" dy="0.95" layer="1"/>
+<smd name="4" x="3.15" y="0" dx="3.2" dy="1.75" layer="1" rot="R90"/>
+<text x="0" y="0" size="1.27" layer="25" align="center">&gt;NAME</text>
+<text x="0" y="0" size="1.27" layer="27" align="center">&gt;VALUE</text>
+<wire x1="-4.275" y1="3.6" x2="4.275" y2="3.6" width="0.05" layer="51"/>
+<wire x1="4.275" y1="3.6" x2="4.275" y2="-3.6" width="0.05" layer="51"/>
+<wire x1="4.275" y1="-3.6" x2="-4.275" y2="-3.6" width="0.05" layer="51"/>
+<wire x1="-4.275" y1="-3.6" x2="-4.275" y2="3.6" width="0.05" layer="51"/>
+<wire x1="-1.75" y1="3.25" x2="1.75" y2="3.25" width="0.1" layer="51"/>
+<wire x1="1.75" y1="3.25" x2="1.75" y2="-3.25" width="0.1" layer="51"/>
+<wire x1="1.75" y1="-3.25" x2="-1.75" y2="-3.25" width="0.1" layer="51"/>
+<wire x1="-1.75" y1="-3.25" x2="-1.75" y2="3.25" width="0.1" layer="51"/>
+<wire x1="-1.75" y1="0.95" x2="0.55" y2="3.25" width="0.1" layer="51"/>
+<wire x1="-1.925" y1="3.25" x2="1.925" y2="3.25" width="0.2" layer="21"/>
+<wire x1="1.925" y1="3.25" x2="1.925" y2="-3.25" width="0.2" layer="21"/>
+<wire x1="1.925" y1="-3.25" x2="-1.925" y2="-3.25" width="0.2" layer="21"/>
+<wire x1="-1.925" y1="-3.25" x2="-1.925" y2="3.25" width="0.2" layer="21"/>
+<wire x1="-4.025" y1="3.125" x2="-2.275" y2="3.125" width="0.2" layer="21"/>
+</package>
 </packages>
 <symbols>
 <symbol name="ATTINY13A-SSH">
@@ -113,6 +137,18 @@
 <pin name="PB1" x="25.4" y="-2.54" length="middle" rot="R180"/>
 <pin name="PB2" x="25.4" y="-5.08" length="middle" rot="R180"/>
 <pin name="VCC" x="25.4" y="-7.62" length="middle" rot="R180"/>
+</symbol>
+<symbol name="LM2936MP-5.0">
+<wire x1="5.08" y1="2.54" x2="22.86" y2="2.54" width="0.254" layer="94"/>
+<wire x1="22.86" y1="-5.08" x2="22.86" y2="2.54" width="0.254" layer="94"/>
+<wire x1="22.86" y1="-5.08" x2="5.08" y2="-5.08" width="0.254" layer="94"/>
+<wire x1="5.08" y1="2.54" x2="5.08" y2="-5.08" width="0.254" layer="94"/>
+<text x="24.13" y="7.62" size="1.778" layer="95" align="center-left">&gt;NAME</text>
+<text x="24.13" y="5.08" size="1.778" layer="96" align="center-left">&gt;VALUE</text>
+<pin name="VIN" x="0" y="0" length="middle" direction="in"/>
+<pin name="GND" x="0" y="-2.54" length="middle" direction="pwr"/>
+<pin name="VOUT" x="27.94" y="0" length="middle" direction="out" rot="R180"/>
+<pin name="GND_1" x="27.94" y="-2.54" length="middle" direction="pwr" rot="R180"/>
 </symbol>
 </symbols>
 <devicesets>
@@ -144,6 +180,35 @@ Source: &lt;a href=""&gt; Datasheet &lt;/a&gt;</description>
 <attribute name="MOUSER_PRICE-STOCK" value="https://www.mouser.com/Search/Refine.aspx?Keyword=556-ATTINY13A-SSH" constant="no"/>
 <attribute name="RS_PART_NUMBER" value="1330955" constant="no"/>
 <attribute name="RS_PRICE-STOCK" value="http://uk.rs-online.com/web/p/products/1330955" constant="no"/>
+</technology>
+</technologies>
+</device>
+</devices>
+</deviceset>
+<deviceset name="LM2936MP-5.0" prefix="IC">
+<description>&lt;b&gt;LDO Voltage Regulators A 926-LM2936MP-5.0NOPB&lt;/b&gt;&lt;p&gt;
+Source: &lt;a href="http://www.ti.com/lit/ds/symlink/lm2936.pdf"&gt; Datasheet &lt;/a&gt;</description>
+<gates>
+<gate name="G$1" symbol="LM2936MP-5.0" x="0" y="0"/>
+</gates>
+<devices>
+<device name="" package="SOT230P700X180-4N">
+<connects>
+<connect gate="G$1" pin="GND" pad="2"/>
+<connect gate="G$1" pin="GND_1" pad="4"/>
+<connect gate="G$1" pin="VIN" pad="1"/>
+<connect gate="G$1" pin="VOUT" pad="3"/>
+</connects>
+<technologies>
+<technology name="">
+<attribute name="DESCRIPTION" value="LDO Voltage Regulators A 926-LM2936MP-5.0NOPB" constant="no"/>
+<attribute name="HEIGHT" value="1.8mm" constant="no"/>
+<attribute name="MANUFACTURER_NAME" value="Texas Instruments" constant="no"/>
+<attribute name="MANUFACTURER_PART_NUMBER" value="LM2936MP-5.0" constant="no"/>
+<attribute name="MOUSER_PART_NUMBER" value="926-LM2936MP-50" constant="no"/>
+<attribute name="MOUSER_PRICE-STOCK" value="https://www.mouser.com/Search/Refine.aspx?Keyword=926-LM2936MP-50" constant="no"/>
+<attribute name="RS_PART_NUMBER" value="4713693" constant="no"/>
+<attribute name="RS_PRICE-STOCK" value="" constant="no"/>
 </technology>
 </technologies>
 </device>
@@ -19959,7 +20024,6 @@ http://www.fairchildsemi.com/ds/LM/LM7805.pdf</description>
 <part name="R2" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="R-EU_" device="M0805" package3d_urn="urn:adsk.eagle:package:23556/1" value="10k"/>
 <part name="PUMP-" library="wirepad" library_urn="urn:adsk.eagle:library:412" deviceset="2,15/1,0" device="" package3d_urn="urn:adsk.eagle:package:30831/1"/>
 <part name="PUMP+" library="wirepad" library_urn="urn:adsk.eagle:library:412" deviceset="2,15/1,0" device="" package3d_urn="urn:adsk.eagle:package:30831/1"/>
-<part name="R4" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="R-EU_" device="M0805" package3d_urn="urn:adsk.eagle:package:23556/1" value="10k"/>
 <part name="PAD1" library="wirepad" library_urn="urn:adsk.eagle:library:412" deviceset="1,6/0,8" device="" package3d_urn="urn:adsk.eagle:package:30830/1"/>
 <part name="PAD6" library="wirepad" library_urn="urn:adsk.eagle:library:412" deviceset="1,6/0,8" device="" package3d_urn="urn:adsk.eagle:package:30830/1"/>
 <part name="T1B" library="semicon-smd-ipc" library_urn="urn:adsk.eagle:library:353" deviceset="NPN-TRANSISTOR_" device="SOT23W" package3d_urn="urn:adsk.eagle:package:26312/1" value="NPN"/>
@@ -19975,44 +20039,43 @@ http://www.fairchildsemi.com/ds/LM/LM7805.pdf</description>
 <part name="T2A" library="transistor" library_urn="urn:adsk.eagle:library:402" deviceset="*-NPN-" device="TO92" package3d_urn="urn:adsk.eagle:package:29893/2" value="2N4401"/>
 <part name="T2B" library="semicon-smd-ipc" library_urn="urn:adsk.eagle:library:353" deviceset="NPN-TRANSISTOR_" device="SOT23W" package3d_urn="urn:adsk.eagle:package:26312/1" value="NPN"/>
 <part name="C2" library="rcl" library_urn="urn:adsk.eagle:library:334" deviceset="CPOL-EU" device="E2.5-7" package3d_urn="urn:adsk.eagle:package:23345/1" value="1000uF"/>
-<part name="R5" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="R-EU_" device="M0805" package3d_urn="urn:adsk.eagle:package:23556/1" value="510"/>
+<part name="R4" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="R-EU_" device="M0805" package3d_urn="urn:adsk.eagle:package:23556/1" value="510"/>
 <part name="P+2" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="VCC" device=""/>
 <part name="GND1" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="GND" device=""/>
-<part name="R6" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="R-EU_" device="M0805" package3d_urn="urn:adsk.eagle:package:23556/1" value="10k"/>
+<part name="R5" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="R-EU_" device="M0805" package3d_urn="urn:adsk.eagle:package:23556/1" value="10k"/>
 <part name="GND4" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="GND" device=""/>
 <part name="GND5" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="GND" device=""/>
-<part name="REG1" library="linear" library_urn="urn:adsk.eagle:library:262" deviceset="78*" device="L" package3d_urn="urn:adsk.eagle:package:16416/2" technology="05"/>
-<part name="R3" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="R-EU_" device="M0805" package3d_urn="urn:adsk.eagle:package:23556/1" value="510"/>
-<part name="R7" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="R-EU_" device="M0805" package3d_urn="urn:adsk.eagle:package:23556/1" value="10k"/>
-<part name="SENSOR+" library="wirepad" library_urn="urn:adsk.eagle:library:412" deviceset="1,6/0,8" device="" package3d_urn="urn:adsk.eagle:package:30830/1"/>
+<part name="REG1A" library="linear" library_urn="urn:adsk.eagle:library:262" deviceset="78*" device="L" package3d_urn="urn:adsk.eagle:package:16416/2" technology="05"/>
+<part name="R3" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="R-EU_" device="M0805" package3d_urn="urn:adsk.eagle:package:23556/1" value="120"/>
+<part name="R6" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="R-EU_" device="M0805" package3d_urn="urn:adsk.eagle:package:23556/1" value="10k"/>
 <part name="C1" library="rcl" library_urn="urn:adsk.eagle:library:334" deviceset="C-EU" device="C0805" package3d_urn="urn:adsk.eagle:package:23617/2" value="100nF"/>
 <part name="GND6" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="GND" device=""/>
-<part name="SENSOR-" library="wirepad" library_urn="urn:adsk.eagle:library:412" deviceset="1,6/0,8" device="" package3d_urn="urn:adsk.eagle:package:30830/1"/>
 <part name="GND2" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="GND" device=""/>
+<part name="REG1B" library="STM32F103RBT6" deviceset="LM2936MP-5.0" device=""/>
 </parts>
 <sheets>
 <sheet>
 <plain>
-<wire x1="10.16" y1="96.52" x2="10.16" y2="71.12" width="0.1524" layer="97"/>
-<wire x1="10.16" y1="71.12" x2="58.42" y2="71.12" width="0.1524" layer="97"/>
+<wire x1="15.24" y1="96.52" x2="15.24" y2="71.12" width="0.1524" layer="97"/>
+<wire x1="15.24" y1="71.12" x2="58.42" y2="71.12" width="0.1524" layer="97"/>
 <wire x1="58.42" y1="71.12" x2="58.42" y2="96.52" width="0.1524" layer="97"/>
-<wire x1="58.42" y1="96.52" x2="10.16" y2="96.52" width="0.1524" layer="97"/>
-<text x="12.7" y="93.98" size="1.778" layer="97">Battery / Input</text>
+<wire x1="58.42" y1="96.52" x2="15.24" y2="96.52" width="0.1524" layer="97"/>
+<text x="17.78" y="93.98" size="1.778" layer="97">Battery / Input</text>
 <wire x1="63.5" y1="96.52" x2="63.5" y2="68.58" width="0.1524" layer="97"/>
 <wire x1="63.5" y1="68.58" x2="137.16" y2="68.58" width="0.1524" layer="97"/>
 <wire x1="137.16" y1="68.58" x2="137.16" y2="96.52" width="0.1524" layer="97"/>
 <wire x1="137.16" y1="96.52" x2="63.5" y2="96.52" width="0.1524" layer="97"/>
 <text x="66.04" y="93.98" size="1.778" layer="97">Solar Charger</text>
 <wire x1="38.1" y1="68.58" x2="38.1" y2="30.48" width="0.1524" layer="97"/>
-<wire x1="38.1" y1="30.48" x2="10.16" y2="30.48" width="0.1524" layer="97"/>
-<wire x1="10.16" y1="30.48" x2="10.16" y2="68.58" width="0.1524" layer="97"/>
-<wire x1="10.16" y1="68.58" x2="38.1" y2="68.58" width="0.1524" layer="97"/>
+<wire x1="38.1" y1="30.48" x2="15.24" y2="30.48" width="0.1524" layer="97"/>
+<wire x1="15.24" y1="30.48" x2="15.24" y2="68.58" width="0.1524" layer="97"/>
+<wire x1="15.24" y1="68.58" x2="38.1" y2="68.58" width="0.1524" layer="97"/>
 <wire x1="48.26" y1="45.72" x2="88.9" y2="45.72" width="0.1524" layer="97"/>
 <wire x1="88.9" y1="45.72" x2="88.9" y2="20.32" width="0.1524" layer="97"/>
 <wire x1="88.9" y1="20.32" x2="48.26" y2="20.32" width="0.1524" layer="97"/>
 <wire x1="48.26" y1="20.32" x2="48.26" y2="45.72" width="0.1524" layer="97"/>
 <text x="58.42" y="43.18" size="1.778" layer="97">Pump DC Motor</text>
-<text x="12.7" y="33.02" size="1.778" layer="97" rot="R90">Warning LED</text>
+<text x="17.78" y="33.02" size="1.778" layer="97" rot="R90">Warning LED</text>
 <text x="109.22" y="50.8" size="1.778" layer="97">Moisture Sensor</text>
 <wire x1="106.68" y1="53.34" x2="106.68" y2="22.86" width="0.1524" layer="97"/>
 <wire x1="106.68" y1="22.86" x2="137.16" y2="22.86" width="0.1524" layer="97"/>
@@ -20061,10 +20124,6 @@ http://www.fairchildsemi.com/ds/LM/LM7805.pdf</description>
 <instance part="PUMP+" gate="1" x="134.62" y="55.88" smashed="yes" rot="R180">
 <attribute name="NAME" x="95.123" y="55.0258" size="1.778" layer="95" rot="R180"/>
 <attribute name="VALUE" x="135.763" y="59.182" size="1.778" layer="96" rot="R180"/>
-</instance>
-<instance part="R4" gate="G$1" x="20.32" y="48.26" smashed="yes" rot="R90">
-<attribute name="NAME" x="18.8214" y="44.45" size="1.778" layer="95" rot="R90"/>
-<attribute name="VALUE" x="23.622" y="44.45" size="1.778" layer="96" rot="R90"/>
 </instance>
 <instance part="PAD1" gate="P" x="35.56" y="53.34" smashed="yes" rot="R180">
 <attribute name="VALUE" x="36.703" y="56.642" size="1.778" layer="96" rot="R180"/>
@@ -20119,7 +20178,7 @@ http://www.fairchildsemi.com/ds/LM/LM7805.pdf</description>
 <attribute name="NAME" x="109.7026" y="72.517" size="1.778" layer="95" rot="R270"/>
 <attribute name="VALUE" x="104.6226" y="72.517" size="1.778" layer="96" rot="R270"/>
 </instance>
-<instance part="R5" gate="G$1" x="86.36" y="73.66" smashed="yes" rot="R90">
+<instance part="R4" gate="G$1" x="86.36" y="73.66" smashed="yes" rot="R90">
 <attribute name="NAME" x="84.8614" y="69.85" size="1.778" layer="95" rot="R90"/>
 <attribute name="VALUE" x="89.662" y="69.85" size="1.778" layer="96" rot="R90"/>
 </instance>
@@ -20129,7 +20188,7 @@ http://www.fairchildsemi.com/ds/LM/LM7805.pdf</description>
 <instance part="GND1" gate="1" x="68.58" y="76.2" smashed="yes">
 <attribute name="VALUE" x="66.04" y="73.66" size="1.778" layer="96"/>
 </instance>
-<instance part="R6" gate="G$1" x="78.74" y="78.74" smashed="yes">
+<instance part="R5" gate="G$1" x="78.74" y="78.74" smashed="yes">
 <attribute name="NAME" x="74.93" y="80.2386" size="1.778" layer="95"/>
 <attribute name="VALUE" x="74.93" y="75.438" size="1.778" layer="96"/>
 </instance>
@@ -20139,21 +20198,17 @@ http://www.fairchildsemi.com/ds/LM/LM7805.pdf</description>
 <instance part="GND5" gate="1" x="40.64" y="76.2" smashed="yes">
 <attribute name="VALUE" x="38.1" y="73.66" size="1.778" layer="96"/>
 </instance>
-<instance part="REG1" gate="A1" x="121.92" y="91.44" smashed="yes">
-<attribute name="NAME" x="114.3" y="84.455" size="1.778" layer="95"/>
+<instance part="REG1A" gate="A1" x="121.92" y="91.44" smashed="yes">
+<attribute name="NAME" x="111.76" y="84.455" size="1.778" layer="95"/>
 <attribute name="VALUE" x="114.3" y="94.615" size="1.778" layer="96"/>
 </instance>
 <instance part="R3" gate="G$1" x="27.94" y="63.5" smashed="yes" rot="R180">
 <attribute name="NAME" x="31.75" y="62.0014" size="1.778" layer="95" rot="R180"/>
 <attribute name="VALUE" x="31.75" y="66.802" size="1.778" layer="96" rot="R180"/>
 </instance>
-<instance part="R7" gate="G$1" x="116.84" y="33.02" smashed="yes" rot="R180">
+<instance part="R6" gate="G$1" x="116.84" y="33.02" smashed="yes" rot="R180">
 <attribute name="NAME" x="120.65" y="31.5214" size="1.778" layer="95" rot="R180"/>
 <attribute name="VALUE" x="120.65" y="36.322" size="1.778" layer="96" rot="R180"/>
-</instance>
-<instance part="SENSOR+" gate="P" x="134.62" y="40.64" smashed="yes" rot="R180">
-<attribute name="NAME" x="135.763" y="38.7858" size="1.778" layer="95" rot="R180"/>
-<attribute name="VALUE" x="135.763" y="43.942" size="1.778" layer="96" rot="R180"/>
 </instance>
 <instance part="C1" gate="G$1" x="101.6" y="39.26" smashed="yes">
 <attribute name="NAME" x="103.124" y="39.641" size="1.778" layer="95"/>
@@ -20162,12 +20217,12 @@ http://www.fairchildsemi.com/ds/LM/LM7805.pdf</description>
 <instance part="GND6" gate="1" x="101.6" y="31.64" smashed="yes">
 <attribute name="VALUE" x="99.06" y="29.1" size="1.778" layer="96"/>
 </instance>
-<instance part="SENSOR-" gate="P" x="134.62" y="33.02" smashed="yes" rot="R180">
-<attribute name="NAME" x="135.763" y="31.1658" size="1.778" layer="95" rot="R180"/>
-<attribute name="VALUE" x="135.763" y="36.322" size="1.778" layer="96" rot="R180"/>
-</instance>
 <instance part="GND2" gate="1" x="111.76" y="26.56" smashed="yes">
 <attribute name="VALUE" x="109.22" y="24.02" size="1.778" layer="96"/>
+</instance>
+<instance part="REG1B" gate="G$1" x="104.14" y="106.68" smashed="yes">
+<attribute name="NAME" x="100.33" y="109.22" size="1.778" layer="95" align="center-left"/>
+<attribute name="VALUE" x="110.49" y="111.76" size="1.778" layer="96" align="center-left"/>
 </instance>
 </instances>
 <busses>
@@ -20199,20 +20254,16 @@ http://www.fairchildsemi.com/ds/LM/LM7805.pdf</description>
 <wire x1="76.2" y1="22.86" x2="60.96" y2="22.86" width="0.1524" layer="91"/>
 <wire x1="60.96" y1="22.86" x2="60.96" y2="33.02" width="0.1524" layer="91"/>
 <pinref part="GND3" gate="1" pin="GND"/>
-<pinref part="R4" gate="G$1" pin="1"/>
-<wire x1="20.32" y1="43.18" x2="20.32" y2="33.02" width="0.1524" layer="91"/>
-<wire x1="20.32" y1="33.02" x2="27.94" y2="33.02" width="0.1524" layer="91"/>
 <pinref part="LED1" gate="G$1" pin="C"/>
 <pinref part="PAD2" gate="P" pin="P"/>
 <wire x1="27.94" y1="33.02" x2="43.18" y2="33.02" width="0.1524" layer="91"/>
 <wire x1="33.02" y1="45.72" x2="27.94" y2="45.72" width="0.1524" layer="91"/>
 <wire x1="27.94" y1="45.72" x2="27.94" y2="33.02" width="0.1524" layer="91"/>
 <junction x="27.94" y="45.72"/>
-<junction x="27.94" y="33.02"/>
 </segment>
 <segment>
 <pinref part="GND1" gate="1" pin="GND"/>
-<pinref part="R6" gate="G$1" pin="1"/>
+<pinref part="R5" gate="G$1" pin="1"/>
 <wire x1="73.66" y1="78.74" x2="68.58" y2="78.74" width="0.1524" layer="91"/>
 <pinref part="IN-" gate="1" pin="P"/>
 <wire x1="68.58" y1="83.82" x2="68.58" y2="78.74" width="0.1524" layer="91"/>
@@ -20239,7 +20290,7 @@ http://www.fairchildsemi.com/ds/LM/LM7805.pdf</description>
 </segment>
 <segment>
 <pinref part="GND2" gate="1" pin="GND"/>
-<pinref part="R7" gate="G$1" pin="2"/>
+<pinref part="R6" gate="G$1" pin="2"/>
 <wire x1="111.76" y1="29.1" x2="111.76" y2="33.02" width="0.1524" layer="91"/>
 </segment>
 </net>
@@ -20270,9 +20321,7 @@ http://www.fairchildsemi.com/ds/LM/LM7805.pdf</description>
 <net name="N$3" class="0">
 <segment>
 <pinref part="LED1" gate="G$1" pin="A"/>
-<pinref part="R4" gate="G$1" pin="2"/>
 <wire x1="27.94" y1="53.34" x2="20.32" y2="53.34" width="0.1524" layer="91"/>
-<junction x="20.32" y="53.34"/>
 <pinref part="PAD1" gate="P" pin="P"/>
 <wire x1="33.02" y1="53.34" x2="27.94" y2="53.34" width="0.1524" layer="91"/>
 <junction x="27.94" y="53.34"/>
@@ -20287,7 +20336,7 @@ http://www.fairchildsemi.com/ds/LM/LM7805.pdf</description>
 <pinref part="PAD4" gate="P" pin="P"/>
 <wire x1="78.74" y1="58.42" x2="86.36" y2="58.42" width="0.1524" layer="91"/>
 <label x="88.9" y="58.42" size="1.778" layer="95"/>
-<pinref part="R5" gate="G$1" pin="1"/>
+<pinref part="R4" gate="G$1" pin="1"/>
 <wire x1="86.36" y1="58.42" x2="132.08" y2="58.42" width="0.1524" layer="91"/>
 <wire x1="86.36" y1="68.58" x2="86.36" y2="58.42" width="0.1524" layer="91"/>
 <junction x="86.36" y="58.42"/>
@@ -20299,11 +20348,11 @@ http://www.fairchildsemi.com/ds/LM/LM7805.pdf</description>
 <pinref part="PAD6" gate="P" pin="P"/>
 <wire x1="78.74" y1="60.96" x2="127" y2="60.96" width="0.1524" layer="91"/>
 <label x="88.9" y="60.96" size="1.778" layer="95"/>
-<pinref part="SENSOR+" gate="P" pin="P"/>
 <wire x1="127" y1="60.96" x2="132.08" y2="60.96" width="0.1524" layer="91"/>
 <wire x1="127" y1="40.64" x2="132.08" y2="40.64" width="0.1524" layer="91"/>
 <wire x1="127" y1="40.64" x2="127" y2="60.96" width="0.1524" layer="91"/>
 <junction x="127" y="60.96"/>
+<label x="124.46" y="38.1" size="1.778" layer="95"/>
 </segment>
 </net>
 <net name="VCC" class="0">
@@ -20342,8 +20391,8 @@ http://www.fairchildsemi.com/ds/LM/LM7805.pdf</description>
 </net>
 <net name="N$4" class="0">
 <segment>
-<pinref part="R6" gate="G$1" pin="2"/>
 <pinref part="R5" gate="G$1" pin="2"/>
+<pinref part="R4" gate="G$1" pin="2"/>
 <wire x1="83.82" y1="78.74" x2="86.36" y2="78.74" width="0.1524" layer="91"/>
 <pinref part="T2A" gate="G$1" pin="B"/>
 <wire x1="86.36" y1="78.74" x2="88.9" y2="78.74" width="0.1524" layer="91"/>
@@ -20359,9 +20408,16 @@ http://www.fairchildsemi.com/ds/LM/LM7805.pdf</description>
 <pinref part="T2A" gate="G$1" pin="C"/>
 <pinref part="T2B" gate="G$1" pin="C"/>
 <wire x1="93.98" y1="83.82" x2="104.14" y2="83.82" width="0.1524" layer="91"/>
-<pinref part="REG1" gate="A1" pin="GND"/>
+<pinref part="REG1A" gate="A1" pin="GND"/>
 <wire x1="121.92" y1="83.82" x2="104.14" y2="83.82" width="0.1524" layer="91"/>
 <junction x="104.14" y="83.82"/>
+<pinref part="REG1B" gate="G$1" pin="GND"/>
+<wire x1="104.14" y1="104.14" x2="104.14" y2="83.82" width="0.1524" layer="91"/>
+<pinref part="REG1B" gate="G$1" pin="GND_1"/>
+<wire x1="134.62" y1="104.14" x2="132.08" y2="104.14" width="0.1524" layer="91"/>
+<wire x1="121.92" y1="83.82" x2="134.62" y2="83.82" width="0.1524" layer="91"/>
+<wire x1="134.62" y1="83.82" x2="134.62" y2="104.14" width="0.1524" layer="91"/>
+<junction x="121.92" y="83.82"/>
 </segment>
 </net>
 <net name="SOLAR_PANEL+" class="0">
@@ -20369,9 +20425,14 @@ http://www.fairchildsemi.com/ds/LM/LM7805.pdf</description>
 <pinref part="C2" gate="G$1" pin="+"/>
 <wire x1="111.76" y1="73.66" x2="129.54" y2="73.66" width="0.1524" layer="91"/>
 <label x="114.3" y="71.12" size="1.778" layer="95"/>
-<pinref part="REG1" gate="A1" pin="VI"/>
+<pinref part="REG1A" gate="A1" pin="VI"/>
 <wire x1="111.76" y1="73.66" x2="111.76" y2="91.44" width="0.1524" layer="91"/>
 <junction x="111.76" y="73.66"/>
+<wire x1="99.06" y1="106.68" x2="99.06" y2="91.44" width="0.1524" layer="91"/>
+<wire x1="99.06" y1="91.44" x2="111.76" y2="91.44" width="0.1524" layer="91"/>
+<junction x="111.76" y="91.44"/>
+<pinref part="REG1B" gate="G$1" pin="VIN"/>
+<wire x1="99.06" y1="106.68" x2="104.14" y2="106.68" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="LED" class="0">
@@ -20395,18 +20456,21 @@ http://www.fairchildsemi.com/ds/LM/LM7805.pdf</description>
 <wire x1="121.92" y1="48.26" x2="53.34" y2="48.26" width="0.1524" layer="91"/>
 <wire x1="53.34" y1="58.42" x2="53.34" y2="48.26" width="0.1524" layer="91"/>
 <junction x="53.34" y="58.42"/>
-<pinref part="R7" gate="G$1" pin="1"/>
-<pinref part="SENSOR-" gate="P" pin="P"/>
+<pinref part="R6" gate="G$1" pin="1"/>
 <wire x1="132.08" y1="33.02" x2="121.92" y2="33.02" width="0.1524" layer="91"/>
 <junction x="121.92" y="33.02"/>
 <pinref part="IN+" gate="1" pin="P"/>
-<pinref part="REG1" gate="A1" pin="VO"/>
+<pinref part="REG1A" gate="A1" pin="VO"/>
 <wire x1="132.08" y1="91.44" x2="132.08" y2="81.28" width="0.1524" layer="91"/>
 <junction x="132.08" y="81.28"/>
 <wire x1="132.08" y1="81.28" x2="139.7" y2="81.28" width="0.1524" layer="91"/>
 <wire x1="139.7" y1="81.28" x2="139.7" y2="99.06" width="0.1524" layer="91"/>
 <wire x1="139.7" y1="99.06" x2="53.34" y2="99.06" width="0.1524" layer="91"/>
 <wire x1="53.34" y1="99.06" x2="53.34" y2="58.42" width="0.1524" layer="91"/>
+<label x="124.46" y="30.48" size="1.778" layer="95"/>
+<wire x1="132.08" y1="106.68" x2="132.08" y2="91.44" width="0.1524" layer="91"/>
+<junction x="132.08" y="91.44"/>
+<pinref part="REG1B" gate="G$1" pin="VOUT"/>
 </segment>
 </net>
 </nets>
