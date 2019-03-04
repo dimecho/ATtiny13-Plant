@@ -35,7 +35,7 @@
 //#define solarPin                    PB2 //Output
 #define ledPin                      PB2 //  PB5 //Output
 #define moistureSensorPin           PB4 //Input
-#define delayBetweenWaterings       4   //8seconds x 12 = 1.5 min
+#define delayBetweenWaterings       8   //8seconds x 12 = 1.5 min
 #define delayBetweenSolarDischarge  4   //8seconds x 4 = .5 min
 #define delayBetweenLogReset        60  //8seconds x 12 x 60 = 1.5 hours
 #define delayBetweenRefillReset     450 //8seconds x 12 x 450 = 12 hours
@@ -48,6 +48,7 @@ static void blink(uint8_t time, uint8_t duration);
 static uint8_t checkEmptyBottle();
 static void resetLog(uint8_t *sleepLogReset, uint16_t *sleepOneDay, uint8_t *emptyBottle, uint16_t (*moistureLog)[3]);
 static uint16_t ReadADC(uint8_t channel);
+static void uart_send_line(char *s, uint16_t i);
 
 //Global variable, set to 'volatile' if used with ISR
 
@@ -193,6 +194,7 @@ int main(void)
     PORTB &= ~(1<<PB0); //OFF
     */
     blink(2,2);
+    uart_send_line(">",0);
     //================
 
     for (;;) {
@@ -208,9 +210,8 @@ int main(void)
         #ifdef solarPin
             if (sleepLoop > delayBetweenSolarDischarge)
             {
-                #ifdef UART_TX_ENABLED
-                    uart_puts("SLR\r\n");
-                #endif
+                uart_send_line("SLR",0);
+                
                 PORTB |= (1<<solarPin); //ON
                 //-------------------
                 //Depends on Capacitor
@@ -222,10 +223,7 @@ int main(void)
                 while(timeout-- && voltage > 100) {
                     _delay_ms(100);
                     voltage = ReadADC(moistureSensorPin);
-                    #ifdef UART_TX_ENABLED
-                        uart_putu(voltage);
-                        uart_puts(",");
-                    #endif
+                    uart_send_line(",",voltage);
                 }
                 //-------------------
                 PORTB &= ~(1<<solarPin); //OFF
@@ -270,19 +268,11 @@ int main(void)
                 //=============
                 PORTB &= ~(1<<sensorPin); //OFF
 
-                #ifdef UART_TX_ENABLED
-                    uart_puts("S=");
-                    uart_putu(moisture);
-                    uart_puts("\r\n");
-                #endif
+                uart_send_line("S=",moisture);
 
                 if(moisture == 0) { //Sensor Not in Soil
 
-                    #ifdef UART_TX_ENABLED
-                        uart_puts("I=");
-                        uart_putu(suitableMoisture);
-                        uart_puts("\r\n");
-                    #endif
+                    uart_send_line("I=",suitableMoisture);
 
                     blink(4,2);
 
@@ -333,54 +323,44 @@ int main(void)
                         }
                         PORTB &= ~(1<<sensorPin); //OFF
 
-                        #ifdef UART_TX_ENABLED
-                            uart_putu(moisture);
-                            uart_puts("\r\n");
-                        #endif
+                        uart_send_line("",moisture);
                     }
                     suitableMoisture = moisture;
                     EEPROM_write(0x01, (suitableMoisture/10)); //max 255 we try to fit 10x
                 
                 }else if (moisture < suitableMoisture) { //Water Plant
-                    //===================
-                    //Detect Empty Bottle (Sensor-less)
-                    //===================
-                    if(moistureLog[0] == 0) {
-                        moistureLog[0] = moisture;
-                    }else if(moistureLog[1] == 0) {
-                        moistureLog[1] = moisture;
-                    }else if(moistureLog[2] == 0) {
-                        moistureLog[2] = moisture;
-                    }else{
-                        uint16_t m = (moistureLog[0] + moistureLog[1] + moistureLog[2]) / 3; //Average
-                        #ifdef UART_TX_ENABLED
-                            uart_puts("M=");
-                            uart_putu(m);
-                            uart_puts("\r\n");
-                        #endif
-                        if (m >= (moisture - 2) && m <= (moisture + 2)) {
-                            emptyBottle = 1; //Pump ran but no change in moisture
+
+                    emptyBottle = checkEmptyBottle(); //Detect Empty Bottle (Sensored)
+
+                    if (emptyBottle == 0) //Detect Empty Bottle (Sensor-less)
+                    {
+                        if(moistureLog[0] == 0) {
+                            moistureLog[0] = moisture;
+                        }else if(moistureLog[1] == 0) {
+                            moistureLog[1] = moisture;
+                        }else if(moistureLog[2] == 0) {
+                            moistureLog[2] = moisture;
                         }else{
-                            resetLog(&sleepLogReset, &sleepOneDay, &emptyBottle, &moistureLog);
+                            uint16_t m = (moistureLog[0] + moistureLog[1] + moistureLog[2]) / 3; //Average
+                            uart_send_line("M=",m);
+
+                            if (m >= (moisture - 2) && m <= (moisture + 2)) {
+                                emptyBottle = 1; //Pump ran but no change in moisture
+                            }else{
+                                resetLog(&sleepLogReset, &sleepOneDay, &emptyBottle, &moistureLog);
+                            }
                         }
                     }
-                    //===================
-
-                    //Bottle must be empty do not pump air
-                    if (emptyBottle == 1) {
-                        #ifdef UART_TX_ENABLED
-                            uart_puts("E\r\n");
-                        #endif
+                   
+                    if (emptyBottle == 1) //Bottle must be empty do not pump air
+                    {
+                        uart_send_line("E",0);
                     }else{
-                        #ifdef UART_TX_ENABLED
-                            uart_puts("P\r\n");
-                        #endif
+                        uart_send_line("P",0);
 
                         PORTB |= (1<<PB0); //ON
                         _delay_ms(6800);
                         PORTB &= ~(1<<PB0); //OFF
-
-                        emptyBottle = checkEmptyBottle();
                     }
                 }
             }
@@ -388,6 +368,17 @@ int main(void)
             sleepLoop++;
         }
     }
+}
+
+void uart_send_line(char *s, uint16_t u)
+{
+    #ifdef UART_TX_ENABLED
+        uart_puts(s);
+        if(u > 0) {
+            uart_putu(u);
+        }
+        uart_puts("\r\n");
+    #endif
 }
 
 uint8_t checkEmptyBottle()
@@ -405,11 +396,7 @@ uint8_t checkEmptyBottle()
     uint16_t water = ReadADC(moistureSensorPin);
     PORTB &= ~(1<<PB0); //OFF
 
-    #ifdef UART_TX_ENABLED
-        uart_puts("J=");
-        uart_putu(water);
-        uart_puts("\r\n");
-    #endif
+    uart_send_line("J=",water);
 
     if (water > 0 && water < 100) { //avoid 0 detection if wire not connected
         return 1;

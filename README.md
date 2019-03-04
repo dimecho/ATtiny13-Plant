@@ -40,7 +40,7 @@ Designed with [EagleCAD](https://www.autodesk.com/products/eagle/free-download)
 
 ## Calibrate Sensor (Without Firmware Flashing)
 
-Short sensor wires. After long LED blink quickly put into moist soil. The value will be stored in memmory as base-line.
+Short sensor wires. After long LED blink quickly put into moist soil. The value will be stored in memory as base-line.
 
 ## Solar
 
