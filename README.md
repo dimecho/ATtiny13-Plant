@@ -38,6 +38,10 @@ Designed with [EagleCAD](https://www.autodesk.com/products/eagle/free-download)
 
 ![Screenshot](img/diagram.png?raw=true)
 
+## Calibrate Sensor (Without Firmware Flashing)
+
+Short sensor wires. After long LED blink quickly put into moist soil. The value will be stored in memmory as base-line.
+
 ## Solar
 
 Optional Pin7 (PB2) used to "burst" charge from solar panel.

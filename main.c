@@ -7,7 +7,7 @@
     CPU @ 1.2Mhz / 8 = 150 Khz
 */
 #ifndef F_CPU
-#define F_CPU (1200000UL)
+    #define F_CPU (1200000UL)
 #endif
 /*
              [ATtiny13A]
@@ -32,93 +32,130 @@
 
 #define pumpPin                     PB0 //Output
 #define sensorPin                   PB1 //Output
-#define solarPin                    PB2 //Output
-//#define ledPin                      PB5 //Output
+//#define solarPin                    PB2 //Output
+#define ledPin                      PB2 //  PB5 //Output
 #define moistureSensorPin           PB4 //Input
-#define delayBetweenWaterings       12  //8seconds x 12 = 1.5 min
+#define delayBetweenWaterings       4   //8seconds x 12 = 1.5 min
 #define delayBetweenSolarDischarge  4   //8seconds x 4 = .5 min
 #define delayBetweenLogReset        60  //8seconds x 12 x 60 = 1.5 hours
 #define delayBetweenRefillReset     450 //8seconds x 12 x 450 = 12 hours
+
+//static void powerSave(void);
+//static void powerWakeup(void);
+static unsigned char EEPROM_read(unsigned char ucAddress);
+static void EEPROM_write(unsigned char ucAddress, unsigned char ucData);
+static void blink(uint8_t time, uint8_t duration);
+static uint8_t checkEmptyBottle();
+static void resetLog(uint8_t *sleepLogReset, uint16_t *sleepOneDay, uint8_t *emptyBottle, uint16_t (*moistureLog)[3]);
+static uint16_t ReadADC(uint8_t channel);
+
+//Global variable, set to 'volatile' if used with ISR
+
+//Brown Out Detector Control Register
 /*
-Moisture analog sensor:
-  - Pull-up Resistor 0(dry)-1023(wet)
-  - MH Sensor Series 0(wet)-1023(dry)
-  Note: Change line: 327/328
+#define BODCR _SFR_IO8(0x30)
+#define BODSE 0
+#define BODS 1
 */
-#define suitableMoisture 380 //700
-
-static void powerSave();
-static void powerWakeup();
-static void blink(uint16_t time, uint8_t duration);
-static void pump(uint16_t time);
-static void process();
-static void resetLog();
-static uint16_t ReadADC();
-static void delay_ms(uint16_t count);
-
-//================
-/*
-Note: Global variables cost a lot of flash size only use if needed.
-https://ww1.microchip.com/downloads/en/AppNotes/doc8453.pdf
-*/
-
-//Global variable, set to volatile if used with ISR
-uint8_t sleepLoop = 0;  //Track the passage of time
-uint8_t sleepLogReset = 0; //Reset logs once in a while
-uint16_t sleepOneDay = 0; //24 hour auto-check for refill
-
-//Collect past logs for empty detection
-uint16_t moistureLog[3] = {0,0,0};
-uint8_t emptyBottle = 0;
-
-//================
-//EEPROM for adjusting with UART
-//uint16_t EEMEM NonVolatileInt;
-//================
 
 ISR(WDT_vect)
 {
-    sleepLoop++; 
+}
+
+unsigned char EEPROM_read(unsigned char ucAddress)
+{
+    /* Wait for completion of previous write */
+    while(EECR & (1<<EEPE))
+    ;
+    /* Set up address register */
+    EEARL = ucAddress;
+    /* Start eeprom read by writing EERE */
+    EECR |= (1<<EERE);
+    /* Return data from data register */
+    return EEDR;
+}
+
+void EEPROM_write(unsigned char ucAddress, unsigned char ucData)
+{
+    /* Wait for completion of previous write */
+    while(EECR & (1<<EEPE))
+    ;
+    /* Set Programming mode */
+    //EECR = (0<<EEPM1)|(0>>EEPM0);
+    EECR = (0<<EEPM1)|(0<<EEPM0);
+    /* Set up address and data registers */
+    EEARL = ucAddress;
+    EEDR = ucData;
+    /* Write logical one to EEMPE */
+    EECR |= (1<<EEMPE);
+    /* Start eeprom write by setting EEPE */
+    EECR |= (1<<EEPE);
 }
 
 int main(void)
 {
+    uint16_t suitableMoisture = 380; //Analog value with 10k pull-up resistor
+
     //================
     //TRANSISTORS
     //================
-    DDRB |= (1<<DDB0);   // Pin 5 Digital OUTPUT
-    DDRB |= (1<<DDB1);   // Pin 6 Digital OUTPUT
+    //DDRB |= (1<<DDB0);   // Pin 5 Digital OUTPUT
+    //DDRB |= (1<<DDB1);   // Pin 6 Digital OUTPUT
+    DDRB |= _BV(pumpPin);
+    DDRB |= _BV(sensorPin);
+
     #ifdef solarPin
-        DDRB |= (1<<DDB2);   // Pin 7 Digital OUTPUT
+        //DDRB |= (1<<DDB2);   // Pin 7 Digital OUTPUT
+        DDRB |= _BV(solarPin);
     #endif
     #ifdef ledPin
-        DDRB |= (1<<DDB5);   // Pin 1 RESET Pin as Digital OUTPUT
+        //DDRB |= (1<<DDB5);   // Pin 1 (RESET) Pin as Digital OUTPUT
+        DDRB |= _BV(ledPin);
     #endif
     //================
     //ANALOG SENSOR
     //================
-    DDRB &= ~(1 << 4); // Pin 3 no Digital OUTPUT
-    PORTB &= ~(1 << 4); // Pin 3 Shutdown Digital OUTPUT
-    ADMUX &= ~_BV(REFS0);     //Set VCC as reference voltage (5V)
-    //ADMUX |= (1 << REFS0);  //Set VCC as reference voltage (Internal 1.1V)
-    //ADMUX |= (1 << MUX0) |= (1 << MUX1); //ADC3 PB3 as analog input channel
-    ADMUX |= (1 << MUX1) | (0 << MUX0); // ADC2 PB4 as analog input channel
-    //ADMUX |= (1 << ADLAR);  //Left adjusts for 8-bit resolution
-    ADCSRA |= (1 << ADEN);   //Enables the ADC
-    //ADCSRA |= (1 << ADPS1) | (1 << ADPS0);  //Set division factor-8 for 125kHz ADC clock
+    DDRB &= ~_BV(moistureSensorPin); // Pin 3 as Analog INPUT
+    //DDRB &= ~(1 << 4); // Pin 3 as Analog INPUT
+    //PORTB &= ~(1 << 4); // Pin 3 Shutdown Digital OUTPUT
     
+    //ADMUX = (0 << REFS0);     //Set VCC as reference voltage (5V)
+    //ADMUX = (1 << REFS0);  //Set VCC as reference voltage (Internal 1.1V)
+    //--------------
+    //ADMUX |= (1 << MUX0) |= (1 << MUX1); //ADC3 PB3 as analog input channel
+    //ADMUX |= (1 << MUX1) | (0 << MUX0); // ADC2 PB4 as analog input channel
+    //--------------
+    //ADMUX |= (1 << ADLAR);  //Left adjusts for 8-bit resolution
+    //--------------
+    // Set the prescaler to clock/128 & enable ADC See ATtiny13 datasheet, Table 14.4.
+    //ADCSRA |= (1 << ADPS1) | (1 << ADPS0);  //Set division factor-8 for 125kHz ADC clock
+    //--------------
+    //ADCSRA |= (1 << ADEN); //Enables the ADC
+
     //================
-    //SLEEP
+    //EEPROM
     //================
-    //wdt_disable();
-        //----------------
-        //WDTCR |= (1<<WDP3); // (1<<WDP2) | (1<<WDP0); //Set timer 4s (max)
-        WDTCR |= (1<<WDP3 )|(0<<WDP2 )|(0<<WDP1)|(1<<WDP0); //Set timer 8s (max)
-        WDTCR |= (1<<WDTIE);  // Enable watchdog timer interrupts
-        //set_sleep_mode(SLEEP_MODE_PWR_DOWN);
-        //set_sleep_mode(SLEEP_MODE_IDLE);
-        //sei(); // Enable global interrupts
-        //----------------
+    unsigned char suitableMoisture_ee = EEPROM_read(0x01);
+    if (suitableMoisture_ee == 255) //EEPROM is blank
+    {
+        EEPROM_write(0x01, (suitableMoisture/10)); //max 255 we try to fit 10x
+    }else{
+        suitableMoisture = (suitableMoisture_ee * 10);
+    }
+    //EEPROM_write(0x01,_suitableMoisture);
+    //================
+    //WATCHDOG
+    //================
+    cli(); // disable all interrupts
+    //wdt_reset();
+    //----------------
+    //WDTCR |= (1<<WDP3); // (1<<WDP2) | (1<<WDP0); //Set timer 4s (max)
+    WDTCR |= (1<<WDP3 )|(0<<WDP2 )|(0<<WDP1)|(1<<WDP0); //Set timer 8s (max)
+    WDTCR |= (1<<WDTIE);  // Enable watchdog timer interrupts
+    //set_sleep_mode(SLEEP_MODE_PWR_DOWN);
+    //set_sleep_mode(SLEEP_MODE_IDLE);
+    //sei(); // Enable global interrupts
+    //----------------
     //wdt_enable(WDTO_8S); // 8s
     // Valid delays:
     //  WDTO_15MS
@@ -131,237 +168,320 @@ int main(void)
     //  WDTO_2S
     //  WDTO_4S
     //  WDTO_8S
+    sei(); // enable all interrupts
 
-    //================
-    //EEPROM
-    //================
     /*
-    suitableMoisture = eeprom_read_word(&NonVolatileInt);
-    if (suitableMoisture == 65535) { //0xFFFF
-        suitableMoisture = 780;
-    }
+    Note: Global variables cost a lot of flash size only use if needed.
+    https://ww1.microchip.com/downloads/en/AppNotes/doc8453.pdf
     */
-    //================
+    uint8_t sleepLoop = 0;  //Track the passage of time
+    uint8_t sleepLogReset = 0; //Reset logs once in a while
+    uint16_t sleepOneDay = 0; //24 hour auto-check for refill
 
-    //Alive Test
-    blink(400,3);
-    pump(800);
+    //Collect past logs for empty detection
+    uint16_t moistureLog[3] = {0,0,0};
+    uint8_t emptyBottle = 0;
+    uint16_t moisture;
+
+    //================
+    //ALIVE TEST
+    //================
+    //BODCR |= (1<<BODS)|(1<<BODSE); //Disable Brown Out Detector Control Register
+    /*
+    PORTB |= (1<<PB0); //ON
+    _delay_ms(900);
+    PORTB &= ~(1<<PB0); //OFF
+    */
+    blink(2,2);
+    //================
 
     for (;;) {
+        
+        //-------------
+        set_sleep_mode(SLEEP_MODE_PWR_DOWN);
+        sleep_mode(); //makes a call to three routines:  sleep_enable(); sleep_cpu(); sleep_disable();
+        //sleep_enable(); //sets the Sleep Enable bit in the MCUCR register
+        //sleep_cpu(); //issues the SLEEP command
+        //sleep_disable(); //clears the SE bit.
+        //-------------
 
-        //  SLEEP_MODE_PWR_DOWN: Disable every clock domain and timer except for the watchdog timer.
-        //  Only way to wake up the device is the WDT and the external interrupt pins.
-        //  The millis() timers will be disabled during sleep, which is why we track seconds in the
-        //  watchdog timer routine.
+        #ifdef solarPin
+            if (sleepLoop > delayBetweenSolarDischarge)
+            {
+                #ifdef UART_TX_ENABLED
+                    uart_puts("SLR\r\n");
+                #endif
+                PORTB |= (1<<solarPin); //ON
+                //-------------------
+                //Depends on Capacitor
+                //_delay_ms(1800);
+                //-------------------
+                //Sense with voltage feedback wire from regulator
+                uint8_t timeout = 40;
+                uint16_t voltage;
+                while(timeout-- && voltage > 100) {
+                    _delay_ms(100);
+                    voltage = ReadADC(moistureSensorPin);
+                    #ifdef UART_TX_ENABLED
+                        uart_putu(voltage);
+                        uart_puts(",");
+                    #endif
+                }
+                //-------------------
+                PORTB &= ~(1<<solarPin); //OFF
+            }
+        #endif
 
-        //  Shut down your external sensors & hardware here
-        powerSave();
-            //-------------
-            set_sleep_mode(SLEEP_MODE_PWR_DOWN);
+        //uart_puts("EE=");
+        //uart_putu(suitableMoisture);
+        //uart_puts("\r\n");
 
-            //sleep_mode(); //makes a call to three routines:  sleep_enable(); sleep_cpu(); sleep_disable();
-            /*
-                sleep_enable() sets the Sleep Enable bit in the MCUCR register
-                sleep_cpu() issues the SLEEP command
-                sleep_disable() clears the SE bit.
-            */
-            sleep_enable();
-            sei();
-            sleep_cpu();
-            sleep_disable();
-            //-------------
-        powerWakeup();
+        if (sleepLoop > delayBetweenWaterings)
+        {
+            sleepLoop = 0;
 
-        process();
+            if(emptyBottle == 1) { //Low Water LED
+
+                blink(9,99);
+
+                emptyBottle = checkEmptyBottle();
+
+                //Retry every 24 hours ...when someone refilled the bottle but did not cycle power.
+                if(sleepOneDay > delayBetweenRefillReset)
+                {
+                   resetLog(&sleepLogReset, &sleepOneDay, &emptyBottle, &moistureLog);
+                }else{
+                    sleepOneDay++;
+                }
+            }else{
+                //======================
+                //Prevents false-positive (empty detection)
+                //Moisture sensor (too accurate) triggers exactly same value when dry
+                //======================
+                if (sleepLogReset > delayBetweenLogReset) {
+                    resetLog(&sleepLogReset, &sleepOneDay, &emptyBottle, &moistureLog);
+                }else{
+                    sleepLogReset++;
+                }
+                //======================
+                PORTB |= (1<<sensorPin); //ON
+                //_delay_ms(10);
+                moisture = ReadADC(moistureSensorPin);
+                //=============
+                PORTB &= ~(1<<sensorPin); //OFF
+
+                #ifdef UART_TX_ENABLED
+                    uart_puts("S=");
+                    uart_putu(moisture);
+                    uart_puts("\r\n");
+                #endif
+
+                if(moisture == 0) { //Sensor Not in Soil
+
+                    #ifdef UART_TX_ENABLED
+                        uart_puts("I=");
+                        uart_putu(suitableMoisture);
+                        uart_puts("\r\n");
+                    #endif
+
+                    blink(4,2);
+
+                    //Read from UART and save to EEPROM
+                    /*
+                    char c, *p, buff[3];
+                    p = buff;
+                    while((c = uart_getc()) != '\n' && (p - buff) < 3) {
+                        *(p++) = c;
+                    }
+                    *p = 0;
+                    _delay_ms(10);
+                    suitableMoisture = (int)buff;
+
+                    uart_putu(suitableMoisture);
+                    uart_puts("\r\n");
+                    */
+                }else if(moisture >= 1022) { //Sensor Manual Calibrate (cross/short both sensor leads)
+
+                    moisture = 0;
+
+                    #ifdef ledPin
+                        PORTB |= (1<<ledPin); //ON
+                    #endif
+                    for(uint8_t i = 0; i < 8; ++i) //Get ready to place into base-line soil
+                    {
+                        #ifdef UART_TX_ENABLED
+                            uart_puts(".");
+                        #endif
+                        _delay_ms(500);
+                    }
+                    #ifdef ledPin
+                        PORTB &= ~(1<<ledPin); //OFF
+                    #endif
+
+                    for(uint8_t i = 0; i < 9; ++i)
+                    {
+                        blink(4,1);
+
+                        PORTB |= (1<<sensorPin); //ON
+                        //_delay_ms(10);
+                        //=============
+                        //Take Highest
+                        //=============
+                        uint16_t a = ReadADC(moistureSensorPin);
+                        if (a > moisture) {
+                            moisture = a;
+                        }
+                        PORTB &= ~(1<<sensorPin); //OFF
+
+                        #ifdef UART_TX_ENABLED
+                            uart_putu(moisture);
+                            uart_puts("\r\n");
+                        #endif
+                    }
+                    suitableMoisture = moisture;
+                    EEPROM_write(0x01, (suitableMoisture/10)); //max 255 we try to fit 10x
+                
+                }else if (moisture < suitableMoisture) { //Water Plant
+                    //===================
+                    //Detect Empty Bottle (Sensor-less)
+                    //===================
+                    if(moistureLog[0] == 0) {
+                        moistureLog[0] = moisture;
+                    }else if(moistureLog[1] == 0) {
+                        moistureLog[1] = moisture;
+                    }else if(moistureLog[2] == 0) {
+                        moistureLog[2] = moisture;
+                    }else{
+                        uint16_t m = (moistureLog[0] + moistureLog[1] + moistureLog[2]) / 3; //Average
+                        #ifdef UART_TX_ENABLED
+                            uart_puts("M=");
+                            uart_putu(m);
+                            uart_puts("\r\n");
+                        #endif
+                        if (m >= (moisture - 2) && m <= (moisture + 2)) {
+                            emptyBottle = 1; //Pump ran but no change in moisture
+                        }else{
+                            resetLog(&sleepLogReset, &sleepOneDay, &emptyBottle, &moistureLog);
+                        }
+                    }
+                    //===================
+
+                    //Bottle must be empty do not pump air
+                    if (emptyBottle == 1) {
+                        #ifdef UART_TX_ENABLED
+                            uart_puts("E\r\n");
+                        #endif
+                    }else{
+                        #ifdef UART_TX_ENABLED
+                            uart_puts("P\r\n");
+                        #endif
+
+                        PORTB |= (1<<PB0); //ON
+                        _delay_ms(6800);
+                        PORTB &= ~(1<<PB0); //OFF
+
+                        emptyBottle = checkEmptyBottle();
+                    }
+                }
+            }
+        }else{
+            sleepLoop++;
+        }
     }
 }
 
-void resetLog()
+uint8_t checkEmptyBottle()
 {
-    sleepLogReset = 0;
-    sleepOneDay = 0;
-	emptyBottle = 0;
-    moistureLog[0] = 0;
-    moistureLog[1] = 0;
-    moistureLog[2] = 0;
+    //===================
+    //Detect Empty Bottle (Sensored)
+    //===================
+    /*
+    loopback wire from water jug to Pin3 (PB4)
+    given power from Pin5 (PB0) while turning on NPN transistor
+    more accurate than sensor-less detection
+    */
+
+    PORTB |= (1<<PB0); //ON
+    uint16_t water = ReadADC(moistureSensorPin);
+    PORTB &= ~(1<<PB0); //OFF
+
+    #ifdef UART_TX_ENABLED
+        uart_puts("J=");
+        uart_putu(water);
+        uart_puts("\r\n");
+    #endif
+
+    if (water > 0 && water < 100) { //avoid 0 detection if wire not connected
+        return 1;
+    }
+    return 0;
 }
 
-void blink(uint16_t time, uint8_t duration)
+void resetLog(uint8_t *sleepLogReset, uint16_t *sleepOneDay, uint8_t *emptyBottle, uint16_t (*moistureLog)[3])
+{
+    *sleepLogReset = 0;
+    *sleepOneDay = 0;
+	*emptyBottle = 0;
+    *moistureLog[0] = 0;
+    *moistureLog[1] = 0;
+    *moistureLog[2] = 0;
+}
+
+void blink(uint8_t time, uint8_t duration)
 {
     #ifdef ledPin
         do {
             PORTB |= (1<<ledPin); //ON
-            delay_ms(time);
+            for(uint8_t i = 0; i < time; ++i) {
+                _delay_ms(100);
+            }
             PORTB &= ~(1<<ledPin); //OFF
+            for(uint8_t i = 0; i < time; ++i) {
+                _delay_ms(100);
+            }
             duration--;
         } while (duration);
     #endif
 }
 
-void pump(uint16_t time)
-{
-    PORTB |= (1<<PB0); //ON
-    delay_ms(time);
-	//===================
-	//Detect Empty Bottle (Sensored)
-	//===================
-	/*
-	loopback wire from water jug to Pin3 (PB4)
-	given power from Pin5 (PB0) while turning on NPN transistor
-	more accurate than sensor-less detection
-	*/
-	uint16_t water = ReadADC();
-	#ifdef UART_TX_ENABLED
-		uart_puts("jug=");
-		uart_putu(water);
-		uart_puts("\r\n");
-	#endif
-	if (water > 0 && water < 100) { //avoid 0 detection if wire not connected
-        emptyBottle = 1;
-	}
-    PORTB &= ~(1<<PB0); //OFF
-}
+uint16_t ReadADC(uint8_t pin) {
 
-void process()
-{
-    #ifdef solarPin
-        if (sleepLoop > delayBetweenSolarDischarge)
-        {
-            #ifdef UART_TX_ENABLED
-                uart_puts("solar\r\n");
-            #endif
-            PORTB |= (1<<solarPin); //ON
-			//-------------------
-			//Depends on Capacitor
-			//_delay_ms(1800);
-			//-------------------
-			//Sense with voltage feedback wire from regulator
-			uint8_t timeout = 40;
-			uint16_t voltage = 1024;
-			while(timeout-- && voltage > 100) {
-				_delay_ms(100);
-				voltage = ReadADC();
-				#ifdef UART_TX_ENABLED
-				    uart_putu(voltage);
-                    uart_puts(",");
-				#endif
-			}
-			//-------------------
-            PORTB &= ~(1<<solarPin); //OFF
-        }
-    #endif
-
-    if (sleepLoop > delayBetweenWaterings) {
-
-        if(emptyBottle == 1) { //Low Water LED
-
-            blink(800,99);
-
-            //Retry every 24 hours ...when someone refilled the bottle but did not cycle power.
-            if(sleepOneDay > delayBetweenRefillReset)
-            {
-                resetLog();
-            }else{
-                sleepOneDay++;
-            }
-        }else{
-            //======================
-            //Prevents false-positive (empty detection)
-            //Moisture sensor (too accurate) triggers exactly same value when dry
-            //======================
-            if (sleepLogReset > delayBetweenLogReset) {
-                resetLog();
-            }else{
-                sleepLogReset++;
-            }
-            //======================
-            PORTB |= (1<<sensorPin); //ON
-            _delay_ms(10);
-            uint16_t moisture = ReadADC();
-            //=============
-            //Take Highest
-            //=============
-            /*
-            for(int i = 0; i < 3; i++) {
-                int a = ReadADC();
-                _delay_ms(10);
-                if (a > moisture) {
-                    moisture = a;
-                }
-            }
-            */
-            //=============
-            PORTB &= ~(1<<sensorPin); //OFF
-
-            #ifdef UART_TX_ENABLED
-                uart_puts("sensor=");
-                uart_putu(moisture);
-                uart_puts("\r\n");
-            #endif
-
-            if(moisture == 0 || moisture == 1023 ) { //Sensor Not in Soil
-
-                #ifdef UART_TX_ENABLED
-                    uart_puts("soil=");
-                    uart_putu(suitableMoisture);
-                    uart_puts("\r\n");
-                #endif
-
-                blink(400,2);
-
-                //Read from UART and save to EEPROM
-                /*
-                char c, *p, buff[3];
-                p = buff;
-                while((c = uart_getc()) != '\n' && (p - buff) < 3) {
-                    *(p++) = c;
-                }
-                *p = 0;
-                _delay_ms(10);
-                suitableMoisture = (int)buff;
-                eeprom_write_word(&NonVolatileInt,suitableMoisture);
-
-                uart_putu(suitableMoisture);
-                uart_puts("\r\n");
-                */
-            }else if (moisture < suitableMoisture) { //Water Plant (Pull-up Resistor)
-            //}else if (moisture > suitableMoisture) { //Water Plant (MH Sensor Series)
-				//===================
-                //Detect Empty Bottle (Sensor-less)
-                //===================
-                if(moistureLog[0] == 0) {
-                    moistureLog[0] = moisture;
-                }else if(moistureLog[1] == 0) {
-                    moistureLog[1] = moisture;
-                }else if(moistureLog[2] == 0) {
-                    moistureLog[2] = moisture;
-                }else{
-                    uint16_t m = (moistureLog[0] + moistureLog[1] + moistureLog[2]) / 3; //Average
-                    if (m >= (moisture - 2) && m <= (moisture + 2)) {
-                        emptyBottle = 1; //Pump ran but no change in moisture
-                    }else{
-                        resetLog();
-                    }
-                }
-                //===================
-
-                //Bottle must be empty do not pump air
-                if (emptyBottle == 1) {
-                    #ifdef UART_TX_ENABLED
-                        uart_puts("empty\r\n");
-                    #endif
-                }else{
-                    #ifdef UART_TX_ENABLED
-                        uart_puts("pump\r\n");
-                    #endif
-                    pump(6800);
-                }
-            }
-        }
-        sleepLoop = 0;
+    switch(pin) {
+    case PB2: ADMUX = _BV(MUX0); break; // ADC1
+        case PB4: ADMUX = _BV(MUX1); break; // ADC2
+        case PB3: ADMUX = _BV(MUX0)|_BV(MUX1); break; // ADC3
+        case PB5: // ADC0
+    default: ADMUX = 0; break;
     }
+
+    ADMUX &= ~_BV(REFS0); // Explicit set VCC as reference voltage (5V)
+    ADCSRA |= _BV(ADEN);  // Enable ADC
+    ADCSRA |= _BV(ADSC);  // Run single conversion
+    while(bit_is_set(ADCSRA, ADSC)); // Wait conversion is done
+
+    // Read values
+    uint8_t low = ADCL;
+    uint8_t high = ADCH;
+
+    return (high << 8) | low; // Combine two bytes
 }
 
+/*
+uint16_t ReadADC(uint8_t channel)
+{
+    ADMUX = (0 << REFS0) | channel;  // set reference and channel
+
+    //ADMUX |= (1 << MUX0) |= (1 << MUX1); //ADC3 PB3
+    ADMUX |= (1 << MUX1) | (0 << MUX0); // ADC2 PB4
+
+    ADCSRA |= (1 << ADSC); // Start Conversion
+    while(ADCSRA & (1<<ADSC)){}  // Wait for conversion complete  
+
+    return ADC; // For 10-bit resolution
+}
+*/
+
+/*
 void powerSave()
 {
     ADCSRA &= ~(1<<ADEN); // Disable ADC converter
@@ -376,23 +496,4 @@ void powerWakeup()
     ADCSRA |= (1 << ADEN);   //Enables the ADC
     while (ADCSRA & (1 << ADSC)); //Wait for completion
 }
-
-uint16_t ReadADC()
-{
-    ADMUX |= (0 << REFS0); // VCC as Reference
-    //ADMUX |= (1 << MUX0) |= (1 << MUX1); //ADC3 PB3
-    ADMUX |= (1 << MUX1) | (0 << MUX0); // ADC2 PB4
-    ADCSRA |= (1 << ADSC); // Start Conversion
-
-    while((ADCSRA & 0x40) !=0){}; //Wait for Conversion Complete
-
-    return ADC;
-}
-
-void delay_ms(uint16_t count)
-{
-  while(count--) {
-    _delay_ms(1);
-
-  }
-}
+*/
