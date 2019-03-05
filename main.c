@@ -194,7 +194,7 @@ int main(void)
     PORTB &= ~(1<<PB0); //OFF
     */
     blink(2,2);
-    uart_send_line(">",0);
+    uart_send_line("1.0 >",0);
     //================
 
     for (;;) {
