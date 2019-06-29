@@ -35,7 +35,7 @@
 //#define solarPin                    PB2 //Output
 #define ledPin                      PB2 //  PB5 //Output
 #define moistureSensorPin           PB4 //Input
-#define delayBetweenWaterings       18  //8seconds x 12 = 2.5 min
+#define delayBetweenWaterings       18  //8seconds x 18 = 2.5 min
 //#define delayBetweenSolarDischarge  4   //8seconds x 4 = .5 min
 #define delayBetweenLogReset        60  //8seconds x 12 x 60 = 1.5 hours
 #define delayBetweenRefillReset     450 //8seconds x 12 x 450 = 12 hours
@@ -301,7 +301,7 @@ int main(void)
                         PORTB &= ~(1<<ledPin); //OFF
                     #endif
 
-                    moisture = ReadMoisture(8);
+                    moisture = ReadMoisture(9);
                     suitableMoisture = moisture;
 
                     EEPROM_write(0x01, (suitableMoisture/10)); //max 255 we try to fit 10x
@@ -338,12 +338,12 @@ int main(void)
                             PORTB &= ~(1<<PB0); //OFF
 
                             overwaterProtection++; //When battery < 3V (without regulator) ADC readouts are unstable
-                        //}else{
-                        //    overwaterProtection = 0;
                         }
                     }else{ //Bottle must be empty do not pump air
                         uart_send_line("E",0);
                     }
+                }else{
+                    overwaterProtection = 0;
                 }
             }
 
