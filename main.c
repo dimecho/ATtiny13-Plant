@@ -46,7 +46,6 @@ static unsigned char EEPROM_read(unsigned char ucAddress);
 static void EEPROM_write(unsigned char ucAddress, unsigned char ucData);
 static void blink(uint8_t time, uint8_t duration);
 static uint8_t checkEmptyBottle();
-static uint16_t ReadMoisture(uint8_t b);
 static uint16_t ReadADC(uint8_t channel);
 static void uart_send_line(char *s, uint16_t i);
 
@@ -175,12 +174,12 @@ int main(void)
     */
     uint8_t sleepLoop = 0;  //Track the passage of time
     uint8_t sleepLogReset = 0; //Reset logs once in a while
-    uint16_t sleepOneDay = 0; //24 hour auto-check for refill
 
     //Collect past logs for empty detection
     uint16_t moistureLog[3] = {0,0,0};
     uint8_t overwaterProtection = 0;
     uint8_t emptyBottle = 0;
+    uint16_t moisture = 0;
 
     //================
     //ALIVE TEST
@@ -235,7 +234,6 @@ int main(void)
         if (sleepLoop > delayBetweenWaterings)
         {
             uint8_t resetLog = 0;
-            sleepLoop = 0;
 
             if(emptyBottle == 1) { //Low Water LED
 
@@ -244,13 +242,14 @@ int main(void)
                 emptyBottle = checkEmptyBottle();
 
                 //Retry every 24 hours ...when someone refilled the bottle but did not cycle power.
-                if(sleepOneDay > delayBetweenRefillReset)
+                if(sleepLoop > delayBetweenRefillReset)
                 {
                    resetLog = 1;
                 }else{
-                    sleepOneDay++;
+                    sleepLoop++;
                 }
             }else{
+                sleepLoop = 0;
                 //======================
                 //Prevents false-positive (empty detection)
                 //Moisture sensor (too accurate) triggers exactly same value when dry
@@ -262,30 +261,22 @@ int main(void)
                 }
                 //======================
                 //blink(4,1);
-                
-                uint16_t moisture = ReadMoisture(4);
+
+                PORTB |= (1<<sensorPin); //ON
+                _delay_ms(8); //Helps with copper oxidization
+                moisture = ReadADC(moistureSensorPin);
+                PORTB &= ~(1<<sensorPin); //OFF
+
+                uart_send_line("S",moisture);
                 
                 if(moisture == 0) { //Sensor Not in Soil
 
-                    uart_send_line("I=",suitableMoisture);
-
+                    uart_send_line("I",suitableMoisture);
                     blink(4,2);
 
-                    //Read from UART and save to EEPROM
-                    /*
-                    char c, *p, buff[3];
-                    p = buff;
-                    while((c = uart_getc()) != '\n' && (p - buff) < 3) {
-                        *(p++) = c;
-                    }
-                    *p = 0;
-                    _delay_ms(10);
-                    suitableMoisture = (int)buff;
-
-                    uart_putu(suitableMoisture);
-                    uart_puts("\r\n");
-                    */
                 }else if(moisture >= 1021) { //Sensor Manual Calibrate (cross/short both sensor leads)
+
+                    moisture = 0;
 
                     #ifdef ledPin
                         PORTB |= (1<<ledPin); //ON
@@ -301,7 +292,22 @@ int main(void)
                         PORTB &= ~(1<<ledPin); //OFF
                     #endif
 
-                    moisture = ReadMoisture(9);
+                    for(uint8_t i = 0; i < 9; ++i)
+                    {
+                        blink(6,1);
+
+                        PORTB |= (1<<sensorPin); //ON
+                        //_delay_ms(10);
+                        //=============
+                        //Take Highest
+                        //=============
+                        uint16_t a = ReadADC(moistureSensorPin);
+                        if (a > moisture) {
+                            moisture = a;
+                        }
+                        PORTB &= ~(1<<sensorPin); //OFF
+                    }
+
                     suitableMoisture = moisture;
 
                     EEPROM_write(0x01, (suitableMoisture/10)); //max 255 we try to fit 10x
@@ -320,7 +326,7 @@ int main(void)
                             moistureLog[2] = moisture;
                         }else{
                             uint16_t m = (moistureLog[0] + moistureLog[1] + moistureLog[2]) / 3; //Average
-                            uart_send_line("M=",m);
+                            //uart_send_line("M",m);
 
                             if (m >= (moisture - 2) && m <= (moisture + 2)) {
                                 emptyBottle = 1; //Pump ran but no change in moisture
@@ -350,7 +356,7 @@ int main(void)
             if(resetLog == 1)
             {
                 sleepLogReset = 0;
-                sleepOneDay = 0;
+                sleepLoop = 0;
                 emptyBottle = 0;
                 moistureLog[0] = 0;
                 moistureLog[1] = 0;
@@ -389,36 +395,12 @@ uint8_t checkEmptyBottle()
     uint16_t water = ReadADC(moistureSensorPin);
     PORTB &= ~(1<<PB0); //OFF
 
-    uart_send_line("J=",water);
+    uart_send_line("J",water);
 
     if (water > 2 && water < 100) { //avoid 0 detection if wire not connected
         return 1;
     }
     return 0;
-}
-
-uint16_t ReadMoisture(uint8_t b)
-{
-    uint16_t moisture = 0;
-
-    for(uint8_t i = 0; i < b; ++i)
-    {
-        if(b > 4) { blink(4,1); }
-
-        PORTB |= (1<<sensorPin); //ON
-        //_delay_ms(10);
-        //=============
-        //Take Highest
-        //=============
-        uint16_t a = ReadADC(moistureSensorPin);
-        if (a > moisture) {
-            moisture = a;
-        }
-        PORTB &= ~(1<<sensorPin); //OFF
-    }
-    uart_send_line("S=",moisture);
-
-    return moisture;
 }
 
 void blink(uint8_t time, uint8_t duration)
