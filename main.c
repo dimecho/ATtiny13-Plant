@@ -1,6 +1,7 @@
 /*  
     FUSE_L=0x6A (Clock divide fuse enabled = 8Mhz CPU frequency is actually 1MHz)
-    FUSE_H=0xFF (0xFE = RSTDISBL -> CATION: If enabled chip can only be programmed once)
+    FUSE_H=0xFF 0xFE = RSTDISBL -> CATION: If enabled chip can only be programmed once)
+    FUSE_H=0xFB (BODLEVEL 0xFD = 1.8V, 0xFB = 2.7V, 0xFF = BOD Disabled)
     F_CPU=8000000 (8Mhz)
 
     Slowing down CPU to save power
@@ -35,26 +36,17 @@
 //#define solarPin                    PB2 //Output
 #define ledPin                      PB2 //  PB5 //Output
 #define moistureSensorPin           PB4 //Input
-#define delayBetweenWaterings       18  //8seconds x 18 = 2.5 min
+#define delayBetweenWaterings       40  //8seconds x 40 = 5.5 min
 //#define delayBetweenSolarDischarge  4   //8seconds x 4 = .5 min
 #define delayBetweenLogReset        60  //8seconds x 12 x 60 = 1.5 hours
 #define delayBetweenRefillReset     450 //8seconds x 12 x 450 = 12 hours
 
-//static void powerSave(void);
-//static void powerWakeup(void);
 static unsigned char EEPROM_read(unsigned char ucAddress);
 static void EEPROM_write(unsigned char ucAddress, unsigned char ucData);
 static void blink(uint8_t time, uint8_t duration);
 static uint8_t checkEmptyBottle();
 static uint16_t ReadADC(uint8_t channel);
 static void uart_send_line(char *s, uint16_t i);
-
-//Brown Out Detector Control Register
-/*
-#define BODCR _SFR_IO8(0x30)
-#define BODSE 0
-#define BODS 1
-*/
 
 ISR(WDT_vect)
 {
@@ -92,7 +84,7 @@ void EEPROM_write(unsigned char ucAddress, unsigned char ucData)
 
 int main(void)
 {
-    uint16_t suitableMoisture = 380; //Analog value with 10k pull-up resistor
+    uint16_t suitableMoisture = 388; //Analog value with 10k pull-up resistor
 
     //================
     //TRANSISTORS
@@ -116,19 +108,6 @@ int main(void)
     DDRB &= ~_BV(moistureSensorPin); // Pin 3 as Analog INPUT
     //DDRB &= ~(1 << 4); // Pin 3 as Analog INPUT
     //PORTB &= ~(1 << 4); // Pin 3 Shutdown Digital OUTPUT
-    
-    //ADMUX = (0 << REFS0);     //Set VCC as reference voltage (5V)
-    //ADMUX = (1 << REFS0);  //Set VCC as reference voltage (Internal 1.1V)
-    //--------------
-    //ADMUX |= (1 << MUX0) |= (1 << MUX1); //ADC3 PB3 as analog input channel
-    //ADMUX |= (1 << MUX1) | (0 << MUX0); // ADC2 PB4 as analog input channel
-    //--------------
-    //ADMUX |= (1 << ADLAR);  //Left adjusts for 8-bit resolution
-    //--------------
-    // Set the prescaler to clock/128 & enable ADC See ATtiny13 datasheet, Table 14.4.
-    //ADCSRA |= (1 << ADPS1) | (1 << ADPS0);  //Set division factor-8 for 125kHz ADC clock
-    //--------------
-    //ADCSRA |= (1 << ADEN); //Enables the ADC
 
     //================
     //EEPROM
@@ -190,8 +169,8 @@ int main(void)
     _delay_ms(900);
     PORTB &= ~(1<<PB0); //OFF
     */
-    blink(2,2);
-    uart_send_line("1.2 >",0);
+    blink(2,4);
+    uart_send_line("1.3",0);
     //================
 
     for (;;) {
@@ -237,7 +216,7 @@ int main(void)
 
             if(emptyBottle == 1) { //Low Water LED
 
-                blink(9,99);
+                blink(9,200);
 
                 emptyBottle = checkEmptyBottle();
 
@@ -260,41 +239,42 @@ int main(void)
                     sleepLogReset++;
                 }
                 //======================
-                //blink(4,1);
+                //blink(4,2);
 
                 PORTB |= (1<<sensorPin); //ON
-                _delay_ms(8); //Helps with copper oxidization
                 moisture = ReadADC(moistureSensorPin);
                 PORTB &= ~(1<<sensorPin); //OFF
 
-                uart_send_line("S",moisture);
+                uart_putu(moisture);
                 
                 if(moisture == 0) { //Sensor Not in Soil
 
                     uart_send_line("I",suitableMoisture);
-                    blink(4,2);
+                    blink(4,4);
 
                 }else if(moisture >= 1021) { //Sensor Manual Calibrate (cross/short both sensor leads)
-
+                    
                     moisture = 0;
 
                     #ifdef ledPin
                         PORTB |= (1<<ledPin); //ON
                     #endif
+                    
                     for(uint8_t i = 0; i < 8; ++i) //Get ready to place into base-line soil
                     {
                         #ifdef UART_TX_ENABLED
                             uart_puts(".");
                         #endif
-                        _delay_ms(800);
+                        _delay_ms(900);
                     }
+                    
                     #ifdef ledPin
                         PORTB &= ~(1<<ledPin); //OFF
                     #endif
-
+                    
                     for(uint8_t i = 0; i < 9; ++i)
                     {
-                        blink(6,1);
+                        blink(6,2);
 
                         PORTB |= (1<<sensorPin); //ON
                         //_delay_ms(10);
@@ -307,11 +287,11 @@ int main(void)
                         }
                         PORTB &= ~(1<<sensorPin); //OFF
                     }
-
+                    
                     suitableMoisture = moisture;
 
                     EEPROM_write(0x01, (suitableMoisture/10)); //max 255 we try to fit 10x
-                
+                    
                 }else if (moisture < suitableMoisture) { //Water Plant
 
                     emptyBottle = checkEmptyBottle(); //Detect Empty Bottle (Sensored)
@@ -395,7 +375,7 @@ uint8_t checkEmptyBottle()
     uint16_t water = ReadADC(moistureSensorPin);
     PORTB &= ~(1<<PB0); //OFF
 
-    uart_send_line("J",water);
+    uart_putu(water);
 
     if (water > 2 && water < 100) { //avoid 0 detection if wire not connected
         return 1;
@@ -407,11 +387,7 @@ void blink(uint8_t time, uint8_t duration)
 {
     #ifdef ledPin
         do {
-            PORTB |= (1<<ledPin); //ON
-            for(uint8_t i = 0; i < time; ++i) {
-                _delay_ms(100);
-            }
-            PORTB &= ~(1<<ledPin); //OFF
+            PORTB ^= _BV(ledPin); //Toggle ON/OFF
             for(uint8_t i = 0; i < time; ++i) {
                 _delay_ms(100);
             }
@@ -422,66 +398,49 @@ void blink(uint8_t time, uint8_t duration)
 
 uint16_t ReadADC(uint8_t pin) {
 
+    //http://maxembedded.com/2011/06/the-adc-of-the-avr/
+
     switch(pin) {
-    case PB2: ADMUX = _BV(MUX0); break; // ADC1
+        //case PB0: ADMUX = (1 << REFS0) | (0 << ADLAR) | (0 << MUX0); // Internal Reference (VBG)
+        //case PB2: ADMUX = _BV(MUX0); break; // ADC1
         case PB4: ADMUX = _BV(MUX1); break; // ADC2
-        case PB3: ADMUX = _BV(MUX0)|_BV(MUX1); break; // ADC3
-        case PB5: // ADC0
-    default: ADMUX = 0; break;
+        //case PB3: ADMUX = _BV(MUX0) | _BV(MUX1); break; // ADC3
+        //case PB5: // ADC0
+        default: ADMUX = 0; break;
     }
 
-    ADMUX &= ~_BV(REFS0); // Explicit set VCC as reference voltage (5V)
-    ADCSRA |= _BV(ADEN);  // Enable ADC
-    ADCSRA |= _BV(ADSC);  // Run single conversion
+    ADMUX |= (0 << REFS0);     //Set VCC as reference voltage (5V)
+    //ADMUX |= (1 << REFS0);  //Set VCC as reference voltage (Internal 1.1V)
+    //--------------
+    //ADMUX |= (1 << MUX0) |= (1 << MUX1); //ADC3 PB3 as analog input channel
+    //ADMUX |= (1 << MUX1) | (0 << MUX0); // ADC2 PB4 as analog input channel
+    //--------------
+    //ADMUX |= (1 << ADLAR);  //Left adjusts for 8-bit resolution
+    //--------------
+    // See ATtiny13 datasheet, Table 14.4.
+    // Predefined division factors – 2, 4, 8, 16, 32, 64, and 128. For example, a prescaler of 64 implies F_ADC = F_CPU/64.
+    // For F_CPU = 16MHz, F_ADC = 16M/64 = 250kHz. Greater the frequency, lesser the accuracy.
+
+    //ADCSRA |= (1 << ADPS1) | (1 << ADPS0);  // Prescaler of 8
+    //ADCSRA |= (1 << ADPS2) | (1 << ADPS1); // Prescaler of 64
+    ADCSRA |= (1 << ADPS2) | (1 << ADPS1) | (1 << ADPS0); // Prescaler of 128
+    //--------------
+    ADCSRA |= (1 << ADEN); //Enables the ADC
+
+    _delay_ms(250); // Wait for Vref to settle
+
+    ADCSRA |= (1 << ADSC); // Start conversion by writing 1 to ADSC
     while(bit_is_set(ADCSRA, ADSC)); // Wait conversion is done
 
     // Read values
+    // uint16_t result = ADC; // For 10-bit resolution (includes ADCL + ADCH)
     uint8_t low = ADCL;
     uint8_t high = ADCH;
 
-    return (high << 8) | low; // Combine two bytes
+    ADCSRA = 0; // Turn off ADC
+
+    uint16_t result = (high << 8) | low; // Combine two bytes
+    //result = 1125300L / result; // Calculate Vcc (in mV); 1125300 = 1.1*1023*1000
+
+    return result;
 }
-
-/*
-void resetLog(uint8_t *sleepLogReset, uint16_t *sleepOneDay, uint8_t *emptyBottle, uint16_t (*moistureLog)[3])
-{
-    *sleepLogReset = 0;
-    *sleepOneDay = 0;
-    *emptyBottle = 0;
-    *moistureLog[0] = 0;
-    *moistureLog[1] = 0;
-    *moistureLog[2] = 0;
-}
-*/
-
-/*
-uint16_t ReadADC(uint8_t channel)
-{
-    ADMUX = (0 << REFS0) | channel;  // set reference and channel
-
-    //ADMUX |= (1 << MUX0) |= (1 << MUX1); //ADC3 PB3
-    ADMUX |= (1 << MUX1) | (0 << MUX0); // ADC2 PB4
-
-    ADCSRA |= (1 << ADSC); // Start Conversion
-    while(ADCSRA & (1<<ADSC)){}  // Wait for conversion complete  
-
-    return ADC; // For 10-bit resolution
-}
-*/
-
-/*
-void powerSave()
-{
-    ADCSRA &= ~(1<<ADEN); // Disable ADC converter
-    ACSR = (1<<ACD); // Disable the analog comparator
-
-    //DIDR0 |= (1<< AIN1D)|(1 << AIN0D); // Disable analog input buffers
-    DIDR0 = 0x3F; //Disable digital input buffers on all ADC0-ADC5 pins
-}
-
-void powerWakeup()
-{
-    ADCSRA |= (1 << ADEN);   //Enables the ADC
-    while (ADCSRA & (1 << ADSC)); //Wait for completion
-}
-*/
