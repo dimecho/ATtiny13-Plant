@@ -69,7 +69,9 @@ avr-objcopy -O ihex main.o main.hex
 
 ## Flash
 
-Use Raspberry Pi (using linuxgpio).
+### Option 1
+
+Raspberry Pi (using linuxgpio)
 ```
 sudo avrdude -p t13 -c linuxgpio -Uhfuse:w:0xFF:m -Ulfuse:w:0x6A:m -U flash:w:main.bin
 ```
@@ -96,17 +98,40 @@ programmer
   miso  = 9;
 ```
 
+### Option 2
+
+Bootloader is usefull for updating the firmware without desoldering the chip. Simply use "one-wire" UART to push firmware.
+
+Compile
+```
+cd ./bootloader
+make
+```
+One-Time Flash
+```
+sudo avrdude -p t13 -c linuxgpio -Uhfuse:w:0xEF:m -Ulfuse:w:0x7A:m -U flash:w:bootload.hex:i
+```
+Update (MacOS)
+```
+cd ./bootloader/osx
+./bootloader -d /dev/cu.usbserial -b 9600 -p main.hex
+```
+
 ## Debug
 
 Use Serial to USB on Pin2 (PB3) + GND.
 
-**Note:** Serial speed is 19200
+**Note:** Serial debug speed is 19200
 
 ## Licenses
 
 > ATtiny13 Plant
 >
 > [![CC0](http://i.creativecommons.org/l/zero/1.0/88x31.png)](https://creativecommons.org/publicdomain/zero/1.0/)
+>
+> Fastboot
+>
+> [![BSD](https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/Heckert_GNU_white.svg/38px-Heckert_GNU_white.svg.png)](https://www.gnu.org/licenses/)
 >
 > Software UART for ATtiny13
 >

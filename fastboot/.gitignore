@@ -1,0 +1,9 @@
+*.x
+*.o
+*.bin
+*.elf
+*.hex
+*.map
+*.lst
+atmel_def.h
+atmel_def.mak

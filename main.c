@@ -1,6 +1,6 @@
 /*  
     FUSE_L=0x6A (Clock divide fuse enabled = 8Mhz CPU frequency is actually 1MHz)
-    FUSE_H=0xFF 0xFE = RSTDISBL -> CATION: If enabled chip can only be programmed once)
+    FUSE_H=0xFF (0xFE = RSTDISBL -> CATION: If enabled chip can only be programmed once)
     FUSE_H=0xFB (BODLEVEL 0xFD = 1.8V, 0xFB = 2.7V, 0xFF = BOD Disabled)
     F_CPU=8000000 (8Mhz)
 
