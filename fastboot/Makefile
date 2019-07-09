@@ -15,20 +15,16 @@ MCU = attiny13a
 # -U lfuse:w:0xe2:m -U hfuse:w:0xdf:m -U efuse:w:0xfe:m 
 
 # Name of the Atmel defs file for the actual MCU.
-ATMEL_INC= tn13Adef.inc
+ATMEL_INC= tn13def.inc
 
 # Processor frequency.  The value is not critical:
 #F_CPU = 14745600
-F_CPU = 8000000
-
-# Boot dealy. How many cycles after boot to wait for bootload request
-# In seconds: Boot_Delay/F_CPU
-Boot_Delay = 2000000
+F_CPU = 1200000
 
 #     AVR Studio 4.10 requires dwarf-2.
 #     gdb runs better with stabs
 #DEBUG = dwarf-2
-DEBUG = stabs+
+#DEBUG = stabs+
 
 # Define the Tx and Rx lines here.  Set both groups to the same for
 # one wire mode:
@@ -36,21 +32,20 @@ STX_PORT = PORTB
 STX = PB3
 
 SRX_PORT = PORTB
-SRX = PB3
+SRX = PB4
 
 ####### End user presets ######################
 
 SHELL=/bin/bash
 
 CFLAGS = -mmcu=$(MCU) -DF_CPU=$(F_CPU) 
-CFLAGS += -I . -I ./added -I ./converted -I/usr/local/share/avr8-gnu-toolchain-darwin_x86_64/avr/include
+CFLAGS += -I . -I ./added -I ./converted
 CFLAGS += -ffreestanding
 CFLAGS += -g$(DEBUG)
 CFLAGS += -L,-g$(DEBUG)
 CFLAGS += -DRAM_START=$(SRAM_START) -DSRAM_SIZE=$(SRAM_SIZE)
 CFLAGS += -DSTX_PORT=$(STX_PORT) -DSTX=$(STX)
 CFLAGS += -DSRX_PORT=$(SRX_PORT) -DSRX=$(SRX)
-CFLAGS += -DBootDelay=$(Boot_Delay) -DBOOTDELAY=$(Boot_Delay)
 
 # The following files were imported by a gawk script without user
 # intervention (in order to ease keeping up with future releases of
@@ -156,3 +151,48 @@ dbg:
 	avr-cpp $(CFLAGS) -dD -E added/bootload.S > bootload.defs
 	sort bootload.defs | gawk '/^#define/' > bootload.sdefs
 	avr-gcc -E $(CFLAGS) added/bootload.S -o bootload.gas
+
+
+###
+# For testing purposes (binary comparison of the output with Atmel
+# ASM's output) a binary image gets generated and compared against
+# Atmel's output in BOOTLOAD.hex.
+#
+# Use AVR Studio (or wine or the like) to generate the BOOTLOAD.hex
+# file from the original sources and put it into the current
+# (resident-gnu/) directory.  The output must be called 'BOOTLOAD.hex"
+# (case matters).  Then run 'make cmp'.  You'll get a listing which
+# depicts the differences.
+#
+# We convert the two files into raw binaries, change them into text
+# (two bytes (4 chars) per line) using hexdump, then run the result
+# through diff, and finally add address information (taken from the
+# line number, displaying word addresses in (), byte addresses
+# without).
+#
+# Remove the -c option to 'get_text_addrs.sh' (above) for full
+# compatibility with the original bootloader at tiny devices. -c
+# packs the code as tight as possible to the end of the flash, making
+# a few more bytes available to the user (which the original doesn't).
+
+cmp:  BOOTLOAD.02x bootload.02x
+	@if ! diff -q $?; then \
+	  echo "Files differ" ; \
+	  diff $? \
+	  | ./diff2addr.sh ;\
+	  echo "'<' means original data (avrasm), '>' new (gcc), '()' word address."; \
+	  exit 1; \
+	else \
+	  echo "Files match. OK."; \
+	fi
+
+%.bin: %.hex
+	avr-objcopy -I ihex -O binary $< $@
+
+%.02x: %.bin
+	hexdump -e '1/2 "%04x" "\n"' $< > $@
+
+### Debug
+bincmp: 
+	objcopy -I ihex -O binary bootload.hex bootload.bin
+	cmp BOOTLOAD.bin bootload.bin

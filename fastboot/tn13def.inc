@@ -1,15 +1,15 @@
 ;***** THIS IS A MACHINE GENERATED FILE - DO NOT EDIT ********************
-;***** Created: 2011-02-09 12:03 ******* Source: ATtiny13A.xml ***********
+;***** Created: 2011-02-09 12:03 ******* Source: ATtiny13.xml ************
 ;*************************************************************************
 ;* A P P L I C A T I O N   N O T E   F O R   T H E   A V R   F A M I L Y
 ;* 
 ;* Number            : AVR000
-;* File Name         : "tn13Adef.inc"
-;* Title             : Register/Bit Definitions for the ATtiny13A
+;* File Name         : "tn13def.inc"
+;* Title             : Register/Bit Definitions for the ATtiny13
 ;* Date              : 2011-02-09
 ;* Version           : 2.35
 ;* Support E-mail    : avr@atmel.com
-;* Target MCU        : ATtiny13A
+;* Target MCU        : ATtiny13
 ;* 
 ;* DESCRIPTION
 ;* When including this file in the assembly program file, all I/O register 
@@ -37,15 +37,15 @@
 ;* ...                         ;otherwise do something else
 ;*************************************************************************
 
-#ifndef _TN13ADEF_INC_
-#define _TN13ADEF_INC_
+#ifndef _TN13DEF_INC_
+#define _TN13DEF_INC_
 
 
 #pragma partinc 0
 
 ; ***** SPECIFY DEVICE ***************************************************
-.device ATtiny13A
-#pragma AVRPART ADMIN PART_NAME ATtiny13A
+.device ATtiny13
+#pragma AVRPART ADMIN PART_NAME ATtiny13
 .equ	SIGNATURE_000	= 0x1e
 .equ	SIGNATURE_001	= 0x90
 .equ	SIGNATURE_002	= 0x07
@@ -71,13 +71,11 @@
 .equ	TCCR0B	= 0x33
 .equ	TCNT0	= 0x32
 .equ	OSCCAL	= 0x31
-.equ	BODCR	= 0x30
 .equ	TCCR0A	= 0x2f
 .equ	DWDR	= 0x2e
 .equ	OCR0B	= 0x29
 .equ	GTCCR	= 0x28
 .equ	CLKPR	= 0x26
-.equ	PRR	= 0x25
 .equ	WDTCR	= 0x21
 .equ	EEAR	= 0x1e
 .equ	EEDR	= 0x1d
@@ -196,6 +194,75 @@
 .equ	EEPM1	= 5	; 
 
 
+; ***** CPU **************************
+; SREG - Status Register
+.equ	SREG_C	= 0	; Carry Flag
+.equ	SREG_Z	= 1	; Zero Flag
+.equ	SREG_N	= 2	; Negative Flag
+.equ	SREG_V	= 3	; Two's Complement Overflow Flag
+.equ	SREG_S	= 4	; Sign Bit
+.equ	SREG_H	= 5	; Half Carry Flag
+.equ	SREG_T	= 6	; Bit Copy Storage
+.equ	SREG_I	= 7	; Global Interrupt Enable
+
+; SPL - Stack Pointer Low Byte
+.equ	SP0	= 0	; Stack Pointer Bit 0
+.equ	SP1	= 1	; Stack Pointer Bit 1
+.equ	SP2	= 2	; Stack Pointer Bit 2
+.equ	SP3	= 3	; Stack Pointer Bit 3
+.equ	SP4	= 4	; Stack Pointer Bit 4
+.equ	SP5	= 5	; Stack Pointer Bit 5
+.equ	SP6	= 6	; Stack Pointer Bit 6
+.equ	SP7	= 7	; Stack Pointer Bit 7
+
+; MCUCR - MCU Control Register
+.equ	ISC00	= 0	; Interrupt Sense Control 0 bit 0
+.equ	ISC01	= 1	; Interrupt Sense Control 0 bit 1
+.equ	SM0	= 3	; Sleep Mode Select Bit 0
+.equ	SM1	= 4	; Sleep Mode Select Bit 1
+.equ	SE	= 5	; Sleep Enable
+.equ	PUD	= 6	; Pull-up Disable
+
+; MCUSR - MCU Status register
+.equ	PORF	= 0	; Power-On Reset Flag
+.equ	EXTRF	= 1	; External Reset Flag
+.equ	BORF	= 2	; Brown-out Reset Flag
+.equ	WDRF	= 3	; Watchdog Reset Flag
+
+; OSCCAL - Oscillator Calibration Register
+.equ	CAL0	= 0	; Oscillatro Calibration Value Bit 0
+.equ	CAL1	= 1	; Oscillatro Calibration Value Bit 1
+.equ	CAL2	= 2	; Oscillatro Calibration Value Bit 2
+.equ	CAL3	= 3	; Oscillatro Calibration Value Bit 3
+.equ	CAL4	= 4	; Oscillatro Calibration Value Bit 4
+.equ	CAL5	= 5	; Oscillatro Calibration Value Bit 5
+.equ	CAL6	= 6	; Oscillatro Calibration Value Bit 6
+
+; CLKPR - Clock Prescale Register
+.equ	CLKPS0	= 0	; Clock Prescaler Select Bit 0
+.equ	CLKPS1	= 1	; Clock Prescaler Select Bit 1
+.equ	CLKPS2	= 2	; Clock Prescaler Select Bit 2
+.equ	CLKPS3	= 3	; Clock Prescaler Select Bit 3
+.equ	CLKPCE	= 7	; Clock Prescaler Change Enable
+
+; DWDR - Debug Wire Data Register
+.equ	DWDR0	= 0	; Debug Wire Data Register Bit 0
+.equ	DWDR1	= 1	; Debug Wire Data Register Bit 1
+.equ	DWDR2	= 2	; Debug Wire Data Register Bit 2
+.equ	DWDR3	= 3	; Debug Wire Data Register Bit 3
+.equ	DWDR4	= 4	; Debug Wire Data Register Bit 4
+.equ	DWDR5	= 5	; Debug Wire Data Register Bit 5
+.equ	DWDR6	= 6	; Debug Wire Data Register Bit 6
+.equ	DWDR7	= 7	; Debug Wire Data Register Bit 7
+
+; SPMCSR - Store Program Memory Control and Status Register
+.equ	SPMEN	= 0	; Store program Memory Enable
+.equ	PGERS	= 1	; Page Erase
+.equ	PGWRT	= 2	; Page Write
+.equ	RFLB	= 3	; Read Fuse and Lock Bits
+.equ	CTPB	= 4	; Clear Temporary Page Buffer
+
+
 ; ***** PORTB ************************
 ; PORTB - Data Register, Port B
 .equ	PORTB0	= 0	; 
@@ -230,8 +297,8 @@
 
 ; ***** EXTERNAL_INTERRUPT ***********
 ; MCUCR - MCU Control Register
-.equ	ISC00	= 0	; Interrupt Sense Control 0 Bit 0
-.equ	ISC01	= 1	; Interrupt Sense Control 0 Bit 1
+;.equ	ISC00	= 0	; Interrupt Sense Control 0 Bit 0
+;.equ	ISC01	= 1	; Interrupt Sense Control 0 Bit 1
 
 ; GIMSK - General Interrupt Mask Register
 .equ	GICR	= GIMSK	; For compatibility
@@ -325,83 +392,6 @@
 .equ	WDTIF	= 7	; Watchdog Timeout Interrupt Flag
 
 
-; ***** CPU **************************
-; SREG - Status Register
-.equ	SREG_C	= 0	; Carry Flag
-.equ	SREG_Z	= 1	; Zero Flag
-.equ	SREG_N	= 2	; Negative Flag
-.equ	SREG_V	= 3	; Two's Complement Overflow Flag
-.equ	SREG_S	= 4	; Sign Bit
-.equ	SREG_H	= 5	; Half Carry Flag
-.equ	SREG_T	= 6	; Bit Copy Storage
-.equ	SREG_I	= 7	; Global Interrupt Enable
-
-; SPL - Stack Pointer Low Byte
-.equ	SP0	= 0	; Stack Pointer Bit 0
-.equ	SP1	= 1	; Stack Pointer Bit 1
-.equ	SP2	= 2	; Stack Pointer Bit 2
-.equ	SP3	= 3	; Stack Pointer Bit 3
-.equ	SP4	= 4	; Stack Pointer Bit 4
-.equ	SP5	= 5	; Stack Pointer Bit 5
-.equ	SP6	= 6	; Stack Pointer Bit 6
-.equ	SP7	= 7	; Stack Pointer Bit 7
-
-; MCUCR - MCU Control Register
-;.equ	ISC00	= 0	; Interrupt Sense Control 0 bit 0
-;.equ	ISC01	= 1	; Interrupt Sense Control 0 bit 1
-.equ	SM0	= 3	; Sleep Mode Select Bit 0
-.equ	SM1	= 4	; Sleep Mode Select Bit 1
-.equ	SE	= 5	; Sleep Enable
-.equ	PUD	= 6	; Pull-up Disable
-
-; MCUSR - MCU Status register
-.equ	PORF	= 0	; Power-On Reset Flag
-.equ	EXTRF	= 1	; External Reset Flag
-.equ	BORF	= 2	; Brown-out Reset Flag
-.equ	WDRF	= 3	; Watchdog Reset Flag
-
-; OSCCAL - Oscillator Calibration Register
-.equ	CAL0	= 0	; Oscillatro Calibration Value Bit 0
-.equ	CAL1	= 1	; Oscillatro Calibration Value Bit 1
-.equ	CAL2	= 2	; Oscillatro Calibration Value Bit 2
-.equ	CAL3	= 3	; Oscillatro Calibration Value Bit 3
-.equ	CAL4	= 4	; Oscillatro Calibration Value Bit 4
-.equ	CAL5	= 5	; Oscillatro Calibration Value Bit 5
-.equ	CAL6	= 6	; Oscillatro Calibration Value Bit 6
-
-; CLKPR - Clock Prescale Register
-.equ	CLKPS0	= 0	; Clock Prescaler Select Bit 0
-.equ	CLKPS1	= 1	; Clock Prescaler Select Bit 1
-.equ	CLKPS2	= 2	; Clock Prescaler Select Bit 2
-.equ	CLKPS3	= 3	; Clock Prescaler Select Bit 3
-.equ	CLKPCE	= 7	; Clock Prescaler Change Enable
-
-; DWDR - Debug Wire Data Register
-.equ	DWDR0	= 0	; Debug Wire Data Register Bit 0
-.equ	DWDR1	= 1	; Debug Wire Data Register Bit 1
-.equ	DWDR2	= 2	; Debug Wire Data Register Bit 2
-.equ	DWDR3	= 3	; Debug Wire Data Register Bit 3
-.equ	DWDR4	= 4	; Debug Wire Data Register Bit 4
-.equ	DWDR5	= 5	; Debug Wire Data Register Bit 5
-.equ	DWDR6	= 6	; Debug Wire Data Register Bit 6
-.equ	DWDR7	= 7	; Debug Wire Data Register Bit 7
-
-; SPMCSR - Store Program Memory Control and Status Register
-.equ	SPMEN	= 0	; Store program Memory Enable
-.equ	PGERS	= 1	; Page Erase
-.equ	PGWRT	= 2	; Page Write
-.equ	RFLB	= 3	; Read Fuse and Lock Bits
-.equ	CTPB	= 4	; Clear Temporary Page Buffer
-
-; PRR - Power Reduction Register
-.equ	PRADC	= 0	; Power Reduction ADC
-.equ	PRTIM0	= 1	; Power Reduction Timer/Counter0
-
-; BODCR - BOD Control Register
-.equ	BPDSE	= 0	; BOD Power-Down Sleep Enable
-.equ	BPDS	= 1	; BOD Power-Down in Power-Down Sleep
-
-
 
 ; ***** LOCKSBITS ********************************************************
 .equ	LB1	= 0	; Lockbit
@@ -473,6 +463,6 @@
 
 .equ	INT_VECTORS_SIZE	= 10	; size in words
 
-#endif  /* _TN13ADEF_INC_ */
+#endif  /* _TN13DEF_INC_ */
 
 ; ***** END OF FILE ******************************************************

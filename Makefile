@@ -1,4 +1,4 @@
-MCU=attiny13
+MCU=attiny13a
 FUSE_L=0x6A
 FUSE_H=0xFF #0xFE
 F_CPU=1200000
@@ -7,10 +7,9 @@ LD=avr-ld
 OBJCOPY=avr-objcopy
 SIZE=avr-size
 AVRDUDE=avrdude
-CFLAGS=-std=c99 -Wall -g -Os -mmcu=${MCU} -DF_CPU=${F_CPU} -I. -I.. -DUART_RX_ENABLED -DUART_TX_ENABLED -DUART_BAUDRATE=19200
+CFLAGS=-std=c99 -Wall -g -Os -mmcu=${MCU} -DF_CPU=${F_CPU} -I. -I..
 TARGET=main
-
-SRCS=main.c uart.c
+SRCS=main.c
 
 all:
 	${CC} ${CFLAGS} -o ${TARGET}.o ${SRCS}

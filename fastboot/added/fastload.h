@@ -20,9 +20,8 @@
 #define  VERSION 0x0201
 
 #define  XTAL F_CPU	// 8MHz, not critical
-//Defined in Makefile as well:
-//#define  BootDelay XTAL / 3	// 0.33s
-//#define  BOOTDELAY XTAL / 3
+#define  BootDelay XTAL / 3	// 0.33s
+#define  BOOTDELAY XTAL / 3
 
 ;------------------------------	select UART mode -------------------------
 #if SRX == STX && SRX_PORT == STX_PORT
@@ -68,13 +67,28 @@
 #define  BOOTSIZE CRC + VERIFY + ONEWIRE + WDTRIGGER + MinSize
 
 ;------------------------------	UART delay loop value --------------------
-#if CRC
-#define  UartLoop 28	// UART loop time
-#define  UARTLOOP 28
+
+#if STX_PORT > 0x1F
+#define  _memmap_delay_ 4
 #else
-#define  UartLoop 24
-#define  UARTLOOP 24
+#define  _memmap_delay_ 0
 #endif
+
+#if CRC
+#define  _crc_delay_ 4
+#else
+#define  _crc_delay_ 0
+#endif
+
+#if FLASHEND > 0xFFFF
+#define  _pc22_delay_ 2	// 22-bit PC: 1 rcall + 1 ret cycle overhead
+#else
+#define  _pc22_delay_ 0
+#endif
+
+#define  UartLoop 24 + _memmap_delay_ + _crc_delay_ + _pc22_delay_
+#define  UARTLOOP 24 + _memmap_delay_ + _crc_delay_ + _pc22_delay_
+
 
 ;------------------------------	Bootloader fuse setting ------------------
 #ifdef FIRSTBOOTSTART
@@ -92,12 +106,12 @@
     .if		BootStart % BufferSize
       .set BufferSize, BufferSize - PAGESIZE
       .if	BootStart % BufferSize
-        .set Buffersize, BufferSize - PAGESIZE
+        .set BufferSize, BufferSize - PAGESIZE
         testpage
       .endif
     .endif
   .endm
-	testpage	; calculate Buffersize to fit into BootStart
+	testpage	; calculate BufferSize to fit into BootStart
 
   ;-----------------------------------------------------------------------
 # define  UserFlash (2*BootStart)
@@ -145,10 +159,13 @@
 #define  A0 r22
 #define  a1 r23
 #define  A1 r23
+#define  A2 r20
+#define  a2 r20
 #define  twl r24	// wait time
 #define  TWL r24
 #define  twh r25
 #define  TWH r25
+
 ;-------------------------------------------------------------------------
 ;				Using SRAM
 ;-------------------------------------------------------------------------
@@ -161,9 +178,9 @@ ProgBuffEnd:
 ;-------------------------------------------------------------------------
 ;				Macros
 ;-------------------------------------------------------------------------
-#if ONEWIRE
+ #if ONEWIRE
   .macro	IOPortInit
-	sbi	STX_PORT, SRX		; weak pullup on
+	sbi 	STX_PORT, SRX		; weak pullup on
 	cbi	STX_DDR, SRX		; as input
   .endm
   .macro	TXD_0
@@ -179,22 +196,55 @@ ProgBuffEnd:
 	sbic	SRX_PIN, SRX		; high = 0
   .endm
 #else
-  .macro	IOPortInit
+  .macro	IOPortInit	    ; uses 'a0'
+  .if	STX_PORT > 0x1F		; working on io address area > 0x1f
+	ldi	a0, 1<<SRX	        ; Called from app? Com port reset is fine.
+	sts	SRX_PORT, a0
+	ldi	a0, 1<<STX
+	sts	STX_PORT, a0
+	sts	STX_DDR, a0
+  .else				; do as usual
 	sbi	SRX_PORT, SRX
 	sbi	STX_PORT, STX
 	sbi	STX_DDR, STX
+  .endif
   .endm
-  .macro	TXD_0
-	cbi	STX_PORT, STX
+  .macro	TXD_0           ;uses 'a2'
+  .if	STX_PORT > 0x1F		; 5 cycles
+	lds	a2, STX_PORT
+	andi	a2, ~(1<<STX)
+	sts	STX_PORT, a2
+  .else
+	cbi	STX_PORT, STX	; 1 cycle
+  .endif
   .endm
-  .macro	TXD_1
+;-------------------------------------------------------------------------
+  .macro	TXD_1           ;uses 'a2'
+  .if	STX_PORT > 0x1F		; 5 cycles
+	lds	a2, STX_PORT
+	ori	a2, 1<<STX
+	sts	STX_PORT, a2
+  .else				; 1 cycle
 	sbi	STX_PORT, STX
+  .endif
   .endm
-  .macro	SKIP_RXD_0
+;-------------------------------------------------------------------------
+  .macro	SKIP_RXD_0      ;uses 'a2'
+  .if	SRX_PORT > 0x1F
+	lds	a2, SRX_PIN
+	sbrc	a2, SRX
+  .else
 	sbic	SRX_PIN, SRX
+  .endif
   .endm
-  .macro	SKIP_RXD_1
+;-------------------------------------------------------------------------
+  .macro	SKIP_RXD_1      ;uses 'a2'
+  .if	SRX_PORT > 0x1F
+	lds	a2, SRX_PIN
+	sbrs	a2, SRX
+  .else
 	sbis	SRX_PIN, SRX
+  .endif
   .endm
 #endif
 ;-------------------------------------------------------------------------

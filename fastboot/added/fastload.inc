@@ -58,6 +58,14 @@ connected:
 	rcall	getchar
 	brne	connected		; until COMMAND received
 ;-------------------------------------------------------------------------
+; Trampoline needed by extended abaud.inc to jump to timeout.
+#if	STX_PORT > 0x1F
+	rjmp	_endtrampoline
+_timeout:
+	rjmp	timeout
+_endtrampoline:
+#endif
+;-------------------------------------------------------------------------
 #include "command.inc" // execute commands
 #include "uart.inc" // UART subroutines
 ;-------------------------------------------------------------------------

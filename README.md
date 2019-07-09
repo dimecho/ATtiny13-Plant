@@ -40,7 +40,7 @@ Designed with [EagleCAD](https://www.autodesk.com/products/eagle/free-download)
 
 ## Calibrate Sensor (Without Firmware Flashing)
 
-Short sensor wires. After long LED blink quickly put into moist soil. The value will be stored in memory as base-line.
+Short sensor wires and wait 5 minutes. After long LED blink quickly put into dry soil. The value will be stored in memory as base-line (anything dryer will be wattered)
 
 ## Solar
 
@@ -54,10 +54,13 @@ Future flashing requires "High-Voltage programmer" to clear the fuse.
 ## Compile
 
 Install "avr-gcc" and run "make".
-<i class="fa fa-windows" aria-hidden="true"></i> [Windows](https://ww1.microchip.com/downloads/en/DeviceDoc/avr8-gnu-toolchain-3.6.2.1759-win32.any.x86.zip)
-<i class="fa fa-apple" aria-hidden="true"></i> [Mac](https://ww1.microchip.com/downloads/en/DeviceDoc/avr8-gnu-toolchain-osx-3.6.2.503-darwin.any.x86_64.tar.gz)
+
+> [Windows](https://ww1.microchip.com/downloads/en/DeviceDoc/avr8-gnu-toolchain-3.6.2.1759-win32.any.x86.zip)
+>
+> [MacOS](https://ww1.microchip.com/downloads/en/DeviceDoc/avr8-gnu-toolchain-osx-3.6.2.503-darwin.any.x86_64.tar.gz)
+
 ```
-avr-gcc -std=gnu99 -Wall -Os -mmcu=attiny13a -DF_CPU=1200000 -DUART_BAUDRATE=19200 main.c uart.c -o main.o
+avr-gcc -std=gnu99 -Wall -Os -mmcu=attiny13a main.c -o main.o
 avr-objcopy -O binary main.o main.bin
 avr-objcopy -O ihex main.o main.hex
 ```
@@ -66,10 +69,7 @@ avr-objcopy -O ihex main.o main.hex
 
 <i class="fa fa-microchip" aria-hidden="true"></i> [Download Binary](../../releases/download/1.0/ATTiny13.Plant.zip)
 
-
 ## Flash
-
-### Option 1
 
 Raspberry Pi (using linuxgpio)
 ```
@@ -98,9 +98,9 @@ programmer
   miso  = 9;
 ```
 
-### Option 2
+### Bootloader (Optional)
 
-Bootloader is usefull for updating the firmware without desoldering the chip. Simply use "one-wire" UART to push firmware.
+Bootloader is usefull for updating the firmware over UART without desoldering the chip.
 
 Compile
 ```
@@ -109,7 +109,7 @@ make
 ```
 One-Time Flash
 ```
-sudo avrdude -p t13 -c linuxgpio -Uhfuse:w:0xEF:m -Ulfuse:w:0x7A:m -U flash:w:bootload.hex:i
+sudo avrdude -p t13 -c linuxgpio -Uhfuse:w:0xEF:m -Ulfuse:w:0x6A:m -e -U flash:w:bootload.hex:i
 ```
 Update (MacOS)
 ```
@@ -121,7 +121,7 @@ cd ./bootloader/osx
 
 Use Serial to USB on Pin2 (PB3) + GND.
 
-**Note:** Serial debug speed is 19200
+**Note:** Serial speed is 9600
 
 ## Licenses
 
@@ -132,7 +132,3 @@ Use Serial to USB on Pin2 (PB3) + GND.
 > Fastboot
 >
 > [![BSD](https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/Heckert_GNU_white.svg/38px-Heckert_GNU_white.svg.png)](https://www.gnu.org/licenses/)
->
-> Software UART for ATtiny13
->
-> [![BSD](https://upload.wikimedia.org/wikipedia/commons/thumb/b/bf/License_icon-bsd.svg/38px-License_icon-bsd.svg.png)](https://opensource.org/licenses/BSD-2-Clause)

@@ -54,10 +54,10 @@ main_error:
 	rjmp	_cex1
 ;-------------------------------------------------------------------------
 timeout:				; command 5
-	out	STX_DDR, zerol
-	out	STX_PORT, zerol
+	xout	STX_DDR, zerol
+	xout	STX_PORT, zerol
 #if SRX_PORT != STX_PORT
-	out	SRX_PORT, zerol
+	xout	SRX_PORT, zerol
 #endif
 #if FlashEnd > 0x0fff
         jmp Application

@@ -2,12 +2,13 @@
 ;				Receive Byte
 ;-------------------------------------------------------------------------
 ;output: a0 = byte
-;used: a1
+;uses: a1, a2
 ;
 getchar:
 #if WDTRIGGER
 	wdr	
 #endif
+	;; SKIP_RXD_[0|1]: 1 clk i/o mapped || 2 clk mem mapped
 	SKIP_RXD_1			; wait for RXD = 1
 	rjmp	getchar
 _rx1:
@@ -21,7 +22,7 @@ _rx1:
 _rx2:
 	rcall	wait_bit_time		;14 + tw
 	lsr	a0			;1
-	SKIP_RXD_0			;1/2
+	SKIP_RXD_0			;1/2 i/o mapped || 3/4 mem mapped
 	ori	a0, 0x80		;1
 #if CRC
 ;------------------------------ CRC --------------------------------------
@@ -40,15 +41,18 @@ _rx6:
 	rjmp .			;2
 	rjmp .			;2
 #endif
+#if STX_PORT > 0x1F
+	nop				;1 to get 27 cycles like in putchar
+#endif
 	dec	a1			;1
-	brne	_rx2			;2 = 24 + tw
+	brne	_rx2			;2 => 24 + tw || 27 + tw
 	cpi	a0, COMMAND		; needed several times
 	ret
 ;-------------------------------------------------------------------------
 ;				transmit byte
 ;-------------------------------------------------------------------------
 ;input: a0 = byte
-;used: a1
+;uses: a1, a2
 ;
 putchar:
 	rcall	wait_bit_time
@@ -72,22 +76,22 @@ _tx3:
 	rjmp .			;2
 	rjmp .			;2
 #endif
-	rcall	wait_bit_time		;14 + tw
+	rcall	wait_bit_time		;14 + tw || 16 + tw (22bit PC!)
 	lsr	a0			;1
 	brcc	_tx4			;1/2
 	nop				;1
-	TXD_0				;2
+	TXD_0				;2 || 5
 	rjmp	_tx5			;2
 _tx4:
-	TXD_1				;2
+	TXD_1				;2 || 5
 	rjmp	_tx5			;2
 _tx5:
 	dec	a1			;1
-	brne	_tx3			;2 = 24 + tw
+	brne	_tx3			;2 => UartLoop
 	ret
 ;-------------------------------------------------------------------------
 ;	Wait 14 cycle + tw
-;
+; uses baudh:baudl(ro), twh:twl(rw)
 wait_bit_time:
 	movw	twl, baudl	;1
 wait_time:
