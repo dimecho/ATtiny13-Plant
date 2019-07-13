@@ -48,7 +48,7 @@ Optional Pin7 (PB2) used to "burst" charge from solar panel.
 
 ## LED
 
-Empty container detection **Caution:** LED uses RESET Pin1 (PB5) requires HFuse 0xFE, if enabled ATTiny13 can only be flashed once.
+Empty container detection **Caution:** LED uses RESET Pin1 (PB5) requires HFuse 0xFE (or 0xEE), if enabled ATTiny13 can only be flashed once.
 Future flashing requires "High-Voltage programmer" to clear the fuse.
 
 ## Compile
@@ -73,7 +73,7 @@ avr-objcopy -O ihex main.o main.hex
 
 Raspberry Pi (using linuxgpio)
 ```
-sudo avrdude -p t13 -c linuxgpio -Uhfuse:w:0xFF:m -Ulfuse:w:0x6A:m -U flash:w:main.bin
+sudo avrdude -p t13 -c linuxgpio -Uhfuse:w:0xFF:m -Ulfuse:w:0x6A:m -U flash:w:main.hex:i
 ```
 
 ![AVR](img/attiny_programmer_pi.png?raw=true)
@@ -109,12 +109,15 @@ make
 ```
 One-Time Flash
 ```
-sudo avrdude -p t13 -c linuxgpio -Uhfuse:w:0xEF:m -Ulfuse:w:0x6A:m -e -U flash:w:bootload.hex:i
+sudo avrdude -p t13 -c linuxgpio -Uhfuse:w:0xEE:m -Ulfuse:w:0x6A:m -e -U flash:w:bootload.hex:i
 ```
 Update (MacOS)
 ```
-cd ./bootloader/osx
-./bootloader -d /dev/cu.usbserial -b 9600 -p main.hex
+./fastboot/osx/bootloader -d /dev/cu.usbserial -b 9600 -p main.hex
+```
+Update (Windows)
+```
+./fastboot/win/FBOOT.EXE -C2 -B9600 -Pmain.hex
 ```
 
 ## Debug

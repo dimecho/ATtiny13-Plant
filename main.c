@@ -36,11 +36,11 @@
 
 #define pumpPin                     PB0 //Output
 #define sensorPin                   PB1 //Output
-//#define solarPin                    PB2 //Output
-#define ledPin                      PB2 //  PB5 //Output
+#define solarPin                    PB2 //Output
+#define ledPin                      PB5 //Output
 #define moistureSensorPin           PB4 //Input
 #define delayBetweenWaterings       40  //8seconds x 40 = 5.5 min
-//#define delayBetweenSolarDischarge  4   //8seconds x 4 = .5 min
+#define delayBetweenSolarDischarge  5   //8seconds x 5 = .5 min
 #ifdef LOG_ENABLED
     #define delayBetweenLogReset        60  //8seconds x 12 x 60 = 1.5 hours
     #define delayBetweenRefillReset     450 //8seconds x 12 x 450 = 12 hours
@@ -109,29 +109,12 @@ int main(void)
 {
     uint16_t suitableMoisture = 388; //Analog value with 10k pull-up resistor
 
-    //================
-    //TRANSISTORS
-    //================
-    //DDRB |= (1<<DDB0);   // Pin 5 Digital OUTPUT
-    //DDRB |= (1<<DDB1);   // Pin 6 Digital OUTPUT
+    DDRB |= (1<<pumpPin); //Digital OUTPUT
+    DDRB |= (1<<sensorPin); //Digital OUTPUT
 
-    DDRB |= _BV(pumpPin);
-    DDRB |= _BV(sensorPin);
-
-    #ifdef solarPin
-        //DDRB |= (1<<DDB2);   // Pin 7 Digital OUTPUT
-        DDRB |= _BV(solarPin);
-    #endif
     #ifdef ledPin
-        //DDRB |= (1<<DDB5);   // Pin 1 (RESET) Pin as Digital OUTPUT
-        DDRB |= _BV(ledPin);
+        DDRB |= (1<<ledPin); //Digital OUTPUT
     #endif
-    //================
-    //ANALOG SENSOR
-    //================
-    DDRB &= ~_BV(moistureSensorPin); // Pin 3 as Analog INPUT
-    //DDRB &= ~(1 << 4); // Pin 3 as Analog INPUT
-    //PORTB &= ~(1 << 4); // Pin 3 Shutdown Digital OUTPUT
 
     //================
     //EEPROM
@@ -152,12 +135,9 @@ int main(void)
     //cli(); // disable all interrupts
     //wdt_reset();
     //----------------
-    //WDTCR |= (1<<WDP3); // (1<<WDP2) | (1<<WDP0); //Set timer 4s (max)
-    WDTCR |= (1<<WDP3 )|(0<<WDP2 )|(0<<WDP1)|(1<<WDP0); //Set timer 8s (max)
+    //WDTCR = (1<<WDP3); // (1<<WDP2) | (1<<WDP0); //Set timer 4s (max)
+    WDTCR = (1<<WDP3) | (0<<WDP2) | (0<<WDP1) | (1<<WDP0); //Set timer 8s (max)
     WDTCR |= (1<<WDTIE);  // Enable watchdog timer interrupts
-    //set_sleep_mode(SLEEP_MODE_PWR_DOWN);
-    //set_sleep_mode(SLEEP_MODE_IDLE);
-    //sei(); // Enable global interrupts
     //----------------
     //wdt_enable(WDTO_8S); // 8s
     // Valid delays:
@@ -198,51 +178,50 @@ int main(void)
         _delay_ms(900);
         PORTB &= ~(1<<PB0); //OFF
         */
-
-        uart_putc('1');
-        uart_putc('.');
-        uart_putc('4');
-        //uart_putc('\r');
-        //uart_putc('\n');
+        #ifdef LOG_ENABLED
+            uart_putc('1');
+            uart_putc('.');
+            uart_putc('4');
+            uart_putc('\r');
+            uart_putc('\n');
+        #endif
     #endif
     blink(2,4);
     //================
 
+    set_sleep_mode(SLEEP_MODE_PWR_DOWN);
+    //set_sleep_mode(SLEEP_MODE_IDLE);
+
+    sleep_enable();
+
     for (;;) {
         
         //-------------
-        set_sleep_mode(SLEEP_MODE_PWR_DOWN);
-        sleep_mode(); //makes a call to three routines:  sleep_enable(); sleep_cpu(); sleep_disable();
+        //sleep_mode(); //makes a call to three routines:  sleep_enable(); sleep_cpu(); sleep_disable();
         //sleep_enable(); //sets the Sleep Enable bit in the MCUCR register
-        //sleep_cpu(); //issues the SLEEP command
+        sleep_cpu(); //issues the SLEEP command
         //sleep_disable(); //clears the SE bit.
+        //power_all_disable(); // turn power off to ADC, TIMER 1 and 2, Serial Interface
         //-------------
 
         #ifdef solarPin
-            if (sleepLoop > delayBetweenSolarDischarge)
+            if (sleepLoop > delayBetweenSolarDischarge) //Collect Solar Power into Capacitor
             {
+                moisture = ReadADC(moistureSensorPin);; //Detect Solar intensity
+
                 #ifdef UART_ENABLED
-                    uart_putc('S');
+                    uart_putu(moisture);
                 #endif
 
-                PORTB |= (1<<solarPin); //ON
-                //-------------------
-                //Depends on Capacitor
-                //_delay_ms(1800);
-                //-------------------
-                //Sense with voltage feedback wire from regulator
-                uint8_t timeout = 40;
-                uint16_t voltage = 0;
-                do {
-                    voltage = ReadADC(moistureSensorPin);
-                    #ifdef UART_ENABLED
-                        uart_putc(',');
-                        uart_putu(voltage);
-                    #endif
-                    timeout--;
-                } while (timeout && voltage > 100);
-                //-------------------
-                PORTB &= ~(1<<solarPin); //OFF
+                if(moisture > 480) //10k inline + 10k pullup (start charging @4.8V+)
+                {
+                    DDRB |= (1<<solarPin); //Digital OUTPUT
+                    PORTB &= ~(1<<solarPin); //Low (ground pin to shutdown regulator)
+
+                    _delay_ms(10000); //10000 uF Capacitor
+
+                    DDRB &= ~(1<<solarPin); //Digital Input (unground turn on regulator)
+                }
             }
         #endif
 
@@ -325,7 +304,7 @@ int main(void)
                         #ifdef UART_ENABLED
                             uart_putc('.');
                         #endif
-                        _delay_ms(900);
+                        _delay_ms(800);
                     }
                     
                     #ifdef ledPin
@@ -383,7 +362,7 @@ int main(void)
                             #endif
 
                             PORTB |= (1<<PB0); //ON
-                            _delay_ms(6800);
+                            _delay_ms(6800); //6.8 seconds;
                             PORTB &= ~(1<<PB0); //OFF
 
                             overwaterProtection++; //When battery < 3V (without regulator) ADC readouts are unstable
@@ -411,9 +390,8 @@ int main(void)
                     #endif
                 }
             #endif
-        }else{
-            sleepLoop++;
         }
+        sleepLoop++;
     }
     return 0;
 }
@@ -437,7 +415,7 @@ void blink(uint8_t time, uint8_t duration)
 {
     #ifdef ledPin
         do {
-            PORTB ^= _BV(ledPin); //Toggle ON/OFF
+            PORTB ^= (1<<ledPin); //Toggle ON/OFF
             uint8_t i = time;
             do {
                 _delay_ms(100);
@@ -451,7 +429,9 @@ void blink(uint8_t time, uint8_t duration)
 uint16_t ReadADC(uint8_t pin) {
 
     //http://maxembedded.com/2011/06/the-adc-of-the-avr/
-    
+
+    DDRB &= ~(1<<pin); //Enable Analog INPUT
+
     ADMUX = (0 << REFS0);     //Set VCC as reference voltage (5V)
     //ADMUX |= (1 << REFS0);  //Set VCC as reference voltage (Internal 1.1V)
 
@@ -490,20 +470,20 @@ uint16_t ReadADC(uint8_t pin) {
     //--------------
     ADCSRA |= (1 << ADEN); //Enables the ADC
 
-    _delay_ms(250); // Wait for Vref to settle
+    _delay_ms(200); //Wait for Vref to settle
 
     ADCSRA |= (1 << ADSC); // Start conversion by writing 1 to ADSC
     while(bit_is_set(ADCSRA, ADSC)); // Wait conversion is done
 
     // Read values
-    // uint16_t result = ADC; // For 10-bit resolution (includes ADCL + ADCH)
-    uint8_t low = ADCL;
-    uint8_t high = ADCH;
+    uint16_t result = ADC; // For 10-bit resolution (includes ADCL + ADCH)
+    //uint8_t low = ADCL;
+    //uint8_t high = ADCH;
+    //uint16_t result = (high << 8) | low; // Combine two bytes
+    //result = 1125300L / result; // Calculate Vcc (in mV); 1125300 = 1.1*1023*1000
 
     ADCSRA = 0; // Turn off ADC
-
-    uint16_t result = (high << 8) | low; // Combine two bytes
-    //result = 1125300L / result; // Calculate Vcc (in mV); 1125300 = 1.1*1023*1000
+    DDRB |= (1<<pin); //Enable Digital OUTPUT (prevents analog-in leaks/saves power)
 
     return result;
 }
@@ -517,10 +497,10 @@ uint16_t ReadADC(uint8_t pin) {
 
 void uart_putc(char c)
 {
-    uint8_t sreg;
-    sreg = SREG;
+    //uint8_t sreg;
+    //sreg = SREG;
 
-    cli();
+    //cli(); // disable all interrupts
     PORTB |= (1 << UART_TX);
     DDRB |= (1 << UART_TX);
     __asm volatile(
@@ -548,7 +528,7 @@ void uart_putc(char c)
         [ch] "r" (c)
         : "r0","r28","r29","r30"
     );
-    SREG = sreg;
+    //SREG = sreg;
 }
 
 void uart_putu(uint16_t x)
