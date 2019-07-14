@@ -19,10 +19,15 @@
               +------+
 */
 
+/* HARDWARE CONFIGURATION */
+/*------------------------*/
+#define WS78L05 //LM2731
 //#define EEPROM_ENABLED
 #define UART_ENABLED
+#define SOLAR_ENABLED
 //#define SENSORLESS_ENABLED
 //#define LOG_ENABLED
+/*------------------------*/
 
 //#include <avr/pgmspace.h>
 //#include <avr/eeprom.h>
@@ -40,7 +45,7 @@
 #define ledPin                      PB5 //Output
 #define moistureSensorPin           PB4 //Input
 #define delayBetweenWaterings       40  //8seconds x 40 = 5.5 min
-#define delayBetweenSolarDischarge  5   //8seconds x 5 = .5 min
+#define delayBetweenSolarDischarge  4   //8seconds x 5 = .5 min
 #ifdef LOG_ENABLED
     #define delayBetweenLogReset        60  //8seconds x 12 x 60 = 1.5 hours
     #define delayBetweenRefillReset     450 //8seconds x 12 x 450 = 12 hours
@@ -204,25 +209,38 @@ int main(void)
         //power_all_disable(); // turn power off to ADC, TIMER 1 and 2, Serial Interface
         //-------------
 
-        #ifdef solarPin
-            if (sleepLoop > delayBetweenSolarDischarge) //Collect Solar Power into Capacitor
-            {
-                moisture = ReadADC(moistureSensorPin);; //Detect Solar intensity
+        #ifdef SOLAR_ENABLED
+            //if (sleepLoop > delayBetweenSolarDischarge) { //Collect Solar Power into Capacitor
+
+                moisture = ReadADC(moistureSensorPin);; //Detect Solar intensity - 10k inline + 10k pullup 
 
                 #ifdef UART_ENABLED
                     uart_putu(moisture);
                 #endif
 
-                if(moisture > 480) //10k inline + 10k pullup (start charging @4.8V+)
+                /*
+                Regulators
+
+                WS78L05 (TO92) linear "low efficiency" - turn off with GND
+                LM2731 (SOT23) switching "high efficiency" - turn off with 5V
+                */
+
+                if(moisture > 420) //Regulator OFF (Charge capcaitor) (min start @4.2V)
                 {
-                    DDRB |= (1<<solarPin); //Digital OUTPUT
-                    PORTB &= ~(1<<solarPin); //Low (ground pin to shutdown regulator)
-
-                    _delay_ms(10000); //10000 uF Capacitor
-
-                    DDRB &= ~(1<<solarPin); //Digital Input (unground turn on regulator)
+                    DDRB |= (1<<solarPin); //Digital
+                    #ifdef WS78L05
+                        PORTB &= ~(1<<solarPin); //Low
+                    #else
+                        PORTB |= (1<<solarPin); //High
+                    #endif
+                }else{ //Regulator ON (Discharge capacitor)
+                    #ifdef WS78L05
+                        DDRB &= ~(1<<solarPin); //Analog
+                    #else
+                        PORTB &= ~(1<<solarPin); //Low
+                    #endif
                 }
-            }
+            //}
         #endif
 
         if (sleepLoop > delayBetweenWaterings)
@@ -481,9 +499,10 @@ uint16_t ReadADC(uint8_t pin) {
     //uint8_t high = ADCH;
     //uint16_t result = (high << 8) | low; // Combine two bytes
     //result = 1125300L / result; // Calculate Vcc (in mV); 1125300 = 1.1*1023*1000
-
-    ADCSRA = 0; // Turn off ADC
-    DDRB |= (1<<pin); //Enable Digital OUTPUT (prevents analog-in leaks/saves power)
+    
+    ADCSRA &= ~ (1 << ADEN); // ADC off
+    //DDRB |= (1<<pin); //Enable Digital OUTPUT (saves power)
+    //PORTB &= ~(1<<pin); //Force Low (prevents leaks)
 
     return result;
 }
