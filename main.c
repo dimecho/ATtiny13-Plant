@@ -31,13 +31,14 @@
 
 //#include <avr/pgmspace.h>
 //#include <avr/eeprom.h>
-//#include <avr/wdt.h>
 //#include <stdio.h>
 //#include <string.h>
 #include <avr/io.h>
 #include <util/delay.h>
 #include <avr/interrupt.h>
 #include <avr/sleep.h>
+//#include <avr/wdt.h>
+//#include <avr/power.h>
 
 #define pumpPin                     PB0 //Output
 #define sensorPin                   PB1 //Output
@@ -117,6 +118,10 @@ int main(void)
     DDRB |= (1<<pumpPin); //Digital OUTPUT
     DDRB |= (1<<sensorPin); //Digital OUTPUT
 
+    #ifdef SOLAR_ENABLED
+        DDRB |= (1<<solarPin); //Digital
+    #endif
+
     #ifdef ledPin
         DDRB |= (1<<ledPin); //Digital OUTPUT
     #endif
@@ -140,9 +145,9 @@ int main(void)
     //cli(); // disable all interrupts
     //wdt_reset();
     //----------------
+    WDTCR = (1<<WDTIE);  // Enable watchdog timer interrupts
     //WDTCR = (1<<WDP3); // (1<<WDP2) | (1<<WDP0); //Set timer 4s (max)
-    WDTCR = (1<<WDP3) | (0<<WDP2) | (0<<WDP1) | (1<<WDP0); //Set timer 8s (max)
-    WDTCR |= (1<<WDTIE);  // Enable watchdog timer interrupts
+    WDTCR |= (1<<WDP3) | (0<<WDP2) | (0<<WDP1) | (1<<WDP0); //Set timer 8s (max)
     //----------------
     //wdt_enable(WDTO_8S); // 8s
     // Valid delays:
@@ -201,46 +206,48 @@ int main(void)
 
     for (;;) {
         
+        //power_all_disable(); // turn power off to ADC, TIMER 1 and 2, Serial Interface
+        //power_adc_disable();
         //-------------
         //sleep_mode(); //makes a call to three routines:  sleep_enable(); sleep_cpu(); sleep_disable();
         //sleep_enable(); //sets the Sleep Enable bit in the MCUCR register
         sleep_cpu(); //issues the SLEEP command
         //sleep_disable(); //clears the SE bit.
-        //power_all_disable(); // turn power off to ADC, TIMER 1 and 2, Serial Interface
         //-------------
+        //power_all_enable(); // put everything on again
+        //power_adc_enable();
 
         #ifdef SOLAR_ENABLED
-            //if (sleepLoop > delayBetweenSolarDischarge) { //Collect Solar Power into Capacitor
 
-                moisture = ReadADC(moistureSensorPin);; //Detect Solar intensity - 10k inline + 10k pullup 
+            moisture = ReadADC(moistureSensorPin); //Detect Solar intensity - 10k inline + 10k pullup 
 
-                #ifdef UART_ENABLED
-                    uart_putu(moisture);
-                #endif
+            #ifdef UART_ENABLED
+                uart_putu(moisture);
+            #endif
 
-                /*
-                Regulators
+            /*
+            Regulators
 
-                WS78L05 (TO92) linear "low efficiency" - turn off with GND
-                LM2731 (SOT23) switching "high efficiency" - turn off with 5V
-                */
+            WS78L05 (TO92) linear "low efficiency" - turn on with GND
+            LM2731 (SOT23) switching "high efficiency" - turn off with 5V
 
-                if(moisture > 420) //Regulator OFF (Charge capcaitor) (min start @4.2V)
-                {
+            Note: with WS78L05 5V Solar ONLY, LM2731 5V-10V
+            */
+
+            //420(@4.2V) = start, over 520(@5V) = direct sunlight ...go to else and stay ON
+            if(moisture > 420 && moisture < 520) //Regulator OFF (Charge capacitor)
+            {
+                //when sleep mode this creates 8 second pulse
+                #ifdef WS78L05
+                    DDRB &= ~(1<<solarPin); //Analog (Off)
+                #else
                     DDRB |= (1<<solarPin); //Digital
-                    #ifdef WS78L05
-                        PORTB &= ~(1<<solarPin); //Low
-                    #else
-                        PORTB |= (1<<solarPin); //High
-                    #endif
-                }else{ //Regulator ON (Discharge capacitor)
-                    #ifdef WS78L05
-                        DDRB &= ~(1<<solarPin); //Analog
-                    #else
-                        PORTB &= ~(1<<solarPin); //Low
-                    #endif
-                }
-            //}
+                    PORTB |= (1<<solarPin); //High (5V)
+                #endif
+            }else{ //Regulator ON (Discharge capacitor)
+                DDRB |= (1<<solarPin); //Digital
+                PORTB &= ~(1<<solarPin); //Low (GND)
+            }
         #endif
 
         if (sleepLoop > delayBetweenWaterings)
@@ -448,8 +455,6 @@ uint16_t ReadADC(uint8_t pin) {
 
     //http://maxembedded.com/2011/06/the-adc-of-the-avr/
 
-    DDRB &= ~(1<<pin); //Enable Analog INPUT
-
     ADMUX = (0 << REFS0);     //Set VCC as reference voltage (5V)
     //ADMUX |= (1 << REFS0);  //Set VCC as reference voltage (Internal 1.1V)
 
@@ -501,8 +506,6 @@ uint16_t ReadADC(uint8_t pin) {
     //result = 1125300L / result; // Calculate Vcc (in mV); 1125300 = 1.1*1023*1000
     
     ADCSRA &= ~ (1 << ADEN); // ADC off
-    //DDRB |= (1<<pin); //Enable Digital OUTPUT (saves power)
-    //PORTB &= ~(1<<pin); //Force Low (prevents leaks)
 
     return result;
 }

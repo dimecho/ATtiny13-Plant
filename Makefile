@@ -14,6 +14,7 @@ SRCS=main.c
 all:
 	${CC} ${CFLAGS} -o ${TARGET}.o ${SRCS}
 	${LD} -o ${TARGET}.elf ${TARGET}.o
+	${OBJCOPY} -j .text -j .data -O binary ${TARGET}.o ${TARGET}.bin
 	${OBJCOPY} -j .text -j .data -O ihex ${TARGET}.o ${TARGET}.hex
 	${SIZE} -C --mcu=${MCU} ${TARGET}.elf
 
