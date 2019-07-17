@@ -8,34 +8,34 @@
 </settings>
 <grid distance="0.1" unitdist="inch" unit="inch" style="lines" multiple="1" display="no" altdistance="0.01" altunitdist="inch" altunit="inch"/>
 <layers>
-<layer number="1" name="Top" color="4" fill="1" visible="no" active="no"/>
-<layer number="2" name="Route2" color="16" fill="1" visible="no" active="no"/>
-<layer number="3" name="Route3" color="17" fill="1" visible="no" active="no"/>
-<layer number="4" name="Route4" color="18" fill="1" visible="no" active="no"/>
-<layer number="5" name="Route5" color="19" fill="1" visible="no" active="no"/>
-<layer number="6" name="Route6" color="25" fill="1" visible="no" active="no"/>
-<layer number="7" name="Route7" color="26" fill="1" visible="no" active="no"/>
-<layer number="8" name="Route8" color="27" fill="1" visible="no" active="no"/>
-<layer number="9" name="Route9" color="28" fill="1" visible="no" active="no"/>
-<layer number="10" name="Route10" color="29" fill="1" visible="no" active="no"/>
-<layer number="11" name="Route11" color="30" fill="1" visible="no" active="no"/>
-<layer number="12" name="Route12" color="20" fill="1" visible="no" active="no"/>
-<layer number="13" name="Route13" color="21" fill="1" visible="no" active="no"/>
-<layer number="14" name="Route14" color="22" fill="1" visible="no" active="no"/>
-<layer number="15" name="Route15" color="23" fill="1" visible="no" active="no"/>
-<layer number="16" name="Bottom" color="1" fill="1" visible="no" active="no"/>
-<layer number="17" name="Pads" color="2" fill="1" visible="no" active="no"/>
-<layer number="18" name="Vias" color="2" fill="1" visible="no" active="no"/>
-<layer number="19" name="Unrouted" color="6" fill="1" visible="no" active="no"/>
-<layer number="20" name="Dimension" color="24" fill="1" visible="no" active="no"/>
-<layer number="21" name="tPlace" color="7" fill="1" visible="no" active="no"/>
-<layer number="22" name="bPlace" color="7" fill="1" visible="no" active="no"/>
-<layer number="23" name="tOrigins" color="15" fill="1" visible="no" active="no"/>
-<layer number="24" name="bOrigins" color="15" fill="1" visible="no" active="no"/>
-<layer number="25" name="tNames" color="7" fill="1" visible="no" active="no"/>
-<layer number="26" name="bNames" color="7" fill="1" visible="no" active="no"/>
-<layer number="27" name="tValues" color="7" fill="1" visible="no" active="no"/>
-<layer number="28" name="bValues" color="7" fill="1" visible="no" active="no"/>
+<layer number="1" name="Top" color="4" fill="1" visible="yes" active="no"/>
+<layer number="2" name="Route2" color="16" fill="1" visible="yes" active="no"/>
+<layer number="3" name="Route3" color="17" fill="1" visible="yes" active="no"/>
+<layer number="4" name="Route4" color="18" fill="1" visible="yes" active="no"/>
+<layer number="5" name="Route5" color="19" fill="1" visible="yes" active="no"/>
+<layer number="6" name="Route6" color="25" fill="1" visible="yes" active="no"/>
+<layer number="7" name="Route7" color="26" fill="1" visible="yes" active="no"/>
+<layer number="8" name="Route8" color="27" fill="1" visible="yes" active="no"/>
+<layer number="9" name="Route9" color="28" fill="1" visible="yes" active="no"/>
+<layer number="10" name="Route10" color="29" fill="1" visible="yes" active="no"/>
+<layer number="11" name="Route11" color="30" fill="1" visible="yes" active="no"/>
+<layer number="12" name="Route12" color="20" fill="1" visible="yes" active="no"/>
+<layer number="13" name="Route13" color="21" fill="1" visible="yes" active="no"/>
+<layer number="14" name="Route14" color="22" fill="1" visible="yes" active="no"/>
+<layer number="15" name="Route15" color="23" fill="1" visible="yes" active="no"/>
+<layer number="16" name="Bottom" color="1" fill="1" visible="yes" active="no"/>
+<layer number="17" name="Pads" color="2" fill="1" visible="yes" active="no"/>
+<layer number="18" name="Vias" color="2" fill="1" visible="yes" active="no"/>
+<layer number="19" name="Unrouted" color="6" fill="1" visible="yes" active="no"/>
+<layer number="20" name="Dimension" color="24" fill="1" visible="yes" active="no"/>
+<layer number="21" name="tPlace" color="7" fill="1" visible="yes" active="no"/>
+<layer number="22" name="bPlace" color="7" fill="1" visible="yes" active="no"/>
+<layer number="23" name="tOrigins" color="15" fill="1" visible="yes" active="no"/>
+<layer number="24" name="bOrigins" color="15" fill="1" visible="yes" active="no"/>
+<layer number="25" name="tNames" color="7" fill="1" visible="yes" active="no"/>
+<layer number="26" name="bNames" color="7" fill="1" visible="yes" active="no"/>
+<layer number="27" name="tValues" color="7" fill="1" visible="yes" active="no"/>
+<layer number="28" name="bValues" color="7" fill="1" visible="yes" active="no"/>
 <layer number="29" name="tStop" color="7" fill="3" visible="no" active="no"/>
 <layer number="30" name="bStop" color="7" fill="6" visible="no" active="no"/>
 <layer number="31" name="tCream" color="7" fill="4" visible="no" active="no"/>
@@ -44,8 +44,8 @@
 <layer number="34" name="bFinish" color="6" fill="6" visible="no" active="no"/>
 <layer number="35" name="tGlue" color="7" fill="4" visible="no" active="no"/>
 <layer number="36" name="bGlue" color="7" fill="5" visible="no" active="no"/>
-<layer number="37" name="tTest" color="7" fill="1" visible="no" active="no"/>
-<layer number="38" name="bTest" color="7" fill="1" visible="no" active="no"/>
+<layer number="37" name="tTest" color="7" fill="1" visible="yes" active="no"/>
+<layer number="38" name="bTest" color="7" fill="1" visible="yes" active="no"/>
 <layer number="39" name="tKeepout" color="4" fill="11" visible="no" active="no"/>
 <layer number="40" name="bKeepout" color="1" fill="11" visible="no" active="no"/>
 <layer number="41" name="tRestrict" color="4" fill="10" visible="no" active="no"/>
@@ -53,12 +53,12 @@
 <layer number="43" name="vRestrict" color="2" fill="10" visible="no" active="no"/>
 <layer number="44" name="Drills" color="7" fill="1" visible="no" active="no"/>
 <layer number="45" name="Holes" color="7" fill="1" visible="no" active="no"/>
-<layer number="46" name="Milling" color="3" fill="1" visible="no" active="no"/>
-<layer number="47" name="Measures" color="7" fill="1" visible="no" active="no"/>
-<layer number="48" name="Document" color="7" fill="1" visible="no" active="no"/>
-<layer number="49" name="Reference" color="7" fill="1" visible="no" active="no"/>
-<layer number="51" name="tDocu" color="7" fill="1" visible="no" active="no"/>
-<layer number="52" name="bDocu" color="7" fill="1" visible="no" active="no"/>
+<layer number="46" name="Milling" color="3" fill="1" visible="yes" active="no"/>
+<layer number="47" name="Measures" color="7" fill="1" visible="yes" active="no"/>
+<layer number="48" name="Document" color="7" fill="1" visible="yes" active="no"/>
+<layer number="49" name="Reference" color="7" fill="1" visible="yes" active="no"/>
+<layer number="51" name="tDocu" color="7" fill="1" visible="yes" active="no"/>
+<layer number="52" name="bDocu" color="7" fill="1" visible="yes" active="no"/>
 <layer number="88" name="SimResults" color="9" fill="1" visible="yes" active="yes"/>
 <layer number="89" name="SimProbes" color="9" fill="1" visible="yes" active="yes"/>
 <layer number="90" name="Modules" color="5" fill="1" visible="yes" active="yes"/>
@@ -25697,6 +25697,8 @@ Source: http://www.hirose.co.jp/cataloge_hp/e24000019.pdf</description>
 <part name="P+5" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="VCC" device=""/>
 <part name="IC3" library="1EDI60I12AF" deviceset="LM27313XMFX_NOPB" device=""/>
 <part name="GND1" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="GND" device=""/>
+<part name="R5" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="R-EU_" device="M0805" package3d_urn="urn:adsk.eagle:package:23556/1" value="10k"/>
+<part name="GND9" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="GND" device=""/>
 </parts>
 <sheets>
 <sheet>
@@ -25711,21 +25713,26 @@ Source: http://www.hirose.co.jp/cataloge_hp/e24000019.pdf</description>
 <wire x1="137.16" y1="68.58" x2="137.16" y2="114.3" width="0.1524" layer="97"/>
 <wire x1="137.16" y1="114.3" x2="66.04" y2="114.3" width="0.1524" layer="97"/>
 <text x="71.12" y="111.76" size="1.778" layer="97">Solar Charger</text>
-<wire x1="38.1" y1="68.58" x2="38.1" y2="30.48" width="0.1524" layer="97"/>
-<wire x1="38.1" y1="30.48" x2="15.24" y2="30.48" width="0.1524" layer="97"/>
-<wire x1="15.24" y1="30.48" x2="15.24" y2="68.58" width="0.1524" layer="97"/>
-<wire x1="15.24" y1="68.58" x2="38.1" y2="68.58" width="0.1524" layer="97"/>
+<wire x1="22.86" y1="68.58" x2="22.86" y2="30.48" width="0.1524" layer="97"/>
+<wire x1="22.86" y1="30.48" x2="0" y2="30.48" width="0.1524" layer="97"/>
+<wire x1="0" y1="30.48" x2="0" y2="68.58" width="0.1524" layer="97"/>
+<wire x1="0" y1="68.58" x2="22.86" y2="68.58" width="0.1524" layer="97"/>
 <wire x1="50.8" y1="45.72" x2="88.9" y2="45.72" width="0.1524" layer="97"/>
 <wire x1="88.9" y1="45.72" x2="88.9" y2="20.32" width="0.1524" layer="97"/>
 <wire x1="88.9" y1="20.32" x2="50.8" y2="20.32" width="0.1524" layer="97"/>
 <wire x1="50.8" y1="20.32" x2="50.8" y2="45.72" width="0.1524" layer="97"/>
 <text x="58.42" y="43.18" size="1.778" layer="97">Pump DC Motor</text>
-<text x="17.78" y="33.02" size="1.778" layer="97" rot="R90">Warning LED</text>
+<text x="2.54" y="35.56" size="1.778" layer="97" rot="R90">Warning LED</text>
 <text x="109.22" y="50.8" size="1.778" layer="97">Moisture Sensor</text>
 <wire x1="106.68" y1="53.34" x2="106.68" y2="22.86" width="0.1524" layer="97"/>
 <wire x1="106.68" y1="22.86" x2="137.16" y2="22.86" width="0.1524" layer="97"/>
 <wire x1="137.16" y1="22.86" x2="137.16" y2="53.34" width="0.1524" layer="97"/>
 <wire x1="137.16" y1="53.34" x2="106.68" y2="53.34" width="0.1524" layer="97"/>
+<text x="27.94" y="35.56" size="1.778" layer="97" rot="R90">Solar Voltage Sensor</text>
+<wire x1="38.1" y1="68.58" x2="38.1" y2="30.48" width="0.1524" layer="97"/>
+<wire x1="38.1" y1="30.48" x2="25.4" y2="30.48" width="0.1524" layer="97"/>
+<wire x1="38.1" y1="68.58" x2="25.4" y2="68.58" width="0.1524" layer="97"/>
+<wire x1="25.4" y1="68.58" x2="25.4" y2="30.48" width="0.1524" layer="97"/>
 </plain>
 <instances>
 <instance part="IC1" gate="G$1" x="53.34" y="63.5" smashed="yes">
@@ -25735,9 +25742,9 @@ Source: http://www.hirose.co.jp/cataloge_hp/e24000019.pdf</description>
 <instance part="P+1" gate="VCC" x="96.52" y="29.1" smashed="yes" rot="R180">
 <attribute name="VALUE" x="93.98" y="31.64" size="1.778" layer="96" rot="R90"/>
 </instance>
-<instance part="LED1" gate="G$1" x="27.94" y="40.64" smashed="yes">
-<attribute name="NAME" x="31.496" y="36.068" size="1.778" layer="95" rot="R90"/>
-<attribute name="VALUE" x="33.655" y="36.068" size="1.778" layer="96" rot="R90"/>
+<instance part="LED1" gate="G$1" x="12.7" y="40.64" smashed="yes">
+<attribute name="NAME" x="16.256" y="36.068" size="1.778" layer="95" rot="R90"/>
+<attribute name="VALUE" x="18.415" y="36.068" size="1.778" layer="96" rot="R90"/>
 </instance>
 <instance part="PAD3" gate="P" x="93.98" y="50.8" smashed="yes">
 <attribute name="VALUE" x="92.837" y="47.498" size="1.778" layer="96"/>
@@ -25767,8 +25774,8 @@ Source: http://www.hirose.co.jp/cataloge_hp/e24000019.pdf</description>
 <attribute name="NAME" x="95.123" y="55.0258" size="1.778" layer="95" rot="R180"/>
 <attribute name="VALUE" x="135.763" y="59.182" size="1.778" layer="96" rot="R180"/>
 </instance>
-<instance part="PAD1" gate="P" x="35.56" y="43.18" smashed="yes" rot="R180">
-<attribute name="VALUE" x="36.703" y="46.482" size="1.778" layer="96" rot="R180"/>
+<instance part="PAD1" gate="P" x="20.32" y="43.18" smashed="yes" rot="R180">
+<attribute name="VALUE" x="21.463" y="46.482" size="1.778" layer="96" rot="R180"/>
 </instance>
 <instance part="PAD6" gate="P" x="134.62" y="60.96" smashed="yes" rot="R180">
 <attribute name="VALUE" x="135.763" y="64.262" size="1.778" layer="96" rot="R180"/>
@@ -25837,9 +25844,9 @@ Source: http://www.hirose.co.jp/cataloge_hp/e24000019.pdf</description>
 <attribute name="NAME" x="72.39" y="98.0186" size="1.778" layer="95"/>
 <attribute name="VALUE" x="77.47" y="98.298" size="1.778" layer="96"/>
 </instance>
-<instance part="R7" gate="G$1" x="27.94" y="50.8" smashed="yes" rot="R270">
-<attribute name="NAME" x="29.4386" y="54.61" size="1.778" layer="95" rot="R270"/>
-<attribute name="VALUE" x="24.638" y="54.61" size="1.778" layer="96" rot="R270"/>
+<instance part="R7" gate="G$1" x="12.7" y="50.8" smashed="yes" rot="R270">
+<attribute name="NAME" x="14.1986" y="54.61" size="1.778" layer="95" rot="R270"/>
+<attribute name="VALUE" x="9.398" y="54.61" size="1.778" layer="96" rot="R270"/>
 </instance>
 <instance part="IC2" gate="G$1" x="43.18" y="99.06" smashed="yes" rot="MR0">
 <attribute name="NAME" x="24.13" y="81.28" size="1.778" layer="95" rot="MR0" align="center-left"/>
@@ -25889,6 +25896,13 @@ Source: http://www.hirose.co.jp/cataloge_hp/e24000019.pdf</description>
 <instance part="GND1" gate="1" x="121.92" y="104.14" smashed="yes" rot="R90">
 <attribute name="VALUE" x="124.46" y="101.6" size="1.778" layer="96" rot="R90"/>
 </instance>
+<instance part="R5" gate="G$1" x="33.02" y="45.72" smashed="yes" rot="R270">
+<attribute name="NAME" x="34.5186" y="49.53" size="1.778" layer="95" rot="R270"/>
+<attribute name="VALUE" x="29.718" y="49.53" size="1.778" layer="96" rot="R270"/>
+</instance>
+<instance part="GND9" gate="1" x="33.02" y="36.72" smashed="yes">
+<attribute name="VALUE" x="30.48" y="34.18" size="1.778" layer="96"/>
+</instance>
 </instances>
 <busses>
 </busses>
@@ -25896,14 +25910,24 @@ Source: http://www.hirose.co.jp/cataloge_hp/e24000019.pdf</description>
 <net name="UART_TX" class="0">
 <segment>
 <pinref part="IC1" gate="G$1" pin="PB3"/>
-<wire x1="53.34" y1="60.96" x2="43.18" y2="60.96" width="0.1524" layer="91"/>
+<wire x1="53.34" y1="60.96" x2="48.26" y2="60.96" width="0.1524" layer="91"/>
 <label x="43.18" y="60.96" size="1.778" layer="95"/>
 <pinref part="PAD9" gate="P" pin="P"/>
+<wire x1="48.26" y1="60.96" x2="43.18" y2="60.96" width="0.1524" layer="91"/>
 <wire x1="-17.78" y1="60.96" x2="43.18" y2="60.96" width="0.1524" layer="91"/>
 <junction x="43.18" y="60.96"/>
 <pinref part="X1" gate="G$1" pin="2"/>
 <wire x1="-15.24" y1="96.52" x2="-17.78" y2="96.52" width="0.1524" layer="91"/>
 <wire x1="-17.78" y1="96.52" x2="-17.78" y2="60.96" width="0.1524" layer="91"/>
+<pinref part="R5" gate="G$1" pin="1"/>
+<wire x1="33.02" y1="50.8" x2="33.02" y2="53.34" width="0.1524" layer="91"/>
+<wire x1="33.02" y1="53.34" x2="48.26" y2="53.34" width="0.1524" layer="91"/>
+<wire x1="48.26" y1="53.34" x2="48.26" y2="60.96" width="0.1524" layer="91"/>
+<junction x="48.26" y="60.96"/>
+<pinref part="R3" gate="G$1" pin="1"/>
+<wire x1="71.12" y1="96.52" x2="71.12" y2="73.66" width="0.1524" layer="91"/>
+<wire x1="71.12" y1="73.66" x2="48.26" y2="73.66" width="0.1524" layer="91"/>
+<wire x1="48.26" y1="73.66" x2="48.26" y2="60.96" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="GND" class="0">
@@ -25925,8 +25949,8 @@ Source: http://www.hirose.co.jp/cataloge_hp/e24000019.pdf</description>
 <wire x1="60.96" y1="22.86" x2="60.96" y2="33.02" width="0.1524" layer="91"/>
 <pinref part="GND3" gate="1" pin="GND"/>
 <pinref part="LED1" gate="G$1" pin="C"/>
-<wire x1="27.94" y1="33.02" x2="43.18" y2="33.02" width="0.1524" layer="91"/>
-<wire x1="27.94" y1="35.56" x2="27.94" y2="33.02" width="0.1524" layer="91"/>
+<wire x1="12.7" y1="33.02" x2="43.18" y2="33.02" width="0.1524" layer="91"/>
+<wire x1="12.7" y1="35.56" x2="12.7" y2="33.02" width="0.1524" layer="91"/>
 </segment>
 <segment>
 <pinref part="GND4" gate="1" pin="GND"/>
@@ -25966,6 +25990,11 @@ Source: http://www.hirose.co.jp/cataloge_hp/e24000019.pdf</description>
 <segment>
 <pinref part="GND1" gate="1" pin="GND"/>
 <pinref part="IC3" gate="G$1" pin="GND"/>
+</segment>
+<segment>
+<pinref part="GND9" gate="1" pin="GND"/>
+<pinref part="R5" gate="G$1" pin="2"/>
+<wire x1="33.02" y1="39.26" x2="33.02" y2="40.64" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="N$1" class="0">
@@ -26084,8 +26113,8 @@ Source: http://www.hirose.co.jp/cataloge_hp/e24000019.pdf</description>
 <label x="43.18" y="63.5" size="1.778" layer="95"/>
 <wire x1="40.64" y1="63.5" x2="53.34" y2="63.5" width="0.1524" layer="91"/>
 <pinref part="R7" gate="G$1" pin="1"/>
-<wire x1="27.94" y1="55.88" x2="27.94" y2="63.5" width="0.1524" layer="91"/>
-<wire x1="27.94" y1="63.5" x2="40.64" y2="63.5" width="0.1524" layer="91"/>
+<wire x1="12.7" y1="55.88" x2="12.7" y2="63.5" width="0.1524" layer="91"/>
+<wire x1="12.7" y1="63.5" x2="40.64" y2="63.5" width="0.1524" layer="91"/>
 <junction x="40.64" y="63.5"/>
 </segment>
 </net>
@@ -26102,11 +26131,7 @@ Source: http://www.hirose.co.jp/cataloge_hp/e24000019.pdf</description>
 <pinref part="R6" gate="G$1" pin="1"/>
 <wire x1="132.08" y1="33.02" x2="121.92" y2="33.02" width="0.1524" layer="91"/>
 <junction x="121.92" y="33.02"/>
-<wire x1="53.34" y1="73.66" x2="53.34" y2="58.42" width="0.1524" layer="91"/>
 <label x="124.46" y="30.48" size="1.778" layer="95"/>
-<pinref part="R3" gate="G$1" pin="1"/>
-<wire x1="71.12" y1="96.52" x2="71.12" y2="73.66" width="0.1524" layer="91"/>
-<wire x1="71.12" y1="73.66" x2="53.34" y2="73.66" width="0.1524" layer="91"/>
 <wire x1="-20.32" y1="58.42" x2="43.18" y2="58.42" width="0.1524" layer="91"/>
 <junction x="43.18" y="58.42"/>
 <wire x1="-20.32" y1="58.42" x2="-20.32" y2="93.98" width="0.1524" layer="91"/>
@@ -26118,10 +26143,10 @@ Source: http://www.hirose.co.jp/cataloge_hp/e24000019.pdf</description>
 <segment>
 <pinref part="LED1" gate="G$1" pin="A"/>
 <pinref part="PAD1" gate="P" pin="P"/>
-<wire x1="33.02" y1="43.18" x2="27.94" y2="43.18" width="0.1524" layer="91"/>
+<wire x1="17.78" y1="43.18" x2="12.7" y2="43.18" width="0.1524" layer="91"/>
 <pinref part="R7" gate="G$1" pin="2"/>
-<junction x="27.94" y="43.18"/>
-<wire x1="27.94" y1="43.18" x2="27.94" y2="45.72" width="0.1524" layer="91"/>
+<junction x="12.7" y="43.18"/>
+<wire x1="12.7" y1="43.18" x2="12.7" y2="45.72" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="N$4" class="0">

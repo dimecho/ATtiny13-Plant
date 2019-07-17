@@ -44,6 +44,7 @@
 #define sensorPin                   PB1 //Output
 #define solarPin                    PB2 //Output
 #define ledPin                      PB5 //Output
+#define solarSensorPin              PB3 //Input/Output
 #define moistureSensorPin           PB4 //Input
 #define delayBetweenWaterings       40  //8seconds x 40 = 5.5 min
 #define delayBetweenSolarDischarge  4   //8seconds x 5 = .5 min
@@ -119,12 +120,14 @@ int main(void)
     DDRB |= (1<<sensorPin); //Digital OUTPUT
 
     #ifdef SOLAR_ENABLED
-        DDRB |= (1<<solarPin); //Digital
+        DDRB |= (1<<solarPin); //Digital OUTPUT
     #endif
 
     #ifdef ledPin
         DDRB |= (1<<ledPin); //Digital OUTPUT
     #endif
+
+    DDRB &= ~(1<<moistureSensorPin); //Analog INPUT
 
     //================
     //EEPROM
@@ -219,9 +222,15 @@ int main(void)
 
         #ifdef SOLAR_ENABLED
 
-            moisture = ReadADC(moistureSensorPin); //Detect Solar intensity - 10k inline + 10k pullup 
+            #ifdef UART_ENABLED
+                DDRB &= ~(1<<solarSensorPin); //Shared pin with UART, Set Analog INPUT
+            #endif
+
+            moisture = ReadADC(solarSensorPin); //Detect Solar intensity - 10k inline + 10k pullup
 
             #ifdef UART_ENABLED
+                //DDRB |= (1<<solarSensorPin); //Shared pin with UART, set Digital OUTPUT
+                uart_putc(',');
                 uart_putu(moisture);
             #endif
 
@@ -234,8 +243,8 @@ int main(void)
             Note: with WS78L05 5V Solar ONLY, LM2731 5V-10V
             */
 
-            //420(@4.2V) = start, over 520(@5V) = direct sunlight ...go to else and stay ON
-            if(moisture > 420 && moisture < 520) //Regulator OFF (Charge capacitor)
+            //420(@4.2V) = start, over 510(@5V) = direct sunlight ...go to else and stay ON
+            if(moisture > 420 && moisture < 510) //Regulator OFF (Charge capacitor)
             {
                 //when sleep mode this creates 8 second pulse
                 #ifdef WS78L05
@@ -387,7 +396,8 @@ int main(void)
                             #endif
 
                             PORTB |= (1<<PB0); //ON
-                            _delay_ms(6800); //6.8 seconds;
+                            //_delay_ms(6800); //6.8 seconds;
+                            blink(32,2);
                             PORTB &= ~(1<<PB0); //OFF
 
                             overwaterProtection++; //When battery < 3V (without regulator) ADC readouts are unstable
@@ -428,9 +438,8 @@ uint16_t sensorRead(uint8_t pin)
     PORTB &= ~(1<<pin); //OFF
 
     #ifdef UART_ENABLED
+        //uart_putc(',');
         uart_putu(value);
-        //uart_putc('\r');
-        //uart_putc('\n');
     #endif
 
     return value;
@@ -458,26 +467,16 @@ uint16_t ReadADC(uint8_t pin) {
     ADMUX = (0 << REFS0);     //Set VCC as reference voltage (5V)
     //ADMUX |= (1 << REFS0);  //Set VCC as reference voltage (Internal 1.1V)
 
-    switch(pin) {
-        /*
-        case PB2: // ADC1
-            //ADMUX |= _BV(MUX0);
-            ADMUX |= (1 << MUX0) | (0 << MUX1); //ADC1 PB2 as analog input channel
-            break;
-        case PB3: // ADC3
-            //ADMUX |= _BV(MUX0) | _BV(MUX1);
-            ADMUX |= (1 << MUX0) | (1 << MUX1); //ADC3 PB3 as analog input channel
-            break;
-        */
-        case PB4: // ADC2
-            //ADMUX |= _BV(MUX1);
-            ADMUX |= (0 << MUX0) | (1 << MUX1); //ADC2 PB4 as analog input channel
-            break;
-        /*case PB5: // ADC0
-            ADMUX |= (0 << MUX0) | (0 << MUX1); //ADC0 PB5 as analog input channel
-            break;
-        */
-        default: ADMUX = 0; break;
+    /*
+    if(pin == PB5) { // ADC0
+        ADMUX |= (0 << MUX0) | (0 << MUX1); //ADC0 PB5 as analog input channel
+    }else if(pin == PB2) { // ADC1
+        ADMUX |= (1 << MUX0) | (0 << MUX1); //ADC1 PB2 as analog input channel
+    }*/
+    if(pin == PB3) { // ADC3
+        ADMUX |= (1 << MUX0) | (1 << MUX1); //ADC3 PB3 as analog input channel
+    }else if (pin == PB4){ // ADC2
+        ADMUX |= (0 << MUX0) | (1 << MUX1); //ADC2 PB4 as analog input channel
     }
     
     //--------------
@@ -493,7 +492,7 @@ uint16_t ReadADC(uint8_t pin) {
     //--------------
     ADCSRA |= (1 << ADEN); //Enables the ADC
 
-    _delay_ms(200); //Wait for Vref to settle
+    //_delay_ms(200); //Wait for Vref to settle
 
     ADCSRA |= (1 << ADSC); // Start conversion by writing 1 to ADSC
     while(bit_is_set(ADCSRA, ADSC)); // Wait conversion is done
