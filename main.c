@@ -24,9 +24,9 @@
 #define WS78L05 //LM2731
 //#define EEPROM_ENABLED
 #define UART_ENABLED
-#define SOLAR_ENABLED
+//#define SOLAR_ENABLED
 //#define SENSORLESS_ENABLED
-//#define LOG_ENABLED
+#define LOG_ENABLED
 /*------------------------*/
 
 //#include <avr/pgmspace.h>
@@ -49,8 +49,8 @@
 #define delayBetweenWaterings       40  //8seconds x 40 = 5.5 min
 #define delayBetweenSolarDischarge  4   //8seconds x 5 = .5 min
 #ifdef LOG_ENABLED
-    #define delayBetweenLogReset        60  //8seconds x 12 x 60 = 1.5 hours
-    #define delayBetweenRefillReset     450 //8seconds x 12 x 450 = 12 hours
+    #define delayBetweenLogReset        20   //8seconds x 40 x 20 = 1.5 hours
+    #define delayBetweenRefillReset     1024 //8seconds x 1024 = 2 hours
 #endif
 
 #ifdef EEPROM_ENABLED
@@ -172,7 +172,7 @@ int main(void)
     */
     uint8_t sleepLoop = 0;  //Track the passage of time
     #ifdef LOG_ENABLED
-        uint8_t sleepLogReset = 0; //Reset logs once in a while
+    //    uint8_t sleepLogReset = 0; //Reset logs once in a while
     #endif
     #ifdef SENSORLESS_ENABLED
         uint16_t moistureLog[3] = {0,0,0}; //Collect past logs for empty detection
@@ -265,43 +265,29 @@ int main(void)
                 uint8_t resetLog = 0;
             #endif
 
-            //===================
-            //Detect Empty Bottle (Sensored)
-            //===================
-            /*
-            loopback wire from water jug to Pin3 (PB4)
-            given power from Pin5 (PB0) while turning on NPN transistor
-            more accurate than sensor-less detection
-            */
-            
-            moisture = sensorRead(pumpPin); //Detect Empty Bottle (Sensored)
-
-            if (moisture > 2 && moisture < 100) { //avoid 0 detection if wire not connected
-                emptyBottle = 1;
-            }else{
-                emptyBottle = 0;
-            }
-            //===================
-
             if(emptyBottle == 1) { //Low Water LED
 
                 blink(9,200);
 
                 #ifdef LOG_ENABLED
-                    //Retry every 24 hours ...when someone refilled the bottle but did not cycle power.
+                    //Retry every 2 hours ...when someone refilled the bottle but did not cycle power.
                     if(sleepLoop > delayBetweenRefillReset)
                     {
                        resetLog = 1;
                     }else{
                         sleepLoop++;
                     }
+                #else
+                    emptyBottle = 0;
                 #endif
+
             }else{
                 sleepLoop = 0;
                 //======================
                 //Prevents false-positive (empty detection)
                 //Moisture sensor (too accurate) triggers exactly same value when dry
                 //======================
+                /*
                 #ifdef LOG_ENABLED
                     if (sleepLogReset > delayBetweenLogReset) {
                         resetLog = 1;
@@ -309,6 +295,7 @@ int main(void)
                         sleepLogReset++;
                     }
                 #endif
+                */
                 //======================
                 //blink(4,2);
 
@@ -365,31 +352,49 @@ int main(void)
                     
                 }else if (moisture < suitableMoisture) { //Water Plant
 
-                    if (emptyBottle == 0) 
-                    {
-                        #ifdef SENSORLESS_ENABLED
-                            //Detect Empty Bottle (Sensor-less)
-                            if(moistureLog[0] == 0) {
-                                moistureLog[0] = moisture;
-                            }else if(moistureLog[1] == 0) {
-                                moistureLog[1] = moisture;
-                            }else if(moistureLog[2] == 0) {
-                                moistureLog[2] = moisture;
+                    //===================
+                    #ifdef SENSORLESS_ENABLED
+                        //Detect Empty Bottle (Sensor-less)
+                        if(moistureLog[0] == 0) {
+                            moistureLog[0] = moisture;
+                        }else if(moistureLog[1] == 0) {
+                            moistureLog[1] = moisture;
+                        }else if(moistureLog[2] == 0) {
+                            moistureLog[2] = moisture;
+                        }else{
+                            uint16_t m = (moistureLog[0] + moistureLog[1] + moistureLog[2]) / 3; //Average
+                            //uart_send_line("M",m);
+
+                            if (m >= (moisture - 2) && m <= (moisture + 2)) {
+                                emptyBottle = 1; //Pump ran but no change in moisture
+                                //continue; //force next wait loop
+                            #ifdef LOG_ENABLED
                             }else{
-                                uint16_t m = (moistureLog[0] + moistureLog[1] + moistureLog[2]) / 3; //Average
-                                //uart_send_line("M",m);
-
-                                if (m >= (moisture - 2) && m <= (moisture + 2)) {
-                                    emptyBottle = 1; //Pump ran but no change in moisture
-                                    continue; //force next wait loop
-                                #ifdef LOG_ENABLED
-                                }else{
-                                    resetLog = 1;
-                                #endif
-                                }
+                                resetLog = 1;
+                            #endif
                             }
-                        #endif
+                        }
+                    #endif
 
+                    //===================
+                    //Detect Empty Bottle (Sensored)
+                    //===================
+                    /*
+                    loopback wire from water jug to Pin3 (PB4)
+                    given power from Pin5 (PB0) while turning on NPN transistor
+                    more accurate than sensor-less detection
+                    */
+                    
+                    moisture = sensorRead(pumpPin);
+
+                    if (moisture > 2 && moisture < 98) { //avoid 0 detection if wire not connected
+                        emptyBottle = 1;
+                    //}else{
+                    //   emptyBottle = 0;
+                    }
+
+                    if (emptyBottle == 0)
+                    {
                         if(overwaterProtection < 4) { //Prevent flooding
                             #ifdef UART_ENABLED
                                 uart_putc('P');
@@ -414,8 +419,8 @@ int main(void)
             #ifdef LOG_ENABLED
                 if(resetLog == 1)
                 {
-                    sleepLogReset = 0;
-                    sleepLoop = 0;
+                    //sleepLogReset = 0;
+                    //sleepLoop = 0;
                     emptyBottle = 0;
                     overwaterProtection = 0;
                     #ifdef SENSORLESS_ENABLED
@@ -486,13 +491,15 @@ uint16_t ReadADC(uint8_t pin) {
     // Predefined division factors – 2, 4, 8, 16, 32, 64, and 128. For example, a prescaler of 64 implies F_ADC = F_CPU/64.
     // For F_CPU = 16MHz, F_ADC = 16M/64 = 250kHz. Greater the frequency, lesser the accuracy.
 
-    //ADCSRA |= (1 << ADPS1) | (1 << ADPS0);  // Prescaler of 8
-    //ADCSRA |= (1 << ADPS2) | (1 << ADPS1); // Prescaler of 64
-    ADCSRA = (1 << ADPS2) | (1 << ADPS1) | (1 << ADPS0); // Prescaler of 128
+    //ADCSRA |= (1 << ADPS1) | (1 << ADPS0);                // Prescaler of 8
+    //ADCSRA |= (1 << ADPS2) | (1 << ADPS1);                // Prescaler of 64
+    //ADCSRA = (1 << ADPS2) | (1 << ADPS1) | (1 << ADPS0);  // Prescaler of 128
     //--------------
-    ADCSRA |= (1 << ADEN); //Enables the ADC
+    ADCSRA |= (1 << ADEN); // Enables ADC
 
-    //_delay_ms(200); //Wait for Vref to settle
+    #ifndef SOLAR_ENABLED
+        _delay_ms(200); // Wait for Vref to settle
+    #endif
 
     ADCSRA |= (1 << ADSC); // Start conversion by writing 1 to ADSC
     while(bit_is_set(ADCSRA, ADSC)); // Wait conversion is done
@@ -503,8 +510,8 @@ uint16_t ReadADC(uint8_t pin) {
     //uint8_t high = ADCH;
     //uint16_t result = (high << 8) | low; // Combine two bytes
     //result = 1125300L / result; // Calculate Vcc (in mV); 1125300 = 1.1*1023*1000
-    
-    ADCSRA &= ~ (1 << ADEN); // ADC off
+
+    ADCSRA &= ~ (1 << ADEN); // Disables ADC
 
     return result;
 }

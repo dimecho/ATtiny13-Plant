@@ -119,6 +119,8 @@ Update (Windows)
 ```
 ./fastboot/win/FBOOT.EXE -C2 -B9600 -Pmain.hex
 ```
+**Note 1:** Ready the chip for flashing by resetting it - short Pin4 (GND) and Pin8 (VCC) for 1 second.
+**Note 2:** Disconnect UART Pin3 (RX) after flashing - sensor will read false-positive if UART has +5V.
 
 ## Debug
 
