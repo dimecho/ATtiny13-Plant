@@ -26,7 +26,7 @@
 #define UART_ENABLED
 //#define SOLAR_ENABLED
 //#define SENSORLESS_ENABLED
-#define LOG_ENABLED
+//#define LOG_ENABLED
 /*------------------------*/
 
 //#include <avr/pgmspace.h>
@@ -39,6 +39,13 @@
 #include <avr/sleep.h>
 //#include <avr/wdt.h>
 //#include <avr/power.h>
+
+#ifndef sensorMoisture
+    #define sensorMoisture          388
+#endif
+#ifndef potSize
+ #define potSize                    32 //32 x 2 x 100 = 6400 miliseconds (6.4 seconds)
+#endif
 
 #define pumpPin                     PB0 //Output
 #define sensorPin                   PB1 //Output
@@ -114,7 +121,7 @@ ISR(WDT_vect)
 
 int main(void)
 {
-    uint16_t suitableMoisture = 388; //Analog value with 10k pull-up resistor
+    uint16_t suitableMoisture = sensorMoisture; //Analog value with 10k pull-up resistor
 
     DDRB |= (1<<pumpPin); //Digital OUTPUT
     DDRB |= (1<<sensorPin); //Digital OUTPUT
@@ -191,21 +198,22 @@ int main(void)
         _delay_ms(900);
         PORTB &= ~(1<<PB0); //OFF
         */
-        #ifdef LOG_ENABLED
-            uart_putc('1');
-            uart_putc('.');
-            uart_putc('4');
-            uart_putc('\r');
-            uart_putc('\n');
-        #endif
+        
+        //uart_putc('1');
+        //uart_putc('.');
+        uart_putc('4');
+        //uart_putc('\r');
+        uart_putc('\n');
     #endif
     blink(2,4);
     //================
 
-    set_sleep_mode(SLEEP_MODE_PWR_DOWN);
-    //set_sleep_mode(SLEEP_MODE_IDLE);
+    #ifndef SOLAR_ENABLED
+        set_sleep_mode(SLEEP_MODE_PWR_DOWN);
+        //set_sleep_mode(SLEEP_MODE_IDLE);
 
-    sleep_enable();
+        sleep_enable();
+    #endif
 
     for (;;) {
         
@@ -273,9 +281,7 @@ int main(void)
                     //Retry every 2 hours ...when someone refilled the bottle but did not cycle power.
                     if(sleepLoop > delayBetweenRefillReset)
                     {
-                       resetLog = 1;
-                    }else{
-                        sleepLoop++;
+                        resetLog = 1;
                     }
                 #else
                     emptyBottle = 0;
@@ -389,12 +395,8 @@ int main(void)
 
                     if (moisture > 2 && moisture < 98) { //avoid 0 detection if wire not connected
                         emptyBottle = 1;
-                    //}else{
-                    //   emptyBottle = 0;
-                    }
-
-                    if (emptyBottle == 0)
-                    {
+                    }else{ //Bottle must be empty do not pump air
+           
                         if(overwaterProtection < 4) { //Prevent flooding
                             #ifdef UART_ENABLED
                                 uart_putc('P');
@@ -402,12 +404,12 @@ int main(void)
 
                             PORTB |= (1<<PB0); //ON
                             //_delay_ms(6800); //6.8 seconds;
-                            blink(32,2);
+                            blink(potSize,2);
                             PORTB &= ~(1<<PB0); //OFF
 
                             overwaterProtection++; //When battery < 3V (without regulator) ADC readouts are unstable
                         }
-                    }else{ //Bottle must be empty do not pump air
+                    
                         #ifdef UART_ENABLED
                             uart_putc('E');
                         #endif

@@ -1,0 +1,43 @@
+#!/bin/sh
+
+cd "$(dirname "$0")"
+
+shopt -s nocasematch
+
+checkUSB()
+{
+    for ((i = 0 ; i < 30 ; i++ )); do
+        cu=$(ls /dev/cu.*)
+        for serial in $cu; do
+            if [[ $serial == *usb* ]] || [[ $serial == *ch34* ]] || [[ $serial == *pl23* ]] ; then
+                #verify=$(stty -f $serial)
+                openBrowser http://127.0.0.1:8080 &
+                return
+            fi
+        done
+        echo "... Waiting for RS232-USB"
+        if [[ $i -eq 1 ]]; then
+            openBrowser http://127.0.0.1:8080/connect.html
+        fi
+        sleep 1
+    done
+}
+
+openBrowser()
+{
+    if [ -d /Applications/Firefox.app ]; then
+        browser="Firefox"
+    elif [ -d /Applications/Chrome.app ]; then
+        browser="Chrome"
+    else
+        browser="Safari"
+    fi
+
+    open -a $browser $1 &
+}
+
+pkill -9 php
+/usr/bin/php -S 0.0.0.0:8080 -t "$(dirname "$0")/Web/" &
+sleep 2
+
+checkUSB

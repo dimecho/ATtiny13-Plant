@@ -1,0 +1,20 @@
+body {
+    /*
+    Photo by Scott Webb on Unsplash
+    */
+    background: url("../img/background.jpg"), linear-gradient(-180deg, rgba(255,255,255,0.50) 0%, rgba(0,0,0,0.50) 100%);
+    background-attachment: fixed;
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    background-size: cover;
+}
+
+table {
+    background-color: rgba(245, 245, 245, 0.75);
+}
+
+.tooltip-inner {
+    text-align:left;
+    min-width: 380px;
+}

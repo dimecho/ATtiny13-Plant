@@ -10,6 +10,8 @@ AVRDUDE=avrdude
 CFLAGS=-std=c99 -Wall -g -Os -mmcu=${MCU} -DF_CPU=${F_CPU} -I. -I..
 TARGET=main
 SRCS=main.c
+SOIL = 280 388 460
+POT = 12 32 64
 
 all:
 	${CC} ${CFLAGS} -o ${TARGET}.o ${SRCS}
@@ -26,3 +28,23 @@ fuse:
 
 clean:
 	rm -f *.c~ *.o *.elf *.hex
+
+guibuild:
+	#SOLAR OFF
+	$(foreach m,$(SOIL), \
+		$(foreach p,$(POT), \
+			${CC} ${CFLAGS} -DLOG_ENABLED -DsensorMoisture=$(m) -DpotSize=$(p) -o ${TARGET}.o ${SRCS}; \
+			${LD} -o ${TARGET}.elf ${TARGET}.o; \
+			${OBJCOPY} -j .text -j .data -O ihex ${TARGET}.o gui/Web/firmware/${TARGET}-$(m)-$(p).hex; \
+			${SIZE} -C --mcu=${MCU} ${TARGET}.elf; \
+		) \
+	)
+	#SOLAR ON
+	$(foreach m,$(SOIL), \
+		$(foreach p,$(POT), \
+			${CC} ${CFLAGS} -DSOLAR_ENABLED -DsensorMoisture=$(m) -DpotSize=$(p) -o ${TARGET}.o ${SRCS}; \
+			${LD} -o ${TARGET}.elf ${TARGET}.o; \
+			${OBJCOPY} -j .text -j .data -O ihex ${TARGET}.o gui/Web/firmware/solar/${TARGET}-$(m)-$(p).hex; \
+			${SIZE} -C --mcu=${MCU} ${TARGET}.elf; \
+		) \
+	)

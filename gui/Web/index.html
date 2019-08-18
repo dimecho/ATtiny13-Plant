@@ -1,0 +1,85 @@
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+        <link rel="stylesheet" type="text/css" href="css/style.css" />
+        <link rel="stylesheet" type="text/css" href="css/animate.css" />
+        <link rel="stylesheet" type="text/css" href="css/bootstrap.css" />
+        <link rel="stylesheet" type="text/css" href="css/ion.rangeSlider.css" />
+        <script src="js/jquery.js"></script>
+        <script src="js/bootstrap.js"></script>
+        <script src="js/bootstrap-notify.js"></script>
+        <script src="js/ion.rangeSlider.js"></script>
+        <script src="js/index.js"></script>
+    </head>
+    <body>
+        <div class="container">
+            <div class="row">
+                <div class="col col-6 mt-3 table-responsive">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col" align="center">
+                                <img srcset="img/chip.png 1x, img/chip@2x.png 2x" />
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col" align="center">
+                                <h1>Plant Control Panel</h1>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <hr/>
+                            </div>
+                        </div>
+                    </div>
+                    <table class="table table-bordered mt-4">
+                            <tr>
+                                <td>
+                                    <div class="container ml-1 mr-1">
+                                        <div class="row">
+                                            <div class="col" align="center">
+                                                <h4>Solar:</h4>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col" align="center">
+                                                <input type="text" class="js-range-slider" id="slider-solar" style="font-size: 18px;" />
+                                            </div>
+                                        </div>
+                                        <div class="row mt-4">
+                                            <div class="col" align="center">
+                                                <h4>Pot Size:</h4>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col" align="center">
+                                                <input type="text" class="js-range-slider" id="slider-pot" style="font-size: 18px;" />
+                                            </div>
+                                        </div>
+                                        <div class="row mt-4">
+                                            <div class="col" align="center">
+                                                <h4>Soil Moisture:</h4>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col" align="center">
+                                                <input type="text" class="js-range-slider" id="slider-soil" />
+                                            </div>
+                                        </div>
+                                        <div class="row mt-4">
+                                            <div class="col" align="center">
+                                                <button type="button" class="btn btn-success" onClick="saveSettings()"><i class="icons icon-save"></i> Save Settings</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                    </table>
+                </div>
+                <div class="col col-7"></div>
+            </div>
+        </div>
+    </body>
+</html>
