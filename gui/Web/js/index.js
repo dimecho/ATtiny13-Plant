@@ -12,7 +12,7 @@ $(document).ready(function ()
 
             if(data.from_value == "ON")
             {
-                $.notify({ message: "Remmember to connect + and - correctly!" }, { type: "success" });
+                $.notify({ message: "Place solar cell as close to direct sunlight as possible" }, { type: "success" });
             }
         },
     });

@@ -87,7 +87,7 @@ public class ATtinyPlant
 
 		Process php = new Process();
 		php.StartInfo.FileName = path + @"php\php.exe";
-		php.StartInfo.Arguments = "-S 0.0.0.0:8080 -t \"" + path + "Web\"";
+		php.StartInfo.Arguments = "-S 127.0.0.1:8080 -t \"" + path + "Web\"";
 		php.Start();
 		
 		Process browser = new Process();

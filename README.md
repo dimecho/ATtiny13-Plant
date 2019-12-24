@@ -38,10 +38,6 @@ Designed with [EagleCAD](https://www.autodesk.com/products/eagle/free-download)
 
 ![Screenshot](img/diagram.png?raw=true)
 
-## Calibrate Sensor (Without Firmware Flashing)
-
-Short sensor wires and wait 5 minutes. After long LED blink quickly put into dry soil. The value will be stored in memory as base-line (anything dryer will be wattered)
-
 ## Solar
 
 Optional Pin7 (PB2) used to "burst" charge from solar panel.
@@ -55,9 +51,9 @@ Future flashing requires "High-Voltage programmer" to clear the fuse.
 
 Install "avr-gcc" and run "make".
 
-> [Windows](https://ww1.microchip.com/downloads/en/DeviceDoc/avr8-gnu-toolchain-3.6.2.1759-win32.any.x86.zip)
->
 > [MacOS](https://ww1.microchip.com/downloads/en/DeviceDoc/avr8-gnu-toolchain-osx-3.6.2.503-darwin.any.x86_64.tar.gz)
+>
+> [Windows](https://ww1.microchip.com/downloads/en/DeviceDoc/avr8-gnu-toolchain-3.6.2.1759-win32.any.x86.zip)
 
 ```
 avr-gcc -std=gnu99 -Wall -Os -mmcu=attiny13a main.c -o main.o
@@ -67,7 +63,11 @@ avr-objcopy -O ihex main.o main.hex
 
 ## Download
 
-<i class="fa fa-microchip" aria-hidden="true"></i> [Download Binary](../../releases/download/1.0/ATTiny13.Plant.zip)
+![MacOS](img/mac.png?raw=true) [MacOS](../../releases/download/1.0/ATTiny13.Plant.dmg)
+
+![Windows](img/win.png?raw=true) [Windows](../../releases/download/1.0/ATTiny13.Plant.zip)
+
+![Firmware](img/chip.png?raw=true) [Firmware](../../releases/download/1.0/ATTiny13.Plant.Firmware.zip)
 
 ## Flash
 
