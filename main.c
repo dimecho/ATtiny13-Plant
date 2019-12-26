@@ -23,7 +23,8 @@
 /*------------------------*/
 #define WS78L05 //LM2731
 //#define EEPROM_ENABLED
-#define UART_ENABLED
+#define UART_TX_ENABLED
+//#define UART_RX_ENABLED
 //#define SOLAR_ENABLED
 //#define SENSORLESS_ENABLED
 //#define LOG_ENABLED
@@ -40,6 +41,9 @@
 //#include <avr/wdt.h>
 //#include <avr/power.h>
 
+#ifndef versionID
+    #define versionID          4
+#endif
 #ifndef sensorMoisture
     #define sensorMoisture          388
 #endif
@@ -65,13 +69,26 @@
     static void EEPROM_write(unsigned char ucAddress, unsigned char ucData);
 #endif
 
-#ifdef UART_ENABLED
-    #define UART_BAUDRATE   (9600)
+#define UART_BAUDRATE   (9600)
+
+#ifdef UART_TX_ENABLED
     #define TXDELAY         (uint8_t)(((F_CPU/UART_BAUDRATE)-7 +1.5)/3)
     #define UART_TX         PB3 // Use PB3 as TX pin
     void uart_putc(char c);
     void uart_putu(uint16_t x);
     void uart_puts(const char *s);
+#endif
+
+#ifdef UART_RX_ENABLED
+    #define RXDELAY          (int)(((F_CPU/UART_BAUDRATE)-5 +1.5)/3)
+    #define RXDELAY2         (int)((RXDELAY*1.5)-2.5)
+    #define UART_RX          PB4 // Use PB4 as RX pin
+    /*
+    #define RXROUNDED         (((F_CPU/UART_BAUDRATE)-5 +2)/3)
+    #if RXROUNDED > 127
+    #error Low baud rates are not supported - use higher, UART_BAUDRATE
+    #endif
+    */
 #endif
 
 static void blink(uint8_t time, uint8_t duration);
@@ -178,9 +195,11 @@ int main(void)
     https://ww1.microchip.com/downloads/en/AppNotes/doc8453.pdf
     */
     uint8_t sleepLoop = 0;  //Track the passage of time
+    /*
     #ifdef LOG_ENABLED
-    //    uint8_t sleepLogReset = 0; //Reset logs once in a while
+        uint8_t sleepLogReset = 0; //Reset logs once in a while
     #endif
+    */
     #ifdef SENSORLESS_ENABLED
         uint16_t moistureLog[3] = {0,0,0}; //Collect past logs for empty detection
     #endif
@@ -188,7 +207,7 @@ int main(void)
     uint8_t emptyBottle = 0;
     uint16_t moisture = 0;
 
-    #ifdef UART_ENABLED
+    #ifdef UART_TX_ENABLED
         //================
         //ALIVE TEST
         //================
@@ -198,12 +217,16 @@ int main(void)
         _delay_ms(900);
         PORTB &= ~(1<<PB0); //OFF
         */
-        
-        //uart_putc('1');
-        //uart_putc('.');
-        uart_putc('4');
+
+        //Chip Identifier for Web Interface
+        #ifdef ATTINY45
+            uart_putc('$');  //$=attiny45
+        #else
+            uart_putc('!'); //!=attiny13
+        #endif
+        uart_putu(versionID); 
         //uart_putc('\r');
-        uart_putc('\n');
+        //uart_putc('\n');
     #endif
     blink(2,4);
     //================
@@ -230,13 +253,13 @@ int main(void)
 
         #ifdef SOLAR_ENABLED
 
-            #ifdef UART_ENABLED
+            #ifdef UART_TX_ENABLED
                 DDRB &= ~(1<<solarSensorPin); //Shared pin with UART, Set Analog INPUT
             #endif
 
             moisture = ReadADC(solarSensorPin); //Detect Solar intensity - 10k inline + 10k pullup
 
-            #ifdef UART_ENABLED
+            #ifdef UART_TX_ENABLED
                 //DDRB |= (1<<solarSensorPin); //Shared pin with UART, set Digital OUTPUT
                 uart_putc(',');
                 uart_putu(moisture);
@@ -309,7 +332,7 @@ int main(void)
 
                 if(moisture == 0) { //Sensor Not in Soil
 
-                    #ifdef UART_ENABLED
+                    #ifdef UART_TX_ENABLED
                         uart_putu(suitableMoisture);
                         //uart_putc('\r');
                         //uart_putc('\n');
@@ -328,7 +351,7 @@ int main(void)
                     
                     for(uint8_t i = 0; i < 8; ++i) //Get ready to place into base-line soil
                     {
-                        #ifdef UART_ENABLED
+                        #ifdef UART_TX_ENABLED
                             uart_putc('.');
                         #endif
                         _delay_ms(800);
@@ -398,7 +421,7 @@ int main(void)
                     }else{ //Bottle must be empty do not pump air
            
                         if(overwaterProtection < 4) { //Prevent flooding
-                            #ifdef UART_ENABLED
+                            #ifdef UART_TX_ENABLED
                                 uart_putc('P');
                             #endif
 
@@ -410,7 +433,7 @@ int main(void)
                             overwaterProtection++; //When battery < 3V (without regulator) ADC readouts are unstable
                         }
                     
-                        #ifdef UART_ENABLED
+                        #ifdef UART_TX_ENABLED
                             uart_putc('E');
                         #endif
                     }
@@ -444,7 +467,7 @@ uint16_t sensorRead(uint8_t pin)
     uint16_t value = ReadADC(moistureSensorPin);
     PORTB &= ~(1<<pin); //OFF
 
-    #ifdef UART_ENABLED
+    #ifdef UART_TX_ENABLED
         //uart_putc(',');
         uart_putu(value);
     #endif
@@ -523,8 +546,7 @@ uint16_t ReadADC(uint8_t pin) {
  * Software UART for ATtiny13
  */
 
-#ifdef UART_ENABLED
-
+#ifdef UART_TX_ENABLED
 void uart_putc(char c)
 {
     //uint8_t sreg;
@@ -572,5 +594,47 @@ void uart_putu(uint16_t x)
 void uart_puts(const char *s)
 {
     while (*s) uart_putc(*(s++));
+}
+#endif
+
+#ifdef UART_RX_ENABLED
+
+char uart_getc(void)
+{
+    char c;
+    //uint8_t sreg;
+    //sreg = SREG;
+
+    //cli(); // disable all interrupts
+    PORTB &= ~(1 << UART_RX);
+    DDRB &= ~(1 << UART_RX);
+    __asm volatile(
+        " ldi r18, %[rxdelay2] \n\t" // 1.5 bit delay
+        " ldi %0, 0x80 \n\t" // bit shift counter
+        "WaitStart: \n\t"
+        " sbic %[uart_port]-2, %[uart_pin] \n\t" // wait for start edge
+        " rjmp WaitStart \n\t"
+        "RxBit: \n\t"
+        // 6 cycle loop + delay - total = 5 + 3*r22
+        // delay (3 cycle * r18) -1 and clear carry with subi
+        " subi r18, 1 \n\t"
+        " brne RxBit \n\t"
+        " ldi r18, %[rxdelay] \n\t"
+        " sbic %[uart_port]-2, %[uart_pin] \n\t" // check UART PIN
+        " sec \n\t"
+        " ror %0 \n\t"
+        " brcc RxBit \n\t"
+        "StopBit: \n\t"
+        " dec r18 \n\t"
+        " brne StopBit \n\t"
+        : "=r" (c)
+        : [uart_port] "I" (_SFR_IO_ADDR(PORTB)),
+        [uart_pin] "I" (UART_RX),
+        [rxdelay] "I" (RXDELAY),
+        [rxdelay2] "I" (RXDELAY2)
+        : "r0","r18","r19"
+    );
+    //SREG = sreg;
+    return c;
 }
 #endif

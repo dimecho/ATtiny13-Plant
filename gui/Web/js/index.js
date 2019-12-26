@@ -1,7 +1,11 @@
+var theme = detectTheme();
 var os = "";
+var chip = "";
 
 $(document).ready(function ()
 {
+    loadTheme();
+
     $("#slider-solar").ionRangeSlider({
         skin: "big",
         from: 0,
@@ -82,6 +86,54 @@ function saveSettings()
     });
 };
 
+function detectTheme()
+{
+    var t = getCookie("theme");
+    if(t == undefined) {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            return ".slate";
+        }else{
+            return ""
+        }
+    }
+    return t;
+};
+
+function switchTheme(element,dark,light) {
+     if(theme == "") {
+        var e = $(element + "." + dark);
+        e.removeClass(dark);
+        e.addClass(light);
+    }else{
+        var e = $(element + "." + light);
+        e.removeClass(light);
+        e.addClass(dark);
+    }
+};
+
+function setTheme() {
+    if(theme == ".slate") {
+        theme = "";
+    }else{
+        theme = ".slate";
+    }
+    setCookie("theme", theme, 1);
+    loadTheme();
+};
+
+function loadTheme() {
+    if(theme == ".slate") {
+        $('link[title="main"]').attr('href', "css/bootstrap.slate.css");
+
+    }else{
+        $('link[title="main"]').attr('href', "css/bootstrap.css");
+    }
+    switchTheme("i.icons","text-white","text-dark");
+    switchTheme("div","bg-primary","bg-light");
+    switchTheme("div","text-white","text-dark");
+    switchTheme("table","bg-primary","bg-light");
+};
+
 function checkFirmwareUpdates()
 {
    var check = Math.random() >= 0.5;
@@ -126,5 +178,40 @@ function checkFirmwareUpdates()
                 } catch(e) {}
             }
         });
+    }
+};
+
+function deleteCookie(name, path, domain) {
+
+  if(getCookie(name)) {
+    document.cookie = name + "=" +
+      ((path) ? ";path="+path:"")+
+      ((domain)?";domain="+domain:"") +
+      ";expires=Thu, 01 Jan 1970 00:00:01 GMT";
+  }
+};
+
+function setCookie(name, value, exdays) {
+
+    var exdate = new Date();
+    exdate.setDate(exdate.getDate() + exdays);
+    var c_value = escape(value) + (exdays == null ? "" : "; expires=" + exdate.toUTCString());
+    document.cookie = name + "=" + c_value;
+};
+
+function getCookie(name) {
+    
+    var i,
+        x,
+        y,
+        ARRcookies = document.cookie.split(";");
+
+    for (var i = 0; i < ARRcookies.length; i++) {
+        x = ARRcookies[i].substr(0, ARRcookies[i].indexOf("="));
+        y = ARRcookies[i].substr(ARRcookies[i].indexOf("=") + 1);
+        x = x.replace(/^\s+|\s+$/g, "");
+        if (x == name) {
+            return unescape(y);
+        }
     }
 };

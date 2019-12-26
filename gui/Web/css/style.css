@@ -6,8 +6,8 @@ body {
 	background-image: url("../img/background.png");
 }
 
-table {
-    background-color: rgba(245, 245, 245, 0.75);
+.icons {
+  font-size: 4em;
 }
 
 .tooltip-inner {

@@ -35,7 +35,15 @@ guibuild:
 		$(foreach p,$(POT), \
 			${CC} ${CFLAGS} -DLOG_ENABLED -DsensorMoisture=$(m) -DpotSize=$(p) -o ${TARGET}.o ${SRCS}; \
 			${LD} -o ${TARGET}.elf ${TARGET}.o; \
-			${OBJCOPY} -j .text -j .data -O ihex ${TARGET}.o gui/Web/firmware/${TARGET}-$(m)-$(p).hex; \
+			${OBJCOPY} -j .text -j .data -O ihex ${TARGET}.o gui/Web/firmware/attiny13/${TARGET}-$(m)-$(p).hex; \
+			${SIZE} -C --mcu=${MCU} ${TARGET}.elf; \
+		) \
+	)
+	$(foreach m,$(SOIL), \
+		$(foreach p,$(POT), \
+			${CC} ${CFLAGS} -DLOG_ENABLED -DEEPROM_ENABLED -DSENSORLESS_ENABLED -DUART_RX_ENABLED -DsensorMoisture=$(m) -DpotSize=$(p) -DATTINY45 -o ${TARGET}.o ${SRCS}; \
+			${LD} -o ${TARGET}.elf ${TARGET}.o; \
+			${OBJCOPY} -j .text -j .data -O ihex ${TARGET}.o gui/Web/firmware/attiny45/${TARGET}-$(m)-$(p).hex; \
 			${SIZE} -C --mcu=${MCU} ${TARGET}.elf; \
 		) \
 	)
@@ -44,7 +52,15 @@ guibuild:
 		$(foreach p,$(POT), \
 			${CC} ${CFLAGS} -DSOLAR_ENABLED -DsensorMoisture=$(m) -DpotSize=$(p) -o ${TARGET}.o ${SRCS}; \
 			${LD} -o ${TARGET}.elf ${TARGET}.o; \
-			${OBJCOPY} -j .text -j .data -O ihex ${TARGET}.o gui/Web/firmware/solar/${TARGET}-$(m)-$(p).hex; \
+			${OBJCOPY} -j .text -j .data -O ihex ${TARGET}.o gui/Web/firmware/attiny13/solar/${TARGET}-$(m)-$(p).hex; \
+			${SIZE} -C --mcu=${MCU} ${TARGET}.elf; \
+		) \
+	)
+	$(foreach m,$(SOIL), \
+		$(foreach p,$(POT), \
+			${CC} ${CFLAGS} -DSOLAR_ENABLED -DLOG_ENABLED -DEEPROM_ENABLED -DSENSORLESS_ENABLED -DUART_RX_ENABLED -DsensorMoisture=$(m) -DpotSize=$(p) -DATTINY45 -o ${TARGET}.o ${SRCS}; \
+			${LD} -o ${TARGET}.elf ${TARGET}.o; \
+			${OBJCOPY} -j .text -j .data -O ihex ${TARGET}.o gui/Web/firmware/attiny45/solar/${TARGET}-$(m)-$(p).hex; \
 			${SIZE} -C --mcu=${MCU} ${TARGET}.elf; \
 		) \
 	)

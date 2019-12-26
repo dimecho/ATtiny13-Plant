@@ -1,0 +1,29 @@
+@font-face {
+  font-family: 'icons';
+  src: url('../font/icons.eot?66359539');
+  src: url('../font/icons.eot?66359539#iefix') format('embedded-opentype'),
+       url('../font/icons.woff2?66359539') format('woff2'),
+       url('../font/icons.woff?66359539') format('woff'),
+       url('../font/icons.ttf?66359539') format('truetype'),
+       url('../font/icons.svg?66359539#icons') format('svg');
+  font-weight: normal;
+  font-style: normal;
+}
+.icons{
+  font-family:'icons';
+  font-style:normal;
+  font-weight:normal;
+  speak:none;
+  display:inline-block;
+  text-decoration:inherit;
+  width:1em;
+  margin-right:.5em;
+  text-align:center;
+  font-variant:normal;
+  text-transform:none;
+  line-height:1em;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale
+}
+.icon-day-and-night:before { content: '\e801'; }
+.icon-chip:before { content: '\e802'; }

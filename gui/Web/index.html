@@ -3,9 +3,10 @@
 <html>
     <head>
         <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+        <link rel="stylesheet" type="text/css" media="screen" title="main">
+        <link rel="stylesheet" type="text/css" href="css/icons.css" />
         <link rel="stylesheet" type="text/css" href="css/style.css" />
         <link rel="stylesheet" type="text/css" href="css/animate.css" />
-        <link rel="stylesheet" type="text/css" href="css/bootstrap.css" />
         <link rel="stylesheet" type="text/css" href="css/ion.rangeSlider.css" />
         <script src="js/jquery.js"></script>
         <script src="js/bootstrap.js"></script>
@@ -16,71 +17,76 @@
     <body>
         <div class="container">
             <div class="row">
-                <div class="col col-7 mt-4 table-responsive">
-                    <div class="container">
-                        <div class="row">
-                            <div class="col" align="center">
-                                <img srcset="img/chip.png 1x, img/chip@2x.png 2x" />
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col" align="center">
-                                <h1>Plant Control Panel</h1>
-                            </div>
-                        </div>
+                <div class="col col-7 mt-4">
+                    <div class="container" align="center">
                         <div class="row">
                             <div class="col">
-                                <hr/>
+                                <i class="icons icon-chip text-dark"></i>
+                            </div>
+                        </div>
+                        <div class="row mt-4">
+                            <div class="col" align="center">
+                                <h1>Plant Control Panel</h1>
+                                <div class="container table-bordered mt-4 bg-light">
+                                    <div class="row mt-2">
+                                        <div class="col">
+                                            <h4>Solar:</h4>
+                                        </div>
+                                    </div>
+                                    <div class="row mt-2">
+                                        <div class="col">
+                                            <input type="text" class="js-range-slider" id="slider-solar" style="font-size: 18px" />
+                                        </div>
+                                    </div>
+                                    <div class="row mt-2">
+                                        <div class="col" >
+                                            <h4>Pot Size:</h4>
+                                        </div>
+                                    </div>
+                                    <div class="row mt-2">
+                                        <div class="col">
+                                            <input type="text" class="js-range-slider" id="slider-pot" style="font-size: 18px" />
+                                        </div>
+                                    </div>
+                                    <div class="row mt-2">
+                                        <div class="col">
+                                            <h4>Soil Moisture:</h4>
+                                        </div>
+                                    </div>
+                                    <div class="row mt-2">
+                                        <div class="col">
+                                            <input type="text" class="js-range-slider" id="slider-soil" />
+                                        </div>
+                                    </div>
+                                    <div class="row m-2">
+                                        <div class="col">
+                                            <button type="button" class="btn btn-success" onClick="saveSettings()">Save Settings</button>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
-                    <table class="table table-bordered mt-4">
-                            <tr>
-                                <td>
-                                    <div class="container ml-1 mr-1">
-                                        <div class="row">
-                                            <div class="col" align="center">
-                                                <h4>Solar:</h4>
-                                            </div>
-                                        </div>
-                                        <div class="row">
-                                            <div class="col" align="center">
-                                                <input type="text" class="js-range-slider" id="slider-solar" style="font-size: 18px;" />
-                                            </div>
-                                        </div>
-                                        <div class="row mt-4">
-                                            <div class="col" align="center">
-                                                <h4>Pot Size:</h4>
-                                            </div>
-                                        </div>
-                                        <div class="row">
-                                            <div class="col" align="center">
-                                                <input type="text" class="js-range-slider" id="slider-pot" style="font-size: 18px;" />
-                                            </div>
-                                        </div>
-                                        <div class="row mt-4">
-                                            <div class="col" align="center">
-                                                <h4>Soil Moisture:</h4>
-                                            </div>
-                                        </div>
-                                        <div class="row">
-                                            <div class="col" align="center">
-                                                <input type="text" class="js-range-slider" id="slider-soil" />
-                                            </div>
-                                        </div>
-                                        <div class="row mt-4">
-                                            <div class="col" align="center">
-                                                <button type="button" class="btn btn-success" onClick="saveSettings()"><i class="icons icon-save"></i> Save Settings</button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </td>
-                            </tr>
-                    </table>
                 </div>
-                <div class="col col-5">
+                <div class="col col-5 mt-4">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col" align="right">
+                                <i class="icons icon-day-and-night text-dark" onClick="setTheme()"></i>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
+        </div>
+        <a class="chipDetect" data-fancybox data-src="#chipDetect" href="#"></a>
+        <div class="d-none bg-light" id="chipDetect">
+            <center>
+                <br><br>
+                <p>Select ATTiny Chip: 
+                <br>
+                <button class="btn btn-primary" type="button" onClick="">Download</button>
+            </center>
         </div>
     </body>
 </html>
