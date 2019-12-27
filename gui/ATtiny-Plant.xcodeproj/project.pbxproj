@@ -8,22 +8,20 @@
 
 /* Begin PBXBuildFile section */
 		32C2481623066B7A0074F958 /* run in Resources */ = {isa = PBXBuildFile; fileRef = 32C2481523066B7A0074F958 /* run */; };
-		32C2481823066B800074F958 /* bootloader in Resources */ = {isa = PBXBuildFile; fileRef = 32C2481723066B800074F958 /* bootloader */; };
 		32C2481E23066C2C0074F958 /* Web in Resources */ = {isa = PBXBuildFile; fileRef = 32C2481D23066C2B0074F958 /* Web */; };
-		32D281B41CF0066E00606B12 /* Application.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32D281B31CF0066E00606B12 /* Application.swift */; };
 		32D281B61CF0066F00606B12 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 32D281B51CF0066F00606B12 /* Assets.xcassets */; };
 		32D281B91CF0066F00606B12 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 32D281B71CF0066F00606B12 /* Main.storyboard */; };
+		32EAFDC123B59EE900103412 /* avrdude in Resources */ = {isa = PBXBuildFile; fileRef = 32EAFDC023B59EE900103412 /* avrdude */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		32C2481523066B7A0074F958 /* run */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; name = run; path = macOS/Resources/run; sourceTree = "<group>"; };
-		32C2481723066B800074F958 /* bootloader */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; name = bootloader; path = macOS/Resources/bootloader; sourceTree = "<group>"; };
 		32C2481D23066C2B0074F958 /* Web */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Web; sourceTree = "<group>"; };
 		32D281AE1CF0066E00606B12 /* ATtiny-Plant.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "ATtiny-Plant.app"; sourceTree = BUILT_PRODUCTS_DIR; };
-		32D281B31CF0066E00606B12 /* Application.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = Application.swift; path = Sources/Application.swift; sourceTree = "<group>"; };
 		32D281B51CF0066F00606B12 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		32D281B81CF0066F00606B12 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		32D281BA1CF0066F00606B12 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		32EAFDC023B59EE900103412 /* avrdude */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; name = avrdude; path = macOS/Resources/avrdude; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -58,7 +56,6 @@
 		32D281B01CF0066E00606B12 /* macOS */ = {
 			isa = PBXGroup;
 			children = (
-				32D281B31CF0066E00606B12 /* Application.swift */,
 				32D281B51CF0066F00606B12 /* Assets.xcassets */,
 				32D281B71CF0066F00606B12 /* Main.storyboard */,
 				32D281BA1CF0066F00606B12 /* Info.plist */,
@@ -70,7 +67,7 @@
 			isa = PBXGroup;
 			children = (
 				32C2481D23066C2B0074F958 /* Web */,
-				32C2481723066B800074F958 /* bootloader */,
+				32EAFDC023B59EE900103412 /* avrdude */,
 				32C2481523066B7A0074F958 /* run */,
 			);
 			name = Resources;
@@ -136,9 +133,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				32C2481623066B7A0074F958 /* run in Resources */,
-				32C2481823066B800074F958 /* bootloader in Resources */,
 				32C2481E23066C2C0074F958 /* Web in Resources */,
 				32D281B61CF0066F00606B12 /* Assets.xcassets in Resources */,
+				32EAFDC123B59EE900103412 /* avrdude in Resources */,
 				32D281B91CF0066F00606B12 /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -150,7 +147,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				32D281B41CF0066E00606B12 /* Application.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

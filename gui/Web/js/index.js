@@ -54,6 +54,8 @@ $(document).ready(function ()
         }
     });
 
+    $(".icon-chip").attr("title", "<h6 class='text-white'>ATtiny13</h6>");
+
     $('[data-toggle="tooltip"]').tooltip()
 });
 
@@ -124,14 +126,14 @@ function setTheme() {
 function loadTheme() {
     if(theme == ".slate") {
         $('link[title="main"]').attr('href', "css/bootstrap.slate.css");
-
+        $(".icon-day-and-night").attr("title", "<h6 class='text-white'>Light Theme</h6>");
     }else{
         $('link[title="main"]').attr('href', "css/bootstrap.css");
+        $(".icon-day-and-night").attr("title", "<h6 class='text-white'>Dark Theme</h6>");
     }
     switchTheme("i.icons","text-white","text-dark");
     switchTheme("div","bg-primary","bg-light");
     switchTheme("div","text-white","text-dark");
-    switchTheme("table","bg-primary","bg-light");
 };
 
 function checkFirmwareUpdates()

@@ -12,8 +12,8 @@
 /*
              [ATtiny13A]
               +------+
-(LED)   PB5  1| O    |8  VCC
-(TX)    PB3  2|      |7  PB2 (Solar)
+(RESET) PB5  1| O    |8  VCC
+(TX)    PB3  2|      |7  PB2 (Solar/LED)
 (RX/A0) PB4  3|      |6  PB1 (Sensor)
         GND  4|      |5  PB0 (Pump)
               +------+
@@ -22,12 +22,12 @@
 /* HARDWARE CONFIGURATION */
 /*------------------------*/
 #define WS78L05 //LM2731
-//#define EEPROM_ENABLED
+#define EEPROM_ENABLED
 #define UART_TX_ENABLED
 //#define UART_RX_ENABLED
 //#define SOLAR_ENABLED
-//#define SENSORLESS_ENABLED
-//#define LOG_ENABLED
+#define SENSORLESS_ENABLED
+#define LOG_ENABLED
 /*------------------------*/
 
 //#include <avr/pgmspace.h>
@@ -42,7 +42,7 @@
 //#include <avr/power.h>
 
 #ifndef versionID
-    #define versionID          4
+    #define versionID               0
 #endif
 #ifndef sensorMoisture
     #define sensorMoisture          388
@@ -54,7 +54,7 @@
 #define pumpPin                     PB0 //Output
 #define sensorPin                   PB1 //Output
 #define solarPin                    PB2 //Output
-#define ledPin                      PB5 //Output
+#define ledPin                      PB2 //PB5 //Output
 #define solarSensorPin              PB3 //Input/Output
 #define moistureSensorPin           PB4 //Input
 #define delayBetweenWaterings       40  //8seconds x 40 = 5.5 min
@@ -172,7 +172,11 @@ int main(void)
     //cli(); // disable all interrupts
     //wdt_reset();
     //----------------
-    WDTCR = (1<<WDTIE);  // Enable watchdog timer interrupts
+    #ifdef __AVR_ATtiny45__
+    	WDTCR = (1<<WDIE);  // Enable watchdog timer interrupts
+    #else
+        WDTCR = (1<<WDTIE);  // Enable watchdog timer interrupts 
+    #endif
     //WDTCR = (1<<WDP3); // (1<<WDP2) | (1<<WDP0); //Set timer 4s (max)
     WDTCR |= (1<<WDP3) | (0<<WDP2) | (0<<WDP1) | (1<<WDP0); //Set timer 8s (max)
     //----------------
@@ -195,11 +199,11 @@ int main(void)
     https://ww1.microchip.com/downloads/en/AppNotes/doc8453.pdf
     */
     uint8_t sleepLoop = 0;  //Track the passage of time
-    /*
+    
     #ifdef LOG_ENABLED
         uint8_t sleepLogReset = 0; //Reset logs once in a while
     #endif
-    */
+    
     #ifdef SENSORLESS_ENABLED
         uint16_t moistureLog[3] = {0,0,0}; //Collect past logs for empty detection
     #endif
@@ -218,13 +222,13 @@ int main(void)
         PORTB &= ~(1<<PB0); //OFF
         */
 
-        //Chip Identifier for Web Interface
-        #ifdef ATTINY45
+        //Chip Identifier for UART
+        #ifdef __AVR_ATtiny45__
             uart_putc('$');  //$=attiny45
         #else
             uart_putc('!'); //!=attiny13
         #endif
-        uart_putu(versionID); 
+        uart_putu(versionID);
         //uart_putc('\r');
         //uart_putc('\n');
     #endif
@@ -316,7 +320,6 @@ int main(void)
                 //Prevents false-positive (empty detection)
                 //Moisture sensor (too accurate) triggers exactly same value when dry
                 //======================
-                /*
                 #ifdef LOG_ENABLED
                     if (sleepLogReset > delayBetweenLogReset) {
                         resetLog = 1;
@@ -324,7 +327,6 @@ int main(void)
                         sleepLogReset++;
                     }
                 #endif
-                */
                 //======================
                 //blink(4,2);
 
@@ -444,8 +446,8 @@ int main(void)
             #ifdef LOG_ENABLED
                 if(resetLog == 1)
                 {
-                    //sleepLogReset = 0;
-                    //sleepLoop = 0;
+                    sleepLogReset = 0;
+                    sleepLoop = 0;
                     emptyBottle = 0;
                     overwaterProtection = 0;
                     #ifdef SENSORLESS_ENABLED
@@ -549,10 +551,10 @@ uint16_t ReadADC(uint8_t pin) {
 #ifdef UART_TX_ENABLED
 void uart_putc(char c)
 {
-    //uint8_t sreg;
-    //sreg = SREG;
+    uint8_t sreg;
+    sreg = SREG;
 
-    //cli(); // disable all interrupts
+    cli(); // disable all interrupts
     PORTB |= (1 << UART_TX);
     DDRB |= (1 << UART_TX);
     __asm volatile(
@@ -580,7 +582,7 @@ void uart_putc(char c)
         [ch] "r" (c)
         : "r0","r28","r29","r30"
     );
-    //SREG = sreg;
+    SREG = sreg;
 }
 
 void uart_putu(uint16_t x)
@@ -602,10 +604,10 @@ void uart_puts(const char *s)
 char uart_getc(void)
 {
     char c;
-    //uint8_t sreg;
-    //sreg = SREG;
+    uint8_t sreg;
+    sreg = SREG;
 
-    //cli(); // disable all interrupts
+    cli(); // disable all interrupts
     PORTB &= ~(1 << UART_RX);
     DDRB &= ~(1 << UART_RX);
     __asm volatile(
@@ -634,7 +636,7 @@ char uart_getc(void)
         [rxdelay2] "I" (RXDELAY2)
         : "r0","r18","r19"
     );
-    //SREG = sreg;
+    SREG = sreg;
     return c;
 }
 #endif

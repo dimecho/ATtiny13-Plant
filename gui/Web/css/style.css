@@ -1,5 +1,5 @@
 body {
-	background-size: 50%;
+	background-size: 40%;
   	background-repeat: no-repeat;
   	background-attachment: fixed;
 	background-position: right; 
@@ -8,9 +8,4 @@ body {
 
 .icons {
   font-size: 4em;
-}
-
-.tooltip-inner {
-    text-align: left;
-    min-width: 380px;
 }

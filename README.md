@@ -44,8 +44,7 @@ Optional Pin7 (PB2) used to "burst" charge from solar panel.
 
 ## LED
 
-Empty container detection **Caution:** LED uses RESET Pin1 (PB5) requires HFuse 0xFE (or 0xEE), if enabled ATTiny13 can only be flashed once.
-Future flashing requires "High-Voltage programmer" to clear the fuse.
+Empty container detection - shared with Solar Pin7 (PB2)
 
 ## Compile
 
@@ -71,12 +70,19 @@ avr-objcopy -O ihex main.o main.hex
 
 ## Flash
 
-Raspberry Pi (using linuxgpio)
+###Option 1 - USBasp (Recommended)
+```
+sudo avrdude -p t13 -c usbasp -Uhfuse:w:0xFF:m -Ulfuse:w:0x6A:m -U flash:w:main.hex:i
+```
+
+![USBASP](img/attiny_programmer_usbasp.png?raw=true)
+
+###Option 2 - Raspberry Pi (Using linuxgpio)
 ```
 sudo avrdude -p t13 -c linuxgpio -Uhfuse:w:0xFF:m -Ulfuse:w:0x6A:m -U flash:w:main.hex:i
 ```
 
-![AVR](img/attiny_programmer_pi.png?raw=true)
+![PI](img/attiny_programmer_pi.png?raw=true)
 
 Install AVRDude.
 ```
@@ -98,7 +104,7 @@ programmer
   miso  = 9;
 ```
 
-### Bootloader (Optional)
+### Bootloader (Optional - No Longer Used in Design)
 
 Bootloader is usefull for updating the firmware over UART without desoldering the chip.
 
@@ -121,6 +127,7 @@ Update (Windows)
 ```
 **Note 1:** Ready the chip for flashing by resetting it - short Pin4 (GND) and Pin8 (VCC) for 1 second.
 **Note 2:** Disconnect UART Pin3 (RX) after flashing - sensor will read false-positive if UART has +5V.
+**Caution:** RESET Pin1 (PB5) if fuses set HFuse 0xFE (or 0xEE), ATTiny13 can only be flashed once. Future flashing requires "High-Voltage programmer" to clear the fuse.
 
 ## Debug
 

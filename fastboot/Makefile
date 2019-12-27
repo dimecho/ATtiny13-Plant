@@ -121,6 +121,10 @@ else
 endif
 
 atmel_def.h: $(ATMEL_INC) Makefile
+	#Fix for macOS (10.15)
+	@if ! [ -x "$(command -v gawk)" ]; then \
+        ln -sf /usr/bin/awk /usr/local/bin/gawk; \
+    fi
 #        We use gawk instead of egrep here due to problems with
 #        WinAVR's egrep (which I didn't dive into):
 	./conv.awk $< | gawk '/PAGESIZE|SIGNATURE_|SRAM_|FLASHEND|BOOT/' > $@
