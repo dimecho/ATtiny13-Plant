@@ -1,6 +1,5 @@
 var theme = detectTheme();
 var os = "";
-var chip = "";
 
 $(document).ready(function ()
 {
@@ -37,7 +36,7 @@ $(document).ready(function ()
         ]
     });
     
-    $.ajax("serial.php?os=1", {
+    $.ajax("usbasp.php?os=1", {
         success: function(data) {
             os = data;
         }
@@ -45,47 +44,56 @@ $(document).ready(function ()
 
     checkFirmwareUpdates();
 
-    $.ajax("serial.php?com=check", {
+    connectPlant();
+
+    $('[data-toggle="tooltip"]').tooltip();
+});
+
+function connectPlant()
+{
+    $.ajax("usbasp.php?connect=plant", {
         success: function(data) {
-            if(data.length > 0)
+            if(data == "attiny13" || data == "attiny45")
             {
                 $.notify({ message: "Plant Connected!" }, { type: "success" });
+                $(".icon-chip").attr("data-original-title", "<h6 class='text-white'>" + data + "</h6>");
+            }else if(data == "fix") {
+                $.notify({ message: "... Fixing USB Driver" }, { type: "danger" });
+                $.ajax("usbasp.php?driver=fix", {
+                    success: function(data) {
+                        if(data == "ok") {
+                            $.notify({ message: "USB Driver Installed" }, { type: "success" });
+                        }
+                    }
+                });
+            }else if(data == "sck") {
+                $.notify({ message: "... Waiting for Plant to Connect" }, { type: "warning" });
+            }else{
+                setTimeout(function () {
+                    connectPlant();
+                }, 4000);
             }
         }
     });
-
-    $(".icon-chip").attr("title", "<h6 class='text-white'>ATtiny13</h6>");
-
-    $('[data-toggle="tooltip"]').tooltip()
-});
+}
 
 function saveSettings()
 {
-    $.ajax("serial.php?com=check", {
-        success: function(data) {
-            //console.log(data);
-            if(data.length > 0)
-            {
-                var s = data.split('\n');
-                //for (var i = 0; i < s.length; i++) {
-                //    if(s[i] != "")
-                //        $("#serial-interface").append($("<option>",{value:s[i]}).append(s[i]));
-                //}
+    connectPlant();
 
-                $.notify({ message: "Firmware is Waiting ...Please Reset Chip" }, { type: "warning" });
+    var chip = $(".icon-chip").attr("data-original-title").toLowerCase();
+    console.log(chip);
 
-                $.ajax("serial.php?flash=" + s[0] + "&solar=" + $("#slider-solar").data().from + "&pot=" + $("#slider-pot").data().from + "&soil=" + $("#slider-soil").data().from, {
-                    success: function(data) {
-                        console.log(data);
-                        $.notify({ message: "Happy Plant &#127807;" }, { type: "success" });
-                    }
-                });
-
-            }else{
-                $.notify({ message: "No USB Found, Connect Plant to Computer" }, { type: "danger" });
+    if(chip.length > 0) {
+        $.ajax("usbasp.php?flash=" + chip + "&solar=" + $("#slider-solar").data().from + "&pot=" + $("#slider-pot").data().from + "&soil=" + $("#slider-soil").data().from, {
+            success: function(data) {
+                console.log(data);
+                $.notify({ message: "Happy Plant &#127807;" }, { type: "success" });
             }
-        }
-    });
+        });
+    }else{
+        $.notify({ message: "Connect Plant to Computer" }, { type: "danger" });
+    }
 };
 
 function detectTheme()
@@ -126,10 +134,10 @@ function setTheme() {
 function loadTheme() {
     if(theme == ".slate") {
         $('link[title="main"]').attr('href', "css/bootstrap.slate.css");
-        $(".icon-day-and-night").attr("title", "<h6 class='text-white'>Light Theme</h6>");
+        $(".icon-day-and-night").attr("data-original-title", "<h6 class='text-white'>Light Theme</h6>");
     }else{
         $('link[title="main"]').attr('href', "css/bootstrap.css");
-        $(".icon-day-and-night").attr("title", "<h6 class='text-white'>Dark Theme</h6>");
+        $(".icon-day-and-night").attr("data-original-title", "<h6 class='text-white'>Dark Theme</h6>");
     }
     switchTheme("i.icons","text-white","text-dark");
     switchTheme("div","bg-primary","bg-light");

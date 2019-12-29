@@ -7,19 +7,12 @@ shopt -s nocasematch
 checkUSB()
 {
     for ((i = 0 ; i < 30 ; i++ )); do
-        cu=$(ls /dev/cu.*)
-        for serial in $cu; do
-            if [[ $serial == *usb* ]] || [[ $serial == *ch34* ]] || [[ $serial == *pl23* ]] ; then
-                #verify=$(stty -f $serial)
-                openBrowser http://127.0.0.1:8080 &
-                return
-            fi
-        done
-        echo "... Waiting for RS232-USB"
-        if [[ $i -eq 1 ]]; then
-            openBrowser http://127.0.0.1:8080/connect.html
+        echo "... Waiting for USB"
+        if [[ $i -eq 0 ]]; then
+            openBrowser http://127.0.0.1:8080
         fi
         sleep 1
+        return
     done
 }
 

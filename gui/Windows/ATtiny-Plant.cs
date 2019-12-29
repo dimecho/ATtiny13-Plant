@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using System.Net;
 using System.Diagnostics;
-//using System.Management;
+using System.IO.Compression;
 using System.Management.Automation;
 using System.Management.Automation.Runspaces;
 using System.Reflection;
@@ -13,6 +13,9 @@ using Microsoft.Win32;
 public class ATtinyPlant
 {
 	static string path = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) + "\\";
+	static string temp = Environment.GetEnvironmentVariable("TEMP") + "\\";
+	static string profile = Environment.GetEnvironmentVariable("USERPROFILE") + "\\";
+	static string appdata = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData)+ "\\ATtiny-Plant\\";
 
     public static void Main(string[] args)
     {
@@ -21,37 +24,47 @@ public class ATtinyPlant
 
 		Console.ForegroundColor = ConsoleColor.Green;
 
-		extractEmbedResource("avrdude.exe");
-		extractEmbedResource("avrdude.conf");
+		if(!Directory.Exists(appdata) || checkVersion() == false)
+		{
+			Directory.CreateDirectory(appdata);
 
-		if (!File.Exists(path + @"php\php.exe")) {
+			Console.WriteLine("...Installing Web-Interface");
+			extractEmbedResource("APP", "ATtiny-Plant-Web.zip", temp);
+			ZipFile.ExtractToDirectory(temp + "ATtiny-Plant-Web.zip", appdata);
+			File.Delete(temp + "ATtiny-Plant-Web.zip");
+		}
+
+		extractEmbedResource("AVR", "avrdude.conf", appdata + @"Web\");
+		extractEmbedResource("AVR", "avrdude.exe", appdata + @"Web\");
+		extractEmbedResource("AVR", "libusb0.dll", appdata + @"Web\");
+		
+		if (!File.Exists(appdata + @"php\php.exe")) {
 
 			string phpFile = "php-7.4.0-Win32-vc15-x64.zip";
-			extractEmbedResource(phpFile);
+			extractEmbedResource("PHP",phpFile,temp);
 
-			if (File.Exists(path + phpFile)) {
-				phpFile = path + phpFile;
+			if (File.Exists(temp + phpFile)) {
+				phpFile = temp + phpFile;
 			}else{
-				if (!File.Exists(Environment.GetEnvironmentVariable("USERPROFILE") + @"\Downloads\" + phpFile)) {
+				if (!File.Exists(profile+ @"Downloads\" + phpFile)) {
 			   		Console.WriteLine("...Downloading PHP");
 
 			   		using (WebClient webClient = new WebClient()) {
 				   		try {
 				   			webClient.Headers.Add("User-Agent", "Mozilla/4.0 (compatible; MSIE 8.0)");
-							webClient.DownloadFile("https://windows.php.net/downloads/releases/archives/" + phpFile , Environment.GetEnvironmentVariable("USERPROFILE") + @"\Downloads\" + phpFile);
+							webClient.DownloadFile("https://windows.php.net/downloads/releases/archives/" + phpFile, profile + @"Downloads\" + phpFile);
 				   		} catch (Exception ex) {
 		                    Console.WriteLine(ex.ToString());
 		                }
 		            }
 			   	}
-			   	phpFile = Environment.GetEnvironmentVariable("USERPROFILE") + @"\Downloads\" + phpFile;
+			   	phpFile = profile + @"Downloads\" + phpFile;
 			}
 
 		   	Console.WriteLine("...Installing PHP");
 
-		  	System.IO.Compression.ZipFile.ExtractToDirectory(phpFile, path + "php");
-
-			File.Move(path + @"php\php.ini-production", path + @"php\php.ini");
+		  	ZipFile.ExtractToDirectory(phpFile, appdata + "php");
+			File.Move(appdata + @"php\php.ini-production", appdata + @"php\php.ini");
 		}
 
 		var vc2019 = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Classes\Installer\Dependencies\VC,redist.x64,amd64,14.24,bundle\Dependents\{282975d8-55fe-4991-bbbb-06a72581ce58}");
@@ -59,25 +72,25 @@ public class ATtinyPlant
 		if (vc2019 == null)
 		{
 			string vcFile = "VC_redist.x64.exe";
-			extractEmbedResource(vcFile);
+			extractEmbedResource("VC",vcFile,temp);
 
-			if (File.Exists(path + vcFile)) {
-				vcFile = path + vcFile;
+			if (File.Exists(temp + vcFile)) {
+				vcFile = temp + vcFile;
 			}else{
-				if (!File.Exists(Environment.GetEnvironmentVariable("USERPROFILE") + @"\Downloads\" + vcFile)) {
+				if (!File.Exists(profile + @"Downloads\" + vcFile)) {
 			   	
 					Console.WriteLine("...Downloading C++ Redistributable for Visual Studio 2019");
 
 					using (WebClient webClient = new WebClient()) {
 				   		try {
 				   			webClient.Headers.Add("User-Agent", "Mozilla/4.0 (compatible; MSIE 8.0)");
-							webClient.DownloadFile("https://aka.ms/vs/16/release/" + vcFile , Environment.GetEnvironmentVariable("USERPROFILE") + @"\Downloads\" + vcFile);
+							webClient.DownloadFile("https://aka.ms/vs/16/release/" + vcFile, profile + @"Downloads\" + vcFile);
 				   		} catch (Exception ex) {
 		                    Console.WriteLine(ex.ToString());
 		                }
 		            }
 				}
-				vcFile = Environment.GetEnvironmentVariable("USERPROFILE") + @"\Downloads\" + vcFile;
+				vcFile = profile + @"Downloads\" + vcFile;
 			}
 
 			ProcessStartInfo start = new ProcessStartInfo();
@@ -89,10 +102,11 @@ public class ATtinyPlant
 		}
 
 		checkDriver();
+		checkDriverFilter();
 
 		Process php = new Process();
-		php.StartInfo.FileName = path + @"php\php.exe";
-		php.StartInfo.Arguments = "-S 127.0.0.1:8080 -t \"" + path + "Web\"";
+		php.StartInfo.FileName = appdata + @"php\php.exe";
+		php.StartInfo.Arguments = "-S 127.0.0.1:8080 -t \"" + appdata + "Web\"";
 		php.Start();
 		
 		Process browser = new Process();
@@ -102,40 +116,38 @@ public class ATtinyPlant
 		//Console.Read();
     }
 
-    public static void checkDriver()
+	public static void checkDriver()
 	{
 		Runspace runspace = RunspaceFactory.CreateRunspace();
 		runspace.Open();
 
 		PowerShell powerShell = PowerShell.Create();
 		powerShell.Runspace = runspace;
-		powerShell.AddScript("Get-WmiObject Win32_PNPEntity | Where-Object{ $_.Status -match \"Error\" -and ($_.Name -match \"STLink\" -or $_.Name -match \"USBasp\") }");
+		powerShell.AddScript("Get-WmiObject Win32_PNPEntity | Where { $_.Status -match \"Error\" -and $_.HardwareID -like \"*VID_16C0&PID_05DC*\"}");
 		var results = powerShell.Invoke();
 
 		if(results.Count > 0)
 		{
-			Console.WriteLine("...Correcting Drivers");
-
 			string zadig = "zadig-2.4.exe";
-			extractEmbedResource(zadig);
+			extractEmbedResource("Drivers", zadig, temp);
 
-			if (File.Exists(path + zadig)) {
-				zadig = path + zadig;
+			if (File.Exists(temp + zadig)) {
+				zadig = temp + zadig;
 			}else{
-				if (!File.Exists(Environment.GetEnvironmentVariable("USERPROFILE") + @"\Downloads\" + zadig)) {
+				if (!File.Exists(profile + @"Downloads\" + zadig)) {
 			   	
 					Console.WriteLine("...Downloading Utility");
 
 					using (WebClient webClient = new WebClient()) {
 				   		try {
 				   			webClient.Headers.Add("User-Agent", "Mozilla/4.0 (compatible; MSIE 8.0)");
-							webClient.DownloadFile("https://zadig.akeo.ie/downloads/" + zadig , Environment.GetEnvironmentVariable("USERPROFILE") + @"\Downloads\" + zadig);
+							webClient.DownloadFile("https://zadig.akeo.ie/downloads/" + zadig, profile + @"Downloads\" + zadig);
 				   		} catch (Exception ex) {
 		                    Console.WriteLine(ex.ToString());
 		                }
 		            }
 				}
-				zadig = Environment.GetEnvironmentVariable("USERPROFILE") + @"\Downloads\" + zadig;
+				zadig = profile + @"Downloads\" + zadig;
 			}
 
 			ProcessStartInfo start = new ProcessStartInfo();
@@ -145,21 +157,102 @@ public class ATtinyPlant
 			    proc.WaitForExit();
 			}
 		}
-		/*
-		foreach (dynamic result in results)
-		{
-		    Console.WriteLine(result.ToString());
-		}
-		*/
 		runspace.Close();
 	}
 
- 	public static void extractEmbedResource(string res)
+	public static void checkDriverFilter()
 	{
-	    if (!File.Exists(path + res)) {
-			Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("EmbedExe." + res);
+		RegistryKey key = Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Enum\USB\VID_16C0&PID_05DC");
+
+		if (key != null) {
+			foreach (var v in key.GetSubKeyNames()) {
+	            //Console.WriteLine(v);
+	            RegistryKey driverKey = key.OpenSubKey(v);
+
+	            if (driverKey != null) {
+	            	var getValue = driverKey.GetValue("UpperFilters",null); //REG_MULTI_SZ
+
+	            	if(getValue != null) {
+		            	foreach (string filter in (string[])getValue) {
+		            		//Console.WriteLine(filter);
+		            		if(filter == "libusb0"){
+		            			return;
+		            		}
+						}
+					}
+	            }
+	        }
+		}
+		installDriverFilter();
+	}
+
+    public static void installDriverFilter()
+	{
+		extractEmbedResource("Drivers", "install-filter.exe", temp);
+		extractEmbedResource("Drivers", "libusb0.dll", temp);
+		extractEmbedResource("Drivers", "libusb0.sys", temp);
+
+		Runspace runspace = RunspaceFactory.CreateRunspace();
+		runspace.Open();
+
+		PowerShell powerShell = PowerShell.Create();
+		powerShell.Runspace = runspace;
+		powerShell.AddScript("Get-WmiObject Win32_PNPEntity | Where {$_.HardwareID -like \"*VID_16C0&PID_05DC*\"} | Select -ExpandProperty HardwareID");
+		var results = powerShell.Invoke();
+
+		if(results.Count > 0)
+		{
+			Console.WriteLine("...Installing Filter");
+					
+			foreach (dynamic result in results)
+			{
+			    Console.WriteLine(result.ToString());
+
+			    ProcessStartInfo start = new ProcessStartInfo();
+				start.FileName = temp + "install-filter.exe";
+				start.Arguments = "install \"--device=" + result.ToString() + "\"";
+				start.Verb = "runas";
+				using (Process proc = Process.Start(start))
+				{
+				    proc.WaitForExit();
+				}
+			    break;
+			}
+		}
+		runspace.Close();
+	}
+
+	public static bool checkVersion()
+	{
+		try
+        {
+			System.Reflection.Assembly assembly = System.Reflection.Assembly.GetExecutingAssembly();
+            Version version = assembly.GetName().Version;
+
+            StreamReader file = new System.IO.StreamReader(appdata + @"Web\firmware\version.txt");  
+			string line = file.ReadLine();
+			file.Close();
+
+            if (line != version.Major + "." + version.Minor) {
+            	Directory.Delete(appdata + "Web", true);
+            	Directory.Delete(appdata + "php", true);
+            	return false;
+            }
+        }
+        catch
+        {
+        	return false;
+        }
+
+		return true;
+	}
+
+ 	public static void extractEmbedResource(string name, string resource, string destination)
+	{
+	    if (!File.Exists(destination + resource)) {
+			Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(name + "." + resource);
 			if(stream != null) {
-	            FileStream fileStream = new FileStream(path + res, FileMode.CreateNew);
+	            FileStream fileStream = new FileStream(destination + resource, FileMode.CreateNew);
 	            for (int i = 0; i < stream.Length; i++)
 	                fileStream.WriteByte((byte)stream.ReadByte());
 	            fileStream.Close();

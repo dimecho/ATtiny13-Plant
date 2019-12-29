@@ -2,10 +2,10 @@
 if [ "$1" = "uninstall" ]; then
     brew remove avrdude
 else
+	if [ ! -f "/usr/local/bin/brew" ]; then
+		/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+	fi
     if [ ! -f "/usr/local/bin/avrdude" ]; then
-        /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
         brew install avrdude
-    else
-        avrdude -p t13 -c usbasp -Uhfuse:w:0xFF:m -Ulfuse:w:0x6A:m -U flash:w:main.hex:i
     fi
 fi
