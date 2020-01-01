@@ -37,6 +37,10 @@ public class ATtinyPlant
 		extractEmbedResource("AVR", "avrdude.conf", appdata + @"Web\");
 		extractEmbedResource("AVR", "avrdude.exe", appdata + @"Web\");
 		extractEmbedResource("AVR", "libusb0.dll", appdata + @"Web\");
+
+		extractEmbedResource("Drivers", "install-filter.exe", temp);
+		extractEmbedResource("Drivers", "libusb0.dll", temp);
+		extractEmbedResource("Drivers", "libusb0.sys", temp);
 		
 		if (!File.Exists(appdata + @"php\php.exe")) {
 
@@ -101,8 +105,8 @@ public class ATtinyPlant
 			}
 		}
 
-		checkDriver();
-		checkDriverFilter();
+		//checkDriver();
+		//checkDriverFilter();
 
 		Process php = new Process();
 		php.StartInfo.FileName = appdata + @"php\php.exe";
@@ -188,10 +192,6 @@ public class ATtinyPlant
 
     public static void installDriverFilter()
 	{
-		extractEmbedResource("Drivers", "install-filter.exe", temp);
-		extractEmbedResource("Drivers", "libusb0.dll", temp);
-		extractEmbedResource("Drivers", "libusb0.sys", temp);
-
 		Runspace runspace = RunspaceFactory.CreateRunspace();
 		runspace.Open();
 

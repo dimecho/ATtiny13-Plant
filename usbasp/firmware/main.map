@@ -1,0 +1,530 @@
+Archive member included to satisfy reference by file (symbol)
+
+/usr/local/share/avr8-gnu-toolchain-darwin_x86_64/bin/../lib/gcc/avr/5.4.0/avr5/libgcc.a(_exit.o)
+                              /usr/local/share/avr8-gnu-toolchain-darwin_x86_64/bin/../lib/gcc/avr/5.4.0/../../../../avr/lib/avr5/crtatmega168.o (exit)
+/usr/local/share/avr8-gnu-toolchain-darwin_x86_64/bin/../lib/gcc/avr/5.4.0/avr5/libgcc.a(_copy_data.o)
+                              usbdrv/usbdrv.o (__do_copy_data)
+/usr/local/share/avr8-gnu-toolchain-darwin_x86_64/bin/../lib/gcc/avr/5.4.0/avr5/libgcc.a(_clear_bss.o)
+                              usbdrv/usbdrv.o (__do_clear_bss)
+
+Allocating common symbols
+Common symbol       size              file
+
+usbTxBuf            0xb               usbdrv/usbdrv.o
+usbDeviceAddr       0x1               usbdrv/usbdrv.o
+usbMsgFlags         0x1               usbdrv/usbdrv.o
+usbRxToken          0x1               usbdrv/usbdrv.o
+usbInputBufOffset   0x1               usbdrv/usbdrv.o
+sck_spsr            0x1               isp.o
+ispTransmit         0x2               isp.o
+sck_spcr            0x1               isp.o
+usbMsgPtr           0x2               usbdrv/usbdrv.o
+usbRxLen            0x1               usbdrv/usbdrv.o
+usbNewDeviceAddr    0x1               usbdrv/usbdrv.o
+usbCurrentTok       0x1               usbdrv/usbdrv.o
+usbConfiguration    0x1               usbdrv/usbdrv.o
+usbRxBuf            0x16              usbdrv/usbdrv.o
+sck_sw_delay        0x1               isp.o
+
+Memory Configuration
+
+Name             Origin             Length             Attributes
+text             0x0000000000000000 0x0000000000020000 xr
+data             0x0000000000800060 0x000000000000ffa0 rw !x
+eeprom           0x0000000000810000 0x0000000000010000 rw !x
+fuse             0x0000000000820000 0x0000000000000003 rw !x
+lock             0x0000000000830000 0x0000000000000400 rw !x
+signature        0x0000000000840000 0x0000000000000400 rw !x
+user_signatures  0x0000000000850000 0x0000000000000400 rw !x
+*default*        0x0000000000000000 0xffffffffffffffff
+
+Linker script and memory map
+
+Address of section .data set to 0x800100
+LOAD /usr/local/share/avr8-gnu-toolchain-darwin_x86_64/bin/../lib/gcc/avr/5.4.0/../../../../avr/lib/avr5/crtatmega168.o
+LOAD usbdrv/usbdrv.o
+LOAD usbdrv/usbdrvasm.o
+LOAD usbdrv/oddebug.o
+LOAD isp.o
+LOAD clock.o
+LOAD main.o
+START GROUP
+LOAD /usr/local/share/avr8-gnu-toolchain-darwin_x86_64/bin/../lib/gcc/avr/5.4.0/avr5/libgcc.a
+LOAD /usr/local/share/avr8-gnu-toolchain-darwin_x86_64/bin/../lib/gcc/avr/5.4.0/../../../../avr/lib/avr5/libm.a
+LOAD /usr/local/share/avr8-gnu-toolchain-darwin_x86_64/bin/../lib/gcc/avr/5.4.0/../../../../avr/lib/avr5/libc.a
+LOAD /usr/local/share/avr8-gnu-toolchain-darwin_x86_64/bin/../lib/gcc/avr/5.4.0/../../../../avr/lib/avr5/libatmega168.a
+END GROUP
+                0x0000000000020000                __TEXT_REGION_LENGTH__ = DEFINED (__TEXT_REGION_LENGTH__)?__TEXT_REGION_LENGTH__:0x20000
+                0x000000000000ffa0                __DATA_REGION_LENGTH__ = DEFINED (__DATA_REGION_LENGTH__)?__DATA_REGION_LENGTH__:0xffa0
+                0x0000000000010000                __EEPROM_REGION_LENGTH__ = DEFINED (__EEPROM_REGION_LENGTH__)?__EEPROM_REGION_LENGTH__:0x10000
+                [0x0000000000000003]                __FUSE_REGION_LENGTH__ = DEFINED (__FUSE_REGION_LENGTH__)?__FUSE_REGION_LENGTH__:0x400
+                0x0000000000000400                __LOCK_REGION_LENGTH__ = DEFINED (__LOCK_REGION_LENGTH__)?__LOCK_REGION_LENGTH__:0x400
+                0x0000000000000400                __SIGNATURE_REGION_LENGTH__ = DEFINED (__SIGNATURE_REGION_LENGTH__)?__SIGNATURE_REGION_LENGTH__:0x400
+                0x0000000000000400                __USER_SIGNATURE_REGION_LENGTH__ = DEFINED (__USER_SIGNATURE_REGION_LENGTH__)?__USER_SIGNATURE_REGION_LENGTH__:0x400
+
+.hash
+ *(.hash)
+
+.dynsym
+ *(.dynsym)
+
+.dynstr
+ *(.dynstr)
+
+.gnu.version
+ *(.gnu.version)
+
+.gnu.version_d
+ *(.gnu.version_d)
+
+.gnu.version_r
+ *(.gnu.version_r)
+
+.rel.init
+ *(.rel.init)
+
+.rela.init
+ *(.rela.init)
+
+.rel.text
+ *(.rel.text)
+ *(.rel.text.*)
+ *(.rel.gnu.linkonce.t*)
+
+.rela.text
+ *(.rela.text)
+ *(.rela.text.*)
+ *(.rela.gnu.linkonce.t*)
+
+.rel.fini
+ *(.rel.fini)
+
+.rela.fini
+ *(.rela.fini)
+
+.rel.rodata
+ *(.rel.rodata)
+ *(.rel.rodata.*)
+ *(.rel.gnu.linkonce.r*)
+
+.rela.rodata
+ *(.rela.rodata)
+ *(.rela.rodata.*)
+ *(.rela.gnu.linkonce.r*)
+
+.rel.data
+ *(.rel.data)
+ *(.rel.data.*)
+ *(.rel.gnu.linkonce.d*)
+
+.rela.data
+ *(.rela.data)
+ *(.rela.data.*)
+ *(.rela.gnu.linkonce.d*)
+
+.rel.ctors
+ *(.rel.ctors)
+
+.rela.ctors
+ *(.rela.ctors)
+
+.rel.dtors
+ *(.rel.dtors)
+
+.rela.dtors
+ *(.rela.dtors)
+
+.rel.got
+ *(.rel.got)
+
+.rela.got
+ *(.rela.got)
+
+.rel.bss
+ *(.rel.bss)
+
+.rela.bss
+ *(.rela.bss)
+
+.rel.plt
+ *(.rel.plt)
+
+.rela.plt
+ *(.rela.plt)
+
+.text           0x0000000000000000      0xec2
+ *(.vectors)
+ .vectors       0x0000000000000000       0x68 /usr/local/share/avr8-gnu-toolchain-darwin_x86_64/bin/../lib/gcc/avr/5.4.0/../../../../avr/lib/avr5/crtatmega168.o
+                0x0000000000000000                __vectors
+                0x0000000000000000                __vector_default
+ *(.vectors)
+ *(.progmem.gcc*)
+                0x0000000000000068                . = ALIGN (0x2)
+                0x0000000000000068                __trampolines_start = .
+ *(.trampolines)
+ .trampolines   0x0000000000000068        0x0 linker stubs
+ *(.trampolines*)
+                0x0000000000000068                __trampolines_end = .
+ *libprintf_flt.a:*(.progmem.data)
+ *libc.a:*(.progmem.data)
+ *(.progmem*)
+ .progmem.data  0x0000000000000068       0x52 usbdrv/usbdrv.o
+                0x0000000000000068                usbDescriptorConfiguration
+                0x000000000000007a                usbDescriptorDevice
+                0x000000000000008c                usbDescriptorStringDevice
+                0x000000000000009a                usbDescriptorStringVendor
+                0x00000000000000b6                usbDescriptorString0
+                0x00000000000000ba                . = ALIGN (0x2)
+ *(.jumptables)
+ *(.jumptables*)
+ *(.lowtext)
+ *(.lowtext*)
+                0x00000000000000ba                __ctors_start = .
+ *(.ctors)
+                0x00000000000000ba                __ctors_end = .
+                0x00000000000000ba                __dtors_start = .
+ *(.dtors)
+                0x00000000000000ba                __dtors_end = .
+ SORT(*)(.ctors)
+ SORT(*)(.dtors)
+ *(.init0)
+ .init0         0x00000000000000ba        0x0 /usr/local/share/avr8-gnu-toolchain-darwin_x86_64/bin/../lib/gcc/avr/5.4.0/../../../../avr/lib/avr5/crtatmega168.o
+                0x00000000000000ba                __init
+ *(.init0)
+ *(.init1)
+ *(.init1)
+ *(.init2)
+ .init2         0x00000000000000ba        0xc /usr/local/share/avr8-gnu-toolchain-darwin_x86_64/bin/../lib/gcc/avr/5.4.0/../../../../avr/lib/avr5/crtatmega168.o
+ *(.init2)
+ *(.init3)
+ *(.init3)
+ *(.init4)
+ .init4         0x00000000000000c6       0x16 /usr/local/share/avr8-gnu-toolchain-darwin_x86_64/bin/../lib/gcc/avr/5.4.0/avr5/libgcc.a(_copy_data.o)
+                0x00000000000000c6                __do_copy_data
+ .init4         0x00000000000000dc       0x10 /usr/local/share/avr8-gnu-toolchain-darwin_x86_64/bin/../lib/gcc/avr/5.4.0/avr5/libgcc.a(_clear_bss.o)
+                0x00000000000000dc                __do_clear_bss
+ *(.init4)
+ *(.init5)
+ *(.init5)
+ *(.init6)
+ *(.init6)
+ *(.init7)
+ *(.init7)
+ *(.init8)
+ *(.init8)
+ *(.init9)
+ .init9         0x00000000000000ec        0x8 /usr/local/share/avr8-gnu-toolchain-darwin_x86_64/bin/../lib/gcc/avr/5.4.0/../../../../avr/lib/avr5/crtatmega168.o
+ *(.init9)
+ *(.text)
+ .text          0x00000000000000f4        0x4 /usr/local/share/avr8-gnu-toolchain-darwin_x86_64/bin/../lib/gcc/avr/5.4.0/../../../../avr/lib/avr5/crtatmega168.o
+                0x00000000000000f4                __vector_20
+                0x00000000000000f4                __vector_24
+                0x00000000000000f4                __vector_12
+                0x00000000000000f4                __bad_interrupt
+                0x00000000000000f4                __vector_6
+                0x00000000000000f4                __vector_3
+                0x00000000000000f4                __vector_23
+                0x00000000000000f4                __vector_25
+                0x00000000000000f4                __vector_11
+                0x00000000000000f4                __vector_13
+                0x00000000000000f4                __vector_17
+                0x00000000000000f4                __vector_19
+                0x00000000000000f4                __vector_7
+                0x00000000000000f4                __vector_5
+                0x00000000000000f4                __vector_4
+                0x00000000000000f4                __vector_9
+                0x00000000000000f4                __vector_2
+                0x00000000000000f4                __vector_21
+                0x00000000000000f4                __vector_15
+                0x00000000000000f4                __vector_8
+                0x00000000000000f4                __vector_14
+                0x00000000000000f4                __vector_10
+                0x00000000000000f4                __vector_16
+                0x00000000000000f4                __vector_18
+                0x00000000000000f4                __vector_22
+ .text          0x00000000000000f8      0x272 usbdrv/usbdrv.o
+                0x00000000000000f8                usbPoll
+                0x000000000000035c                usbInit
+ .text          0x000000000000036a      0x28c usbdrv/usbdrvasm.o
+                0x000000000000036a                usbCrc16
+                0x0000000000000394                usbCrc16Append
+                0x000000000000039c                __vector_1
+ .text          0x00000000000005f6        0x0 usbdrv/oddebug.o
+ .text          0x00000000000005f6      0x44e isp.o
+                0x00000000000005f6                ispTransmit_sw
+                0x0000000000000634                ispTransmit_hw
+                0x0000000000000640                spiHWenable
+                0x000000000000064e                ispSetSCKOption
+                0x0000000000000704                ispDelay
+                0x0000000000000714                ispConnect
+                0x000000000000075c                ispDisconnect
+                0x000000000000076c                ispEnterProgrammingMode
+                0x00000000000007fa                ispReadFlash
+                0x0000000000000862                ispWriteFlash
+                0x0000000000000916                ispFlushPage
+                0x00000000000009be                ispReadEEPROM
+                0x00000000000009f8                ispWriteEEPROM
+ .text          0x0000000000000a44       0x18 clock.o
+                0x0000000000000a44                clockWait
+ .text          0x0000000000000a5c      0x412 main.o
+                0x0000000000000a5c                usbFunctionSetup
+                0x0000000000000c7a                usbFunctionRead
+                0x0000000000000d22                usbFunctionWrite
+ .text          0x0000000000000e6e        0x0 /usr/local/share/avr8-gnu-toolchain-darwin_x86_64/bin/../lib/gcc/avr/5.4.0/avr5/libgcc.a(_exit.o)
+ .text          0x0000000000000e6e        0x0 /usr/local/share/avr8-gnu-toolchain-darwin_x86_64/bin/../lib/gcc/avr/5.4.0/avr5/libgcc.a(_copy_data.o)
+ .text          0x0000000000000e6e        0x0 /usr/local/share/avr8-gnu-toolchain-darwin_x86_64/bin/../lib/gcc/avr/5.4.0/avr5/libgcc.a(_clear_bss.o)
+                0x0000000000000e6e                . = ALIGN (0x2)
+ *(.text.*)
+ .text.startup  0x0000000000000e6e       0x50 main.o
+                0x0000000000000e6e                main
+ .text.libgcc.mul
+                0x0000000000000ebe        0x0 /usr/local/share/avr8-gnu-toolchain-darwin_x86_64/bin/../lib/gcc/avr/5.4.0/avr5/libgcc.a(_exit.o)
+ .text.libgcc.div
+                0x0000000000000ebe        0x0 /usr/local/share/avr8-gnu-toolchain-darwin_x86_64/bin/../lib/gcc/avr/5.4.0/avr5/libgcc.a(_exit.o)
+ .text.libgcc   0x0000000000000ebe        0x0 /usr/local/share/avr8-gnu-toolchain-darwin_x86_64/bin/../lib/gcc/avr/5.4.0/avr5/libgcc.a(_exit.o)
+ .text.libgcc.prologue
+                0x0000000000000ebe        0x0 /usr/local/share/avr8-gnu-toolchain-darwin_x86_64/bin/../lib/gcc/avr/5.4.0/avr5/libgcc.a(_exit.o)
+ .text.libgcc.builtins
+                0x0000000000000ebe        0x0 /usr/local/share/avr8-gnu-toolchain-darwin_x86_64/bin/../lib/gcc/avr/5.4.0/avr5/libgcc.a(_exit.o)
+ .text.libgcc.fmul
+                0x0000000000000ebe        0x0 /usr/local/share/avr8-gnu-toolchain-darwin_x86_64/bin/../lib/gcc/avr/5.4.0/avr5/libgcc.a(_exit.o)
+ .text.libgcc.fixed
+                0x0000000000000ebe        0x0 /usr/local/share/avr8-gnu-toolchain-darwin_x86_64/bin/../lib/gcc/avr/5.4.0/avr5/libgcc.a(_exit.o)
+ .text.libgcc.mul
+                0x0000000000000ebe        0x0 /usr/local/share/avr8-gnu-toolchain-darwin_x86_64/bin/../lib/gcc/avr/5.4.0/avr5/libgcc.a(_copy_data.o)
+ .text.libgcc.div
+                0x0000000000000ebe        0x0 /usr/local/share/avr8-gnu-toolchain-darwin_x86_64/bin/../lib/gcc/avr/5.4.0/avr5/libgcc.a(_copy_data.o)
+ .text.libgcc   0x0000000000000ebe        0x0 /usr/local/share/avr8-gnu-toolchain-darwin_x86_64/bin/../lib/gcc/avr/5.4.0/avr5/libgcc.a(_copy_data.o)
+ .text.libgcc.prologue
+                0x0000000000000ebe        0x0 /usr/local/share/avr8-gnu-toolchain-darwin_x86_64/bin/../lib/gcc/avr/5.4.0/avr5/libgcc.a(_copy_data.o)
+ .text.libgcc.builtins
+                0x0000000000000ebe        0x0 /usr/local/share/avr8-gnu-toolchain-darwin_x86_64/bin/../lib/gcc/avr/5.4.0/avr5/libgcc.a(_copy_data.o)
+ .text.libgcc.fmul
+                0x0000000000000ebe        0x0 /usr/local/share/avr8-gnu-toolchain-darwin_x86_64/bin/../lib/gcc/avr/5.4.0/avr5/libgcc.a(_copy_data.o)
+ .text.libgcc.fixed
+                0x0000000000000ebe        0x0 /usr/local/share/avr8-gnu-toolchain-darwin_x86_64/bin/../lib/gcc/avr/5.4.0/avr5/libgcc.a(_copy_data.o)
+ .text.libgcc.mul
+                0x0000000000000ebe        0x0 /usr/local/share/avr8-gnu-toolchain-darwin_x86_64/bin/../lib/gcc/avr/5.4.0/avr5/libgcc.a(_clear_bss.o)
+ .text.libgcc.div
+                0x0000000000000ebe        0x0 /usr/local/share/avr8-gnu-toolchain-darwin_x86_64/bin/../lib/gcc/avr/5.4.0/avr5/libgcc.a(_clear_bss.o)
+ .text.libgcc   0x0000000000000ebe        0x0 /usr/local/share/avr8-gnu-toolchain-darwin_x86_64/bin/../lib/gcc/avr/5.4.0/avr5/libgcc.a(_clear_bss.o)
+ .text.libgcc.prologue
+                0x0000000000000ebe        0x0 /usr/local/share/avr8-gnu-toolchain-darwin_x86_64/bin/../lib/gcc/avr/5.4.0/avr5/libgcc.a(_clear_bss.o)
+ .text.libgcc.builtins
+                0x0000000000000ebe        0x0 /usr/local/share/avr8-gnu-toolchain-darwin_x86_64/bin/../lib/gcc/avr/5.4.0/avr5/libgcc.a(_clear_bss.o)
+ .text.libgcc.fmul
+                0x0000000000000ebe        0x0 /usr/local/share/avr8-gnu-toolchain-darwin_x86_64/bin/../lib/gcc/avr/5.4.0/avr5/libgcc.a(_clear_bss.o)
+ .text.libgcc.fixed
+                0x0000000000000ebe        0x0 /usr/local/share/avr8-gnu-toolchain-darwin_x86_64/bin/../lib/gcc/avr/5.4.0/avr5/libgcc.a(_clear_bss.o)
+                0x0000000000000ebe                . = ALIGN (0x2)
+ *(.fini9)
+ .fini9         0x0000000000000ebe        0x0 /usr/local/share/avr8-gnu-toolchain-darwin_x86_64/bin/../lib/gcc/avr/5.4.0/avr5/libgcc.a(_exit.o)
+                0x0000000000000ebe                exit
+                0x0000000000000ebe                _exit
+ *(.fini9)
+ *(.fini8)
+ *(.fini8)
+ *(.fini7)
+ *(.fini7)
+ *(.fini6)
+ *(.fini6)
+ *(.fini5)
+ *(.fini5)
+ *(.fini4)
+ *(.fini4)
+ *(.fini3)
+ *(.fini3)
+ *(.fini2)
+ *(.fini2)
+ *(.fini1)
+ *(.fini1)
+ *(.fini0)
+ .fini0         0x0000000000000ebe        0x4 /usr/local/share/avr8-gnu-toolchain-darwin_x86_64/bin/../lib/gcc/avr/5.4.0/avr5/libgcc.a(_exit.o)
+ *(.fini0)
+                0x0000000000000ec2                _etext = .
+
+.data           0x0000000000800100        0x2 load address 0x0000000000000ec2
+                0x0000000000800100                PROVIDE (__data_start, .)
+ *(.data)
+ .data          0x0000000000800100        0x0 /usr/local/share/avr8-gnu-toolchain-darwin_x86_64/bin/../lib/gcc/avr/5.4.0/../../../../avr/lib/avr5/crtatmega168.o
+ .data          0x0000000000800100        0x2 usbdrv/usbdrv.o
+                0x0000000000800101                usbTxLen
+ .data          0x0000000000800102        0x0 usbdrv/usbdrvasm.o
+ .data          0x0000000000800102        0x0 usbdrv/oddebug.o
+ .data          0x0000000000800102        0x0 isp.o
+ .data          0x0000000000800102        0x0 clock.o
+ .data          0x0000000000800102        0x0 main.o
+ .data          0x0000000000800102        0x0 /usr/local/share/avr8-gnu-toolchain-darwin_x86_64/bin/../lib/gcc/avr/5.4.0/avr5/libgcc.a(_exit.o)
+ .data          0x0000000000800102        0x0 /usr/local/share/avr8-gnu-toolchain-darwin_x86_64/bin/../lib/gcc/avr/5.4.0/avr5/libgcc.a(_copy_data.o)
+ .data          0x0000000000800102        0x0 /usr/local/share/avr8-gnu-toolchain-darwin_x86_64/bin/../lib/gcc/avr/5.4.0/avr5/libgcc.a(_clear_bss.o)
+ *(.data*)
+ *(.gnu.linkonce.d*)
+ *(.rodata)
+ *(.rodata*)
+ *(.gnu.linkonce.r*)
+                0x0000000000800102                . = ALIGN (0x2)
+                0x0000000000800102                _edata = .
+                0x0000000000800102                PROVIDE (__data_end, .)
+
+.bss            0x0000000000800102       0x45
+                0x0000000000800102                PROVIDE (__bss_start, .)
+ *(.bss)
+ .bss           0x0000000000800102        0x0 /usr/local/share/avr8-gnu-toolchain-darwin_x86_64/bin/../lib/gcc/avr/5.4.0/../../../../avr/lib/avr5/crtatmega168.o
+ .bss           0x0000000000800102        0x0 usbdrv/usbdrv.o
+ .bss           0x0000000000800102        0x0 usbdrv/usbdrvasm.o
+ .bss           0x0000000000800102        0x0 usbdrv/oddebug.o
+ .bss           0x0000000000800102        0x0 isp.o
+ .bss           0x0000000000800102        0x0 clock.o
+ .bss           0x0000000000800102       0x15 main.o
+ .bss           0x0000000000800117        0x0 /usr/local/share/avr8-gnu-toolchain-darwin_x86_64/bin/../lib/gcc/avr/5.4.0/avr5/libgcc.a(_exit.o)
+ .bss           0x0000000000800117        0x0 /usr/local/share/avr8-gnu-toolchain-darwin_x86_64/bin/../lib/gcc/avr/5.4.0/avr5/libgcc.a(_copy_data.o)
+ .bss           0x0000000000800117        0x0 /usr/local/share/avr8-gnu-toolchain-darwin_x86_64/bin/../lib/gcc/avr/5.4.0/avr5/libgcc.a(_clear_bss.o)
+ *(.bss*)
+ *(COMMON)
+ COMMON         0x0000000000800117       0x2b usbdrv/usbdrv.o
+                0x0000000000800117                usbTxBuf
+                0x0000000000800122                usbDeviceAddr
+                0x0000000000800123                usbMsgFlags
+                0x0000000000800124                usbRxToken
+                0x0000000000800125                usbInputBufOffset
+                0x0000000000800126                usbMsgPtr
+                0x0000000000800128                usbRxLen
+                0x0000000000800129                usbNewDeviceAddr
+                0x000000000080012a                usbCurrentTok
+                0x000000000080012b                usbConfiguration
+                0x000000000080012c                usbRxBuf
+ COMMON         0x0000000000800142        0x5 isp.o
+                0x0000000000800142                sck_spsr
+                0x0000000000800143                ispTransmit
+                0x0000000000800145                sck_spcr
+                0x0000000000800146                sck_sw_delay
+                0x0000000000800147                PROVIDE (__bss_end, .)
+                0x0000000000000ec2                __data_load_start = LOADADDR (.data)
+                0x0000000000000ec4                __data_load_end = (__data_load_start + SIZEOF (.data))
+
+.noinit         0x0000000000800147        0x0
+                [!provide]                        PROVIDE (__noinit_start, .)
+ *(.noinit*)
+                [!provide]                        PROVIDE (__noinit_end, .)
+                0x0000000000800147                _end = .
+                [!provide]                        PROVIDE (__heap_start, .)
+
+.eeprom         0x0000000000810000        0x0
+ *(.eeprom*)
+                0x0000000000810000                __eeprom_end = .
+
+.fuse
+ *(.fuse)
+ *(.lfuse)
+ *(.hfuse)
+ *(.efuse)
+
+.lock
+ *(.lock*)
+
+.signature
+ *(.signature*)
+
+.user_signatures
+ *(.user_signatures*)
+
+.stab
+ *(.stab)
+
+.stabstr
+ *(.stabstr)
+
+.stab.excl
+ *(.stab.excl)
+
+.stab.exclstr
+ *(.stab.exclstr)
+
+.stab.index
+ *(.stab.index)
+
+.stab.indexstr
+ *(.stab.indexstr)
+
+.comment        0x0000000000000000       0x2f
+ *(.comment)
+ .comment       0x0000000000000000       0x2f usbdrv/usbdrv.o
+                                         0x30 (size before relaxing)
+ .comment       0x000000000000002f       0x30 usbdrv/oddebug.o
+ .comment       0x000000000000002f       0x30 isp.o
+ .comment       0x000000000000002f       0x30 clock.o
+ .comment       0x000000000000002f       0x30 main.o
+
+.note.gnu.avr.deviceinfo
+                0x0000000000000000       0x3c
+ .note.gnu.avr.deviceinfo
+                0x0000000000000000       0x3c /usr/local/share/avr8-gnu-toolchain-darwin_x86_64/bin/../lib/gcc/avr/5.4.0/../../../../avr/lib/avr5/crtatmega168.o
+
+.note.gnu.build-id
+ *(.note.gnu.build-id)
+
+.debug
+ *(.debug)
+
+.line
+ *(.line)
+
+.debug_srcinfo
+ *(.debug_srcinfo)
+
+.debug_sfnames
+ *(.debug_sfnames)
+
+.debug_aranges
+ *(.debug_aranges)
+
+.debug_pubnames
+ *(.debug_pubnames)
+
+.debug_info     0x0000000000000000      0x5f4
+ *(.debug_info .gnu.linkonce.wi.*)
+ .debug_info    0x0000000000000000      0x5f4 /usr/local/share/avr8-gnu-toolchain-darwin_x86_64/bin/../lib/gcc/avr/5.4.0/../../../../avr/lib/avr5/crtatmega168.o
+
+.debug_abbrev   0x0000000000000000      0x5a2
+ *(.debug_abbrev)
+ .debug_abbrev  0x0000000000000000      0x5a2 /usr/local/share/avr8-gnu-toolchain-darwin_x86_64/bin/../lib/gcc/avr/5.4.0/../../../../avr/lib/avr5/crtatmega168.o
+
+.debug_line     0x0000000000000000       0x1a
+ *(.debug_line .debug_line.* .debug_line_end)
+ .debug_line    0x0000000000000000       0x1a /usr/local/share/avr8-gnu-toolchain-darwin_x86_64/bin/../lib/gcc/avr/5.4.0/../../../../avr/lib/avr5/crtatmega168.o
+
+.debug_frame
+ *(.debug_frame)
+
+.debug_str      0x0000000000000000      0x208
+ *(.debug_str)
+ .debug_str     0x0000000000000000      0x208 /usr/local/share/avr8-gnu-toolchain-darwin_x86_64/bin/../lib/gcc/avr/5.4.0/../../../../avr/lib/avr5/crtatmega168.o
+
+.debug_loc
+ *(.debug_loc)
+
+.debug_macinfo
+ *(.debug_macinfo)
+
+.debug_weaknames
+ *(.debug_weaknames)
+
+.debug_funcnames
+ *(.debug_funcnames)
+
+.debug_typenames
+ *(.debug_typenames)
+
+.debug_varnames
+ *(.debug_varnames)
+
+.debug_pubtypes
+ *(.debug_pubtypes)
+
+.debug_ranges
+ *(.debug_ranges)
+
+.debug_macro
+ *(.debug_macro)
+OUTPUT(main.bin elf32-avr)
+LOAD linker stubs

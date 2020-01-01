@@ -21,11 +21,11 @@
 
 /* HARDWARE CONFIGURATION */
 /*------------------------*/
-#define WS78L05 //LM2731
+#define WS78L05 //WS78L05 = cheap, LM2731 = expensive, TPL5110 = most expensive
 #define EEPROM_ENABLED
 #define UART_TX_ENABLED
 //#define UART_RX_ENABLED
-//#define SOLAR_ENABLED
+#define SOLAR_ENABLED
 #define SENSORLESS_ENABLED
 #define LOG_ENABLED
 /*------------------------*/
@@ -255,45 +255,6 @@ int main(void)
         //power_all_enable(); // put everything on again
         //power_adc_enable();
 
-        #ifdef SOLAR_ENABLED
-
-            #ifdef UART_TX_ENABLED
-                DDRB &= ~(1<<solarSensorPin); //Shared pin with UART, Set Analog INPUT
-            #endif
-
-            moisture = ReadADC(solarSensorPin); //Detect Solar intensity - 10k inline + 10k pullup
-
-            #ifdef UART_TX_ENABLED
-                //DDRB |= (1<<solarSensorPin); //Shared pin with UART, set Digital OUTPUT
-                uart_putc(',');
-                uart_putu(moisture);
-            #endif
-
-            /*
-            Regulators
-
-            WS78L05 (TO92) linear "low efficiency" - turn on with GND
-            LM2731 (SOT23) switching "high efficiency" - turn off with 5V
-
-            Note: with WS78L05 5V Solar ONLY, LM2731 5V-10V
-            */
-
-            //420(@4.2V) = start, over 510(@5V) = direct sunlight ...go to else and stay ON
-            if(moisture > 420 && moisture < 510) //Regulator OFF (Charge capacitor)
-            {
-                //when sleep mode this creates 8 second pulse
-                #ifdef WS78L05
-                    DDRB &= ~(1<<solarPin); //Analog (Off)
-                #else
-                    DDRB |= (1<<solarPin); //Digital
-                    PORTB |= (1<<solarPin); //High (5V)
-                #endif
-            }else{ //Regulator ON (Discharge capacitor)
-                DDRB |= (1<<solarPin); //Digital
-                PORTB &= ~(1<<solarPin); //Low (GND)
-            }
-        #endif
-
         if (sleepLoop > delayBetweenWaterings)
         {
             #ifdef LOG_ENABLED
@@ -458,6 +419,58 @@ int main(void)
                 }
             #endif
         }
+
+        #ifdef SOLAR_ENABLED
+            /*
+            (Optional TPL5110 = extreme efficiency 50nA! (nano-amp) sleep. Bypasses ATtiny ligic. Solar pin = DONE pin = Turnoff ATtiny)
+            Note: Install both TPL5110 & LM2731
+            */
+            #ifdef TPL5110
+                DDRB |= (1<<solarPin); //Digital
+                PORTB |= (1<<solarPin); //High (5V)
+            #endif
+            /*
+            (Optional TPL5110: If we are not off at this point TPL5110 was not installed,
+            Do solar with ATtiny (Highly NOT recommened ...TPL5110 is the way to go)
+            */
+
+            #ifdef UART_TX_ENABLED
+                DDRB &= ~(1<<solarSensorPin); //Shared pin with UART, Set Analog INPUT
+            #endif
+
+            moisture = ReadADC(solarSensorPin); //Detect Solar intensity - 10k inline + 10k pullup
+
+            #ifdef UART_TX_ENABLED
+                //DDRB |= (1<<solarSensorPin); //Shared pin with UART, set Digital OUTPUT
+                uart_putc(',');
+                uart_putu(moisture);
+            #endif
+
+            /*
+            Regulators
+
+            WS78L05 (TO92) linear "low efficiency" - turn on with GND
+            LM2731 (SOT23) switching "high efficiency" - turn off with 5V
+
+            Note: with WS78L05 5V Solar ONLY, LM2731 5V-10V
+            */
+
+            //420(@4.2V) = start, over 510(@5V) = direct sunlight ...go to else and stay ON
+            if(moisture > 420 && moisture < 510) //Regulator OFF (Charge capacitor)
+            {
+                //when sleep mode this creates 8 second pulse
+                #ifdef WS78L05
+                    DDRB &= ~(1<<solarPin); //Analog (Off)
+                #else
+                    DDRB |= (1<<solarPin); //Digital
+                    PORTB |= (1<<solarPin); //High (5V)
+                #endif
+            }else{ //Regulator ON (Discharge capacitor)
+                DDRB |= (1<<solarPin); //Digital
+                PORTB &= ~(1<<solarPin); //Low (GND)
+            }
+        #endif
+            
         sleepLoop++;
     }
     return 0;
@@ -524,9 +537,9 @@ uint16_t ReadADC(uint8_t pin) {
     //--------------
     ADCSRA |= (1 << ADEN); // Enables ADC
 
-    #ifndef SOLAR_ENABLED
+    //#ifndef SOLAR_ENABLED
         _delay_ms(200); // Wait for Vref to settle
-    #endif
+    //#endif
 
     ADCSRA |= (1 << ADSC); // Start conversion by writing 1 to ADSC
     while(bit_is_set(ADCSRA, ADSC)); // Wait conversion is done

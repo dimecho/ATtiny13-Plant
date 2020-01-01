@@ -7,7 +7,7 @@ $(document).ready(function ()
 
     $("#slider-solar").ionRangeSlider({
         skin: "big",
-        from: 0,
+        from: getCookie("attiny-plant-solar"),
         values: [
             "OFF", "ON"
         ],
@@ -22,7 +22,7 @@ $(document).ready(function ()
 
     $("#slider-pot").ionRangeSlider({
         skin: "big",
-        from: 0,
+        from: getCookie("attiny-plant-pot"),
         values: [
             "Small", "Medium", "Large"
         ]
@@ -30,16 +30,10 @@ $(document).ready(function ()
 
     $("#slider-soil").ionRangeSlider({
         skin: "big",
-        from: 0,
+        from: getCookie("attiny-plant-soil"),
         values: [
             "Dry (Cactus)", "Moist (Regular)", "Wet (Tropical)"
         ]
-    });
-    
-    $.ajax("usbasp.php?os=1", {
-        success: function(data) {
-            os = data;
-        }
     });
 
     checkFirmwareUpdates();
@@ -53,9 +47,8 @@ function connectPlant()
 {
     $.ajax("usbasp.php?connect=plant", {
         success: function(data) {
-            if(data == "attiny13" || data == "attiny45")
-            {
-                $.notify({ message: "Plant Connected!" }, { type: "success" });
+            if(data == "ATtiny13" || data == "ATtiny45" || data == "ATtiny85") {
+                $.notify({ message: "Plant Connected" }, { type: "success" });
                 $(".icon-chip").attr("data-original-title", "<h6 class='text-white'>" + data + "</h6>");
             }else if(data == "fix") {
                 $.notify({ message: "... Fixing USB Driver" }, { type: "danger" });
@@ -85,10 +78,15 @@ function saveSettings()
     console.log(chip);
 
     if(chip.length > 0) {
+        $.notify({ message: "... Flashing new Firmware" }, { type: "warning" });
         $.ajax("usbasp.php?flash=" + chip + "&solar=" + $("#slider-solar").data().from + "&pot=" + $("#slider-pot").data().from + "&soil=" + $("#slider-soil").data().from, {
             success: function(data) {
                 console.log(data);
                 $.notify({ message: "Happy Plant &#127807;" }, { type: "success" });
+
+                setCookie("attiny-plant-solar", $("#slider-solar").data().from, 30);
+                setCookie("attiny-plant-pot", $("#slider-pot").data().from, 30);
+                setCookie("attiny-plant-soil", $("#slider-soil").data().from, 30);
             }
         });
     }else{

@@ -30,7 +30,7 @@ clean:
 	rm -f *.c~ *.o *.elf *.hex
 
 guibuild:
-	#SOLAR OFF
+	#ATtiny13
 	$(foreach m,$(SOIL), \
 		$(foreach p,$(POT), \
 			${CC} ${CFLAGS} -DsensorMoisture=$(m) -DpotSize=$(p) -o ${TARGET}.o ${SRCS}; \
@@ -39,16 +39,7 @@ guibuild:
 			${SIZE} -C --mcu=${MCU} ${TARGET}.elf; \
 		) \
 	)
-	#SOLAR ON
-	$(foreach m,$(SOIL), \
-		$(foreach p,$(POT), \
-			${CC} ${CFLAGS} -DSOLAR_ENABLED -DsensorMoisture=$(m) -DpotSize=$(p) -o ${TARGET}.o ${SRCS}; \
-			${LD} -o ${TARGET}.elf ${TARGET}.o; \
-			${OBJCOPY} -j .text -j .data -O ihex ${TARGET}.o gui/Web/firmware/attiny13/solar/${TARGET}-$(m)-$(p).hex; \
-			${SIZE} -C --mcu=${MCU} ${TARGET}.elf; \
-		) \
-	)
-	#SOLAR OFF
+	#ATtiny45
 	$(foreach m,$(SOIL), \
 		$(foreach p,$(POT), \
 			${CC} -std=c99 -Wall -g -Os -mmcu=attiny45 -DF_CPU=${F_CPU} -I. -I.. -DsensorMoisture=$(m) -DpotSize=$(p) -o ${TARGET}.o ${SRCS}; \
@@ -57,12 +48,12 @@ guibuild:
 			${SIZE} -C --mcu=attiny45 ${TARGET}.elf; \
 		) \
 	)
-	#SOLAR ON
+	#ATtiny85
 	$(foreach m,$(SOIL), \
 		$(foreach p,$(POT), \
-			${CC} -std=c99 -Wall -g -Os -mmcu=attiny45 -DF_CPU=${F_CPU} -I. -I.. -DSOLAR_ENABLED -DsensorMoisture=$(m) -DpotSize=$(p) -o ${TARGET}.o ${SRCS}; \
+			${CC} -std=c99 -Wall -g -Os -mmcu=attiny45 -DF_CPU=${F_CPU} -I. -I.. -DsensorMoisture=$(m) -DpotSize=$(p) -o ${TARGET}.o ${SRCS}; \
 			${LD} -o ${TARGET}.elf ${TARGET}.o; \
-			${OBJCOPY} -j .text -j .data -O ihex ${TARGET}.o gui/Web/firmware/attiny45/solar/${TARGET}-$(m)-$(p).hex; \
-			${SIZE} -C --mcu=attiny45 ${TARGET}.elf; \
+			${OBJCOPY} -j .text -j .data -O ihex ${TARGET}.o gui/Web/firmware/attiny85/${TARGET}-$(m)-$(p).hex; \
+			${SIZE} -C --mcu=attiny85 ${TARGET}.elf; \
 		) \
 	)

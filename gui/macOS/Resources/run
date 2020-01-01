@@ -4,18 +4,6 @@ cd "$(dirname "$0")"
 
 shopt -s nocasematch
 
-checkUSB()
-{
-    for ((i = 0 ; i < 30 ; i++ )); do
-        echo "... Waiting for USB"
-        if [[ $i -eq 0 ]]; then
-            openBrowser http://127.0.0.1:8080
-        fi
-        sleep 1
-        return
-    done
-}
-
 openBrowser()
 {
     if [ -d /Applications/Firefox.app ]; then
@@ -29,8 +17,10 @@ openBrowser()
     open -a $browser $1 &
 }
 
+./avrdude
+
 pkill -9 php
 /usr/bin/php -S 0.0.0.0:8080 -t "$(dirname "$0")/Web/" &
 sleep 2
 
-checkUSB
+openBrowser http://127.0.0.1:8080
