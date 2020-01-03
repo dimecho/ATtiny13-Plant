@@ -13,9 +13,9 @@
              [ATtiny13A]
               +------+
 (RESET) PB5  1| O    |8  VCC
-(TX)    PB3  2|      |7  PB2 (Solar/LED)
-(RX/A0) PB4  3|      |6  PB1 (Sensor)
-        GND  4|      |5  PB0 (Pump)
+(TX)    PB3  2|      |7  PB2 (LED)
+(RX/A0) PB4  3|      |6  PB1 (Solar)
+        GND  4|      |5  PB0 (Sensor/Pump)
               +------+
 */
 
@@ -52,8 +52,8 @@
 #endif
 
 #define pumpPin                     PB0 //Output
-#define sensorPin                   PB1 //Output
-#define solarPin                    PB2 //Output
+#define sensorPin                   PB0 //PB1 //Output
+#define solarPin                    PB1 //Output
 #define ledPin                      PB2 //PB5 //Output
 #define solarSensorPin              PB3 //Input/Output
 #define moistureSensorPin           PB4 //Input
@@ -172,7 +172,7 @@ int main(void)
     //cli(); // disable all interrupts
     //wdt_reset();
     //----------------
-    #ifdef __AVR_ATtiny45__
+    #if defined __AVR_ATtiny45__ || defined __AVR_ATtiny85__
     	WDTCR = (1<<WDIE);  // Enable watchdog timer interrupts
     #else
         WDTCR = (1<<WDTIE);  // Enable watchdog timer interrupts 
@@ -221,13 +221,7 @@ int main(void)
         _delay_ms(900);
         PORTB &= ~(1<<PB0); //OFF
         */
-
-        //Chip Identifier for UART
-        #ifdef __AVR_ATtiny45__
-            uart_putc('$');  //$=attiny45
-        #else
-            uart_putc('!'); //!=attiny13
-        #endif
+        uart_putc('.');
         uart_putu(versionID);
         //uart_putc('\r');
         //uart_putc('\n');
