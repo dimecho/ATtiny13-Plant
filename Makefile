@@ -10,8 +10,6 @@ AVRDUDE=avrdude
 CFLAGS=-std=c99 -Wall -g -Os -mmcu=${MCU} -DF_CPU=${F_CPU} -I. -I..
 TARGET=main
 SRCS=main.c
-SOIL = 280 388 460
-POT = 12 32 64
 
 all:
 	${CC} ${CFLAGS} -o ${TARGET}.o ${SRCS}
@@ -31,29 +29,19 @@ clean:
 
 guibuild:
 	#ATtiny13
-	$(foreach m,$(SOIL), \
-		$(foreach p,$(POT), \
-			${CC} ${CFLAGS} -DsensorMoisture=$(m) -DpotSize=$(p) -o ${TARGET}.o ${SRCS}; \
-			${LD} -o ${TARGET}.elf ${TARGET}.o; \
-			${OBJCOPY} -j .text -j .data -O ihex ${TARGET}.o gui/Web/firmware/attiny13/${TARGET}-$(m)-$(p).hex; \
-			${SIZE} -C --mcu=${MCU} ${TARGET}.elf; \
-		) \
-	)
+	${CC} ${CFLAGS} -o ${TARGET}.o ${SRCS};
+	${LD} -o ${TARGET}.elf ${TARGET}.o;
+	${OBJCOPY} -j .text -j .data -O ihex ${TARGET}.o gui/Web/firmware/attiny13.hex;
+	${SIZE} -C --mcu=${MCU} ${TARGET}.elf;
+
 	#ATtiny45
-	$(foreach m,$(SOIL), \
-		$(foreach p,$(POT), \
-			${CC} -std=c99 -Wall -g -Os -mmcu=attiny45 -DF_CPU=${F_CPU} -I. -I.. -DsensorMoisture=$(m) -DpotSize=$(p) -o ${TARGET}.o ${SRCS}; \
-			${LD} -o ${TARGET}.elf ${TARGET}.o; \
-			${OBJCOPY} -j .text -j .data -O ihex ${TARGET}.o gui/Web/firmware/attiny45/${TARGET}-$(m)-$(p).hex; \
-			${SIZE} -C --mcu=attiny45 ${TARGET}.elf; \
-		) \
-	)
+	${CC} -std=c99 -Wall -g -Os -mmcu=attiny45 -DF_CPU=${F_CPU} -I. -I.. -o ${TARGET}.o ${SRCS};
+	${LD} -o ${TARGET}.elf ${TARGET}.o;
+	${OBJCOPY} -j .text -j .data -O ihex ${TARGET}.o gui/Web/firmware/attiny45.hex;
+	${SIZE} -C --mcu=attiny45 ${TARGET}.elf;
+
 	#ATtiny85
-	$(foreach m,$(SOIL), \
-		$(foreach p,$(POT), \
-			${CC} -std=c99 -Wall -g -Os -mmcu=attiny85 -DF_CPU=${F_CPU} -I. -I.. -DsensorMoisture=$(m) -DpotSize=$(p) -o ${TARGET}.o ${SRCS}; \
-			${LD} -o ${TARGET}.elf ${TARGET}.o; \
-			${OBJCOPY} -j .text -j .data -O ihex ${TARGET}.o gui/Web/firmware/attiny85/${TARGET}-$(m)-$(p).hex; \
-			${SIZE} -C --mcu=attiny85 ${TARGET}.elf; \
-		) \
-	)
+	${CC} -std=c99 -Wall -g -Os -mmcu=attiny85 -DF_CPU=${F_CPU} -I. -I.. -o ${TARGET}.o ${SRCS};
+	${LD} -o ${TARGET}.elf ${TARGET}.o;
+	${OBJCOPY} -j .text -j .data -O ihex ${TARGET}.o gui/Web/firmware/attiny85.hex;
+	${SIZE} -C --mcu=attiny85 ${TARGET}.elf;

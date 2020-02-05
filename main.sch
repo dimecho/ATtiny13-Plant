@@ -25807,7 +25807,7 @@ Source: &lt;a href="http://www.farnell.com/datasheets/2037314.pdf"&gt; Datasheet
 <part name="PAD5" library="wirepad" library_urn="urn:adsk.eagle:library:412" deviceset="1,6/0,8" device="" package3d_urn="urn:adsk.eagle:package:30830/1"/>
 <part name="PAD7" library="wirepad" library_urn="urn:adsk.eagle:library:412" deviceset="1,6/0,8" device="" package3d_urn="urn:adsk.eagle:package:30830/1"/>
 <part name="T1A" library="transistor" library_urn="urn:adsk.eagle:library:402" deviceset="*-NPN-" device="TO92" package3d_urn="urn:adsk.eagle:package:29893/2" value="2N4401"/>
-<part name="R2" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="R-EU_" device="M0805" package3d_urn="urn:adsk.eagle:package:23556/1" value="10k"/>
+<part name="R2" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="R-EU_" device="R0805" package3d_urn="urn:adsk.eagle:package:23553/2" value="10k"/>
 <part name="PUMP-" library="wirepad" library_urn="urn:adsk.eagle:library:412" deviceset="2,15/1,0" device="" package3d_urn="urn:adsk.eagle:package:30831/1"/>
 <part name="PUMP+" library="wirepad" library_urn="urn:adsk.eagle:library:412" deviceset="2,15/1,0" device="" package3d_urn="urn:adsk.eagle:package:30831/1"/>
 <part name="PAD1" library="wirepad" library_urn="urn:adsk.eagle:library:412" deviceset="1,6/0,8" device="" package3d_urn="urn:adsk.eagle:package:30830/1"/>
@@ -25816,37 +25816,38 @@ Source: &lt;a href="http://www.farnell.com/datasheets/2037314.pdf"&gt; Datasheet
 <part name="PAD8" library="wirepad" library_urn="urn:adsk.eagle:library:412" deviceset="1,6/0,8" device="" package3d_urn="urn:adsk.eagle:package:30830/1"/>
 <part name="PAD9" library="wirepad" library_urn="urn:adsk.eagle:library:412" deviceset="1,6/0,8" device="" package3d_urn="urn:adsk.eagle:package:30830/1"/>
 <part name="PAD10" library="wirepad" library_urn="urn:adsk.eagle:library:412" deviceset="1,6/0,8" device="" package3d_urn="urn:adsk.eagle:package:30830/1"/>
-<part name="R1" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="R-EU_" device="M0805" package3d_urn="urn:adsk.eagle:package:23556/1" value="510"/>
+<part name="R1" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="R-EU_" device="R0805" package3d_urn="urn:adsk.eagle:package:23553/2" value="1k"/>
 <part name="B-" library="wirepad" library_urn="urn:adsk.eagle:library:412" deviceset="1,6/0,8" device="" package3d_urn="urn:adsk.eagle:package:30830/1"/>
 <part name="GND3" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="GND" device=""/>
 <part name="IN+" library="wirepad" library_urn="urn:adsk.eagle:library:412" deviceset="1,6/0,9" device="" package3d_urn="urn:adsk.eagle:package:30840/1" value="5V"/>
 <part name="C2" library="rcl" library_urn="urn:adsk.eagle:library:334" deviceset="CPOL-EU" device="E2.5-7" package3d_urn="urn:adsk.eagle:package:23345/1" value="1000uF"/>
 <part name="GND5" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="GND" device=""/>
 <part name="REG1A" library="linear" library_urn="urn:adsk.eagle:library:262" deviceset="78*" device="L" package3d_urn="urn:adsk.eagle:package:16416/2" technology="05"/>
-<part name="R6" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="R-EU_" device="M0805" package3d_urn="urn:adsk.eagle:package:23556/1" value="10k"/>
+<part name="R6" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="R-EU_" device="R0805" package3d_urn="urn:adsk.eagle:package:23553/2" value="10k"/>
 <part name="C1" library="rcl" library_urn="urn:adsk.eagle:library:334" deviceset="C-EU" device="C0805" package3d_urn="urn:adsk.eagle:package:23617/2" value="100nF"/>
 <part name="GND2" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="GND" device=""/>
-<part name="R3" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="R-EU_" device="M0805" package3d_urn="urn:adsk.eagle:package:23556/1" value="10k"/>
-<part name="R7" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="R-EU_" device="M0805" package3d_urn="urn:adsk.eagle:package:23556/1" value="510"/>
+<part name="R3" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="R-EU_" device="R0805" package3d_urn="urn:adsk.eagle:package:23553/2" value="1k"/>
+<part name="R7" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="R-EU_" device="M0805" package3d_urn="urn:adsk.eagle:package:23556/1" value="1k"/>
 <part name="IC2" library="1EDI60I12AF" deviceset="TP4056-42-ESOP8" device=""/>
 <part name="C3" library="rcl" library_urn="urn:adsk.eagle:library:334" deviceset="C-EU" device="C3216" package3d_urn="urn:adsk.eagle:package:23628/2" value="10uF"/>
 <part name="R4" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="R-EU_" device="M1206" package3d_urn="urn:adsk.eagle:package:23566/1" value="R400"/>
 <part name="C4" library="rcl" library_urn="urn:adsk.eagle:library:334" deviceset="C-EU" device="C3216" package3d_urn="urn:adsk.eagle:package:23628/2" value="10uF"/>
 <part name="R8" library="rcl" library_urn="urn:adsk.eagle:library:334" deviceset="R-EU_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="10k"/>
 <part name="LED2" library="led" library_urn="urn:adsk.eagle:library:259" deviceset="LED" device="SML0805" package3d_urn="urn:adsk.eagle:package:15830/1"/>
-<part name="R9" library="rcl" library_urn="urn:adsk.eagle:library:334" deviceset="R-EU_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="1.2k"/>
+<part name="R9" library="rcl" library_urn="urn:adsk.eagle:library:334" deviceset="R-EU_" device="R0805" package3d_urn="urn:adsk.eagle:package:23553/2" value="1.2k"/>
 <part name="GND7" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="GND" device=""/>
 <part name="X1" library="con-hirose" library_urn="urn:adsk.eagle:library:152" deviceset="MINI-USB-" device="UX60A-MB-5ST" package3d_urn="urn:adsk.eagle:package:7263/1"/>
 <part name="GND8" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="GND" device=""/>
 <part name="P+5" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="VCC" device=""/>
 <part name="IC3" library="1EDI60I12AF" deviceset="LM27313XMFX_NOPB" device=""/>
 <part name="GND1" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="GND" device=""/>
-<part name="R5" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="R-EU_" device="M0805" package3d_urn="urn:adsk.eagle:package:23556/1" value="10k"/>
+<part name="R5" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="R-EU_" device="R0805" package3d_urn="urn:adsk.eagle:package:23553/2" value="10k"/>
 <part name="X2" library="con-garry" library_urn="urn:adsk.eagle:library:147" deviceset="332-02" device="" package3d_urn="urn:adsk.eagle:package:6810/1"/>
 <part name="GND10" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="GND" device=""/>
 <part name="IC4" library="SamacSys" deviceset="TPL5110DDCT" device=""/>
 <part name="GND11" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="GND" device=""/>
-<part name="R10" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="R-EU_" device="M0805" package3d_urn="urn:adsk.eagle:package:23556/1" value="100k"/>
+<part name="R10" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="R-EU_" device="R0805" package3d_urn="urn:adsk.eagle:package:23553/2" value="100k"/>
+<part name="R11" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="R-EU_" device="R0805" package3d_urn="urn:adsk.eagle:package:23553/2" value="10k"/>
 </parts>
 <sheets>
 <sheet>
@@ -25861,10 +25862,10 @@ Source: &lt;a href="http://www.farnell.com/datasheets/2037314.pdf"&gt; Datasheet
 <wire x1="137.16" y1="73.66" x2="137.16" y2="119.38" width="0.1524" layer="97"/>
 <wire x1="137.16" y1="119.38" x2="88.9" y2="119.38" width="0.1524" layer="97"/>
 <text x="91.44" y="116.84" size="1.778" layer="97">Solar Charger</text>
-<wire x1="20.32" y1="60.96" x2="20.32" y2="15.24" width="0.1524" layer="97"/>
+<wire x1="20.32" y1="55.88" x2="20.32" y2="15.24" width="0.1524" layer="97"/>
 <wire x1="20.32" y1="15.24" x2="0" y2="15.24" width="0.1524" layer="97"/>
-<wire x1="0" y1="15.24" x2="0" y2="60.96" width="0.1524" layer="97"/>
-<wire x1="0" y1="60.96" x2="20.32" y2="60.96" width="0.1524" layer="97"/>
+<wire x1="0" y1="15.24" x2="0" y2="55.88" width="0.1524" layer="97"/>
+<wire x1="0" y1="55.88" x2="20.32" y2="55.88" width="0.1524" layer="97"/>
 <wire x1="48.26" y1="40.64" x2="86.36" y2="40.64" width="0.1524" layer="97"/>
 <wire x1="86.36" y1="40.64" x2="86.36" y2="15.24" width="0.1524" layer="97"/>
 <wire x1="86.36" y1="15.24" x2="48.26" y2="15.24" width="0.1524" layer="97"/>
@@ -25876,11 +25877,11 @@ Source: &lt;a href="http://www.farnell.com/datasheets/2037314.pdf"&gt; Datasheet
 <wire x1="106.68" y1="17.78" x2="137.16" y2="17.78" width="0.1524" layer="97"/>
 <wire x1="137.16" y1="17.78" x2="137.16" y2="48.26" width="0.1524" layer="97"/>
 <wire x1="137.16" y1="48.26" x2="106.68" y2="48.26" width="0.1524" layer="97"/>
-<text x="25.4" y="30.48" size="1.778" layer="97" rot="R90">Solar Voltage Sensor</text>
-<wire x1="35.56" y1="60.96" x2="35.56" y2="15.24" width="0.1524" layer="97"/>
+<text x="25.4" y="17.78" size="1.778" layer="97" rot="R90">Solar Voltage Sensor</text>
+<wire x1="35.56" y1="48.26" x2="35.56" y2="15.24" width="0.1524" layer="97"/>
 <wire x1="35.56" y1="15.24" x2="22.86" y2="15.24" width="0.1524" layer="97"/>
-<wire x1="35.56" y1="60.96" x2="22.86" y2="60.96" width="0.1524" layer="97"/>
-<wire x1="22.86" y1="60.96" x2="22.86" y2="15.24" width="0.1524" layer="97"/>
+<wire x1="35.56" y1="48.26" x2="22.86" y2="48.26" width="0.1524" layer="97"/>
+<wire x1="22.86" y1="48.26" x2="22.86" y2="15.24" width="0.1524" layer="97"/>
 <text x="50.8" y="83.82" size="1.778" layer="97" rot="R90">Low Power Sleep</text>
 <wire x1="48.26" y1="127" x2="48.26" y2="73.66" width="0.1524" layer="97"/>
 <wire x1="48.26" y1="73.66" x2="78.74" y2="73.66" width="0.1524" layer="97"/>
@@ -26025,8 +26026,8 @@ Source: &lt;a href="http://www.farnell.com/datasheets/2037314.pdf"&gt; Datasheet
 <instance part="X1" gate="G$1" x="-10.16" y="38.1" smashed="yes">
 <attribute name="NAME" x="-7.62" y="49.53" size="1.778" layer="95"/>
 </instance>
-<instance part="GND8" gate="1" x="-15.24" y="25.4" smashed="yes">
-<attribute name="VALUE" x="-17.78" y="22.86" size="1.778" layer="96"/>
+<instance part="GND8" gate="1" x="-15.24" y="20.32" smashed="yes">
+<attribute name="VALUE" x="-17.78" y="17.78" size="1.778" layer="96"/>
 </instance>
 <instance part="P+5" gate="VCC" x="-15.24" y="76.2" smashed="yes" rot="R180">
 <attribute name="VALUE" x="-12.7" y="76.2" size="1.778" layer="96" rot="R90"/>
@@ -26061,6 +26062,10 @@ Source: &lt;a href="http://www.farnell.com/datasheets/2037314.pdf"&gt; Datasheet
 <instance part="R10" gate="G$1" x="58.42" y="116.84" smashed="yes" rot="R180">
 <attribute name="NAME" x="59.69" y="115.3414" size="1.778" layer="95" rot="R180"/>
 <attribute name="VALUE" x="59.69" y="120.142" size="1.778" layer="96" rot="R180"/>
+</instance>
+<instance part="R11" gate="G$1" x="10.16" y="58.42" smashed="yes" rot="R180">
+<attribute name="NAME" x="8.89" y="62.0014" size="1.778" layer="95" rot="R180"/>
+<attribute name="VALUE" x="13.97" y="61.722" size="1.778" layer="96" rot="R180"/>
 </instance>
 </instances>
 <busses>
@@ -26140,7 +26145,7 @@ Source: &lt;a href="http://www.farnell.com/datasheets/2037314.pdf"&gt; Datasheet
 <segment>
 <pinref part="GND8" gate="1" pin="GND"/>
 <pinref part="X1" gate="G$1" pin="5"/>
-<wire x1="-15.24" y1="27.94" x2="-15.24" y2="33.02" width="0.1524" layer="91"/>
+<wire x1="-15.24" y1="22.86" x2="-15.24" y2="33.02" width="0.1524" layer="91"/>
 </segment>
 <segment>
 <pinref part="IC4" gate="G$1" pin="GND"/>
@@ -26281,6 +26286,9 @@ Source: &lt;a href="http://www.farnell.com/datasheets/2037314.pdf"&gt; Datasheet
 <pinref part="IC1" gate="G$1" pin="PB5"/>
 <label x="40.64" y="58.42" size="1.778" layer="95"/>
 <wire x1="38.1" y1="58.42" x2="50.8" y2="58.42" width="0.1524" layer="91"/>
+<pinref part="R11" gate="G$1" pin="1"/>
+<wire x1="15.24" y1="58.42" x2="38.1" y2="58.42" width="0.1524" layer="91"/>
+<junction x="38.1" y="58.42"/>
 </segment>
 </net>
 <net name="SENSOR-" class="0">
@@ -26411,6 +26419,18 @@ Source: &lt;a href="http://www.farnell.com/datasheets/2037314.pdf"&gt; Datasheet
 <wire x1="-20.32" y1="12.7" x2="91.44" y2="12.7" width="0.1524" layer="91"/>
 <wire x1="91.44" y1="12.7" x2="91.44" y2="43.18" width="0.1524" layer="91"/>
 <junction x="91.44" y="43.18"/>
+</segment>
+</net>
+<net name="N$12" class="0">
+<segment>
+<pinref part="R11" gate="G$1" pin="2"/>
+<wire x1="5.08" y1="58.42" x2="-2.54" y2="58.42" width="0.1524" layer="91"/>
+</segment>
+</net>
+<net name="N$13" class="0">
+<segment>
+<wire x1="-2.54" y1="58.42" x2="-2.54" y2="45.72" width="0.1524" layer="91"/>
+<wire x1="-2.54" y1="45.72" x2="-7.62" y2="45.72" width="0.1524" layer="91"/>
 </segment>
 </net>
 </nets>

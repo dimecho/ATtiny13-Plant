@@ -20,7 +20,7 @@ openBrowser()
 ./avrdude
 
 pkill -9 php
-/usr/bin/php -S 0.0.0.0:8080 -t "$(dirname "$0")/Web/" &
+/usr/bin/php -S 127.0.0.1:8080 -t "$(dirname "$0")/Web/" &
 sleep 2
 
 openBrowser http://127.0.0.1:8080

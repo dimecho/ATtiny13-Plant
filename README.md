@@ -7,11 +7,15 @@ Monitor soil moisture and water plant. Portable and high efficiency with lithium
 
 ![Photo](img/photo.jpg?raw=true)
 
-## PCB
+![GUI](gui/Interface.png?raw=true)
 
-![Screenshot](img/pcb.png?raw=true)
+## Download
 
-Designed with [EagleCAD](https://www.autodesk.com/products/eagle/free-download)
+![MacOS](img/mac.png?raw=true) [MacOS](../../releases/download/1.0/ATTiny13.Plant.dmg)
+
+![Windows](img/win.png?raw=true) [Windows](../../releases/download/1.0/ATTiny13.Plant.zip)
+
+![Firmware](img/chip.png?raw=true) [Firmware](../../releases/download/1.0/ATTiny13.Plant.Firmware.zip)
 
 ## BOM (Bill of Materials)
 
@@ -20,31 +24,29 @@ Designed with [EagleCAD](https://www.autodesk.com/products/eagle/free-download)
 | IC1   | ATTINY13A  | SOP-8 or DIP-8      | CPU      |
 | C1    | 100nF      | 0805 or 0603 (104)  | CPU      |
 | T1A/B | 2N4401 NPN | TO-92 or SOT-23     | Pump     |
-| R1    | 510R       | 0805 or 0603 (511)  | Pump     |
+| R1    | 1k         | 0805 or 0603 (102)  | Pump     |
 | R2    | 10k        | 0805 or 0603 (103)  | Pump     |
-| LED1  | Red        | 0805 or DIP-2       | LED      |
-| R3    | 120R       | 0805 or 0603 (121)  | LED      |
+| R3    | 1k         | 0805 or 0603 (102)  | Solar    |
 | T2A/B | 2N4401 NPN | TO-92 or SOT-23     | Solar    |
-| REG1  | 7805L (5V) | TO-92               | Solar    |
+| REG1  | 78L05 (5V) | TO-92               | Solar    |
 | C2    | 1000uF     | 7x7 mm              | Solar    |
-| R4    | 510R       | 0805 or 0603 (511)  | Solar    |
 | R5    | 10k        | 0805 or 0603 (103)  | Solar    |
 | R6    | 10k        | 0805 or 0603 (103)  | Sensor   |
+| LED1  | Red        | 0805 or DIP-2       | LED      |
+| R7    | 1k         | 0805 or 0603 (102)  | LED      |
 | -     | 3.7-4.2V   | Lithium Cell 18650  | Battery  |
 | -     | TP4056     | Lithium Charger     | Charger  |
 | -     | 10V+       | 2x 5V Solar Cells   | Solar    |
 
+## PCB
+
+![PCB](img/pcb.png?raw=true)
+
+Designed with [EagleCAD](https://www.autodesk.com/products/eagle/free-download)
+
 ## Diagram
 
 ![Screenshot](img/diagram.png?raw=true)
-
-## Solar
-
-Optional Pin7 (PB2) used to "burst" charge from solar panel.
-
-## LED
-
-Empty container detection - shared with Solar Pin7 (PB2)
 
 ## Compile
 
@@ -59,14 +61,6 @@ avr-gcc -std=gnu99 -Wall -Os -mmcu=attiny13a main.c -o main.o
 avr-objcopy -O binary main.o main.bin
 avr-objcopy -O ihex main.o main.hex
 ```
-
-## Download
-
-![MacOS](img/mac.png?raw=true) [MacOS](../../releases/download/1.0/ATTiny13.Plant.dmg)
-
-![Windows](img/win.png?raw=true) [Windows](../../releases/download/1.0/ATTiny13.Plant.zip)
-
-![Firmware](img/chip.png?raw=true) [Firmware](../../releases/download/1.0/ATTiny13.Plant.Firmware.zip)
 
 ## Flash
 
@@ -130,12 +124,6 @@ Update (Windows)
 **Note 2:** Disconnect UART Pin3 (RX) after flashing - sensor will read false-positive if UART has +5V.
 
 **Caution:** RESET Pin1 (PB5) if fuses set HFuse 0xFE (or 0xEE), ATTiny13 can only be flashed once. Future flashing requires "High-Voltage programmer" to clear the fuse.
-
-## Debug
-
-Use Serial to USB-TTL on Pin2 (PB3) + GND.
-
-**Note:** Serial speed is 9600
 
 ## Licenses
 
