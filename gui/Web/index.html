@@ -1,35 +1,49 @@
 <!DOCTYPE html>
 <html>
     <head>
+        <title>ATtiny Plant</title>
         <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
         <link rel="stylesheet" type="text/css" media="screen" title="main">
+        <link rel="stylesheet" type="text/css" href="css/preloader.css" />
         <link rel="stylesheet" type="text/css" href="css/icons.css" />
         <link rel="stylesheet" type="text/css" href="css/style.css" />
         <link rel="stylesheet" type="text/css" href="css/animate.css" />
         <link rel="stylesheet" type="text/css" href="css/ion.rangeSlider.css" />
+        <link rel="stylesheet" type="text/css" href="css/jquery.fancybox.css" />
         <script src="js/jquery.js"></script>
+        <script src="js/preloader.js"></script>
         <script src="js/bootstrap.js"></script>
         <script src="js/bootstrap-notify.js"></script>
         <script src="js/ion.rangeSlider.js"></script>
+        <script src="js/jquery.fancybox.js"></script>
         <script src="js/index.js"></script>
     </head>
-    <body>
-        <div class="container-fluid d-flex flex-column">
+    <body class="preloader">
+        <div id="preloader"></div>
+        <div class="container-fluid d-flex flex-column" style="display: none;">
             <div class="row d-flex p-4">
                 <div class="col col-7 mt-4" align="center">
                     <i class="icons icon-chip text-dark" data-toggle="tooltip" data-html="true"></i>
-                    <br/><br/>
+                    <br/>
                     <h1>Settings</h1>
                     <div class="container border mt-4 bg-light p-4">
                         <div class="row">
                             <div class="col">
-                                <h4>Solar:</h4>
+                                <h4>Solar</h4>
                                 <input type="text" class="js-range-slider" id="slider-solar" style="font-size: 18px" />
-                                <h4>Pot Size:</h4>
+                                <h4>Pot Size</h4>
                                 <input type="text" class="js-range-slider" id="slider-pot" style="font-size: 18px" />
-                                <h4>Soil Moisture:</h4>
+                                <h4>Soil Moisture</h4>
                                 <input type="text" class="js-range-slider" id="slider-soil" />
-                                <br/><br/>
+                            </div>
+                        </div>
+                        <div class="row">
+                        	<div class="col">
+                                <br/>
+                                <button type="button" class="btn btn-primary" onClick="autoConfigure()">Auto Configure</button>
+                            </div>
+                            <div class="col">
+                                <br/>
                                 <button type="button" class="btn btn-success" onClick="saveSettings()">Save Settings</button>
                             </div>
                         </div>
@@ -37,12 +51,12 @@
                 </div>
                 <div class="col col-5 mt-4" align="center">
                     <i class="icons icon-day-and-night text-dark" data-toggle="tooltip" data-html="true" onClick="setTheme()"></i>
-                    <br/><br/>
+                    <br/>
                     <h1>Console</h1>
                     <div class="container border mt-4 p-4" style="background: rgba(60, 60, 60, 0.4);">
                         <div class="row p-2">
                             <div class="col">
-                                <button class="btn btn-primary" type="button" onClick="startConsole(0xEE)" id="debugConsole">Start Console</button>
+                                <button class="btn btn-primary" type="button" onClick="startConsole(0xEE,1)" id="debugConsole">Start Console</button>
                             </div>
                             <div class="col">
                                 <button class="btn btn-primary" type="button" onClick="flashFirmware()" id="flashFirmware">Flash Firmware</button>
@@ -65,6 +79,7 @@
                                 <br/><br/>
                                 <br/><br/>
                                 <br/><br/>
+                                <center><a class="text-white" href="usbasp.php?eeprom=erase"><small>Erase EEPROM</small></a></center>
                             </div>
                         </div>
                     </div>
@@ -75,5 +90,15 @@
             <input type="file" name="file" class="fileUpload" hidden accept=".hex">
             <input type="submit" hidden>
         </form>
+        <a class="autoconfig" data-fancybox data-src="#autoconfig" href="#"></a>
+        <div class="d-none bg-light" id="autoconfig">
+            <center>
+                <br><br>
+               	<h1>Soil Type</h1>
+                <br>
+                <div class="container">
+                </div>
+            </center>
+        </div>
     </body>
 </html>

@@ -1,5 +1,4 @@
 <p align="center"><img src="img/icon.png?raw=true"></p>
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
 
 # ATtiny13 Plant
 
@@ -26,7 +25,7 @@ Monitor soil moisture and water plant. Portable and high efficiency with lithium
 | T1A/B | 2N4401 NPN | TO-92 or SOT-23     | Pump     |
 | R1    | 1k         | 0805 or 0603 (102)  | Pump     |
 | R2    | 10k        | 0805 or 0603 (103)  | Pump     |
-| R3    | 1k         | 0805 or 0603 (102)  | Solar    |
+| R3    | 330R       | 0805 or 0603 (331)  | Solar    |
 | T2A/B | 2N4401 NPN | TO-92 or SOT-23     | Solar    |
 | REG1  | 78L05 (5V) | TO-92               | Solar    |
 | C2    | 1000uF     | 7x7 mm              | Solar    |

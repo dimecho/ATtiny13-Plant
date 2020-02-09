@@ -5,7 +5,10 @@ body {
 	background-position: right; 
 	background-image: url("../img/background.png");
 }
-
+.fancybox-content {
+  width:90%;
+  border-radius:5px
+}
 .icons {
   font-size: 4em;
 }

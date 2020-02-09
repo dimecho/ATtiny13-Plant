@@ -31,8 +31,10 @@
             header("Refresh:4; url=index.html");
             echo "Firmware Updated!";
         }else{
+            echo "<pre>";
             echo $command;
             echo $output;
+            echo "</pre>";
         }
     }
     else if(isset($_GET["connect"]))
@@ -88,6 +90,8 @@
         $command .= " -c usbasp -p " .$_SESSION["chip"]. " -U eeprom:r:" . $tmp_dir . $eeprom_file .":r";
 
         if($_GET["eeprom"] == "erase") {
+
+            //header("Refresh:3; url=index.html");
 
         	$f = fopen($tmp_dir . $eeprom_file, 'wb');
 			for ($i=0; $i<64; $i++) {
@@ -180,7 +184,7 @@
         if (strpos($uname, "darwin") !== false) {
             $command = "/usr/local/bin/avrdude -c usbasp -p t13 -n";
         }else if (strpos($uname, "win") !== false) {
-            $command = "avrdude.exe -c usbasp -p t13 -n";
+            $command = "avrdude.exe -c usbasp t13 -n";
         }else{
             $command = "avrdude -c usbasp -p t13 -n";
         }
@@ -211,6 +215,13 @@
                 //echo $output;
             }
         }else{
+            $count = 0;
+            while($count < 4 && strpos($output, "error:") == false) {
+                sleep(1);
+                $output = shell_exec($command. " 2>&1");
+                $count++;
+            }
+
             return"sck";
         }
 

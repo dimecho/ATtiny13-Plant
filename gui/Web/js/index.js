@@ -1,23 +1,45 @@
 
 var theme = detectTheme();
 var refreshTimer;
-var refreshSpeed = 4000;
+var refreshSpeed = 5000;
 var progressTimer;
+var deepSleep = 40; //8seconds x 40 = 5.5 min
+var moistureOffset =260; //this is caused by double 10k pullup resistor (on both sides "out" and sense "in")
+var saveReminder;
 
 var solar_values = [0,1];
 var solar_labels = ["OFF", "ON"];
 
-var pot_values = [12,32,64];
+var pot_values = [40,60,80];
 var pot_labels = ["Small", "Medium", "Large"];
 
-var soil_values = [280, 388, 460];
-var soil_labels = ["Dry (Cactus)", "Moist (Regular)", "Wet (Tropical)"];
+var soil_values = [280, 480];
+var soil_labels = ["Dry (Cactus)", "Wet (Tropical)"];
+
+var soil_type_values = [300, 320, 380, 420, 464];
+var soil_type_labels = ["Sand", "Clay", "Dirt", "Loam", "Moss"];
+
+var connectMessage = "Connect Plant to Computer";
 
 var p = 1;
 var os = "";
 var chip = "";
 
-var connectMessage = "Connect Plant to Computer";
+/*==========
+EEPROM Map
+============*/
+var ee = parseInt(0x01);
+var e_versionID = parseInt(0x00);
+var e_sensorMoisture = parseInt(0x02);
+
+var e_potSize = parseInt(0x04);
+var e_runSolar = parseInt(0x06);
+var e_deepSleep = parseInt(0x08);
+var e_VReg = parseInt(0xA);
+var e_VSolar = parseInt(0xC);
+var e_moisture = parseInt(0x1A);
+var e_water = parseInt(0x1C);
+var e_errorCode = parseInt(0x2A);
 
 $(document).ready(function ()
 {
@@ -39,18 +61,47 @@ $(document).ready(function ()
                 $.notify({ message: "ATtiny will go into DEEP-SLEEP mode, saving battery power" }, { type: "success" });
             }
         },
+        onChange: function (e) {
+            clearTimeout(saveReminder);
+            saveReminder = setInterval(saveReminderCounter, 20000);
+        }
     });
 
     $("#slider-pot").ionRangeSlider({
         skin: "big",
         from: 0,
-        values: pot_labels
+        values: pot_labels,
+        onChange: function (e) {
+            clearTimeout(saveReminder);
+            saveReminder = setInterval(saveReminderCounter, 20000);
+        }
     });
     
     $("#slider-soil").ionRangeSlider({
         skin: "big",
         from: 0,
-        values: soil_labels
+        min: 280,
+        max: 480,
+        step: 1,
+        prettify: function (n) {
+            //console.log(n);
+            if(n == 280){
+                return soil_labels[0];
+            }else if(n == 480){
+                return soil_labels[1];
+            }
+            return n;
+        },
+        onChange: function (e) {
+            clearTimeout(saveReminder);
+            saveReminder = setInterval(saveReminderCounter, 20000);
+        }
+    });
+
+    $("#slider-soil-type").ionRangeSlider({
+        skin: "big",
+        from: 0,
+        values: soil_type_labels
     });
 
     checkFirmwareUpdates();
@@ -58,7 +109,38 @@ $(document).ready(function ()
     connectPlant(true);
 
     $('[data-toggle="tooltip"]').tooltip();
+
+    window.addEventListener("beforeunload", function (e) {
+        sendStop();
+    });
 });
+
+function autoConfigure()
+{
+    var row = $("<div>", { class: "row" });
+    var img_src = ["sand.png", "clay.png", "dirt.png", "loam.png", "moss.png"];
+
+    for (var i = 0; i < soil_type_labels.length; i++) {
+        var h = $("<h6>").append(soil_type_labels[i]);
+        var img = $("<img>", { class: "img-thumbnail bg-light rounded-circle", src: "img/" + img_src[i], onClick: "setSoil(" + soil_type_values[i] + ");$.fancybox.close();"});
+        
+        var col = $("<div>", { class: "col" });
+        col.append(h);
+        col.append(img);
+        row.append(col);
+    }
+    $("#autoconfig div").empty().append(row);
+    $("#autoconfig").removeClass("d-none");
+    $(".autoconfig").trigger('click');
+};
+
+function setSoil(value)
+{
+    var instance = $("#slider-soil").data("ionRangeSlider");
+    instance.update({
+       from: value
+    });
+};
 
 function stopConsole()
 {
@@ -66,14 +148,19 @@ function stopConsole()
 
     var btn = $("#debugConsole");
     btn.text("Start Console");
-    btn.attr("onclick","startConsole(0xEE)");
+    btn.attr("onclick","startConsole(0xEE,1)");
     btn.removeClass("btn-danger");
     btn.addClass("btn-primary");
 
-    //$.ajax("usbasp.php?eeprom=write&offset=1,8&value=255,40");
+    sendStop();
 };
 
-function startConsole(hex)
+function sendStop()
+{
+    $.ajax("usbasp.php?eeprom=write&offset=" + ee + "," + e_deepSleep + "&value=255," + deepSleep);
+};
+
+function startConsole(hex,delay)
 {
     connectPlant(false);
 
@@ -84,10 +171,7 @@ function startConsole(hex)
             progressTimer = setInterval(progressCounter, 12);
         }
 
-        //Clear old values
-        $.ajax("usbasp.php?eeprom=write&offset=10,26,42&value=255,255,255", { async:false });
-
-        $.ajax("usbasp.php?eeprom=write&offset=1,8&value=" + parseInt(hex) + ",0", {
+        $.ajax("usbasp.php?eeprom=write&offset=" + ee + ","+ e_deepSleep +"," + e_VSolar + "," + e_moisture + "," + e_water + "," + e_errorCode + "&value=" + parseInt(hex) + "," + parseInt(delay) + ",255,255,255,255", {
             success: function(data) {
                 console.log(data);
                 if(data.length >= 64) {
@@ -95,20 +179,20 @@ function startConsole(hex)
                     var btn = $("#debugConsole");
 
                     var s = data.split("\n");
-                    if(s[1] == parseInt(0xEE))
+                    if(s[ee] == parseInt(0xEE))
                     {
                         //console.log(data);
                         $.notify({ message: "EEPROM Debug Enabled" }, { type: "success" });
 
                         $("#debugOutput").empty();
                         btn.text("Stop Console");
-                        btn.attr("onclick","startConsole(0xFF)");
+                        btn.attr("onclick","startConsole(0xFF," + deepSleep  + ")");
                         btn.removeClass("btn-primary");
                         btn.addClass("btn-danger");
 
                         getEEPROM();
                       
-                    }else if(s[1] == parseInt(0xFF)) {
+                    }else if(s[ee] == parseInt(0xFF)) {
                         $.notify({ message: "EEPROM Debug Disabled" }, { type: "warning" });
                         
                         stopConsole();
@@ -150,11 +234,22 @@ function getEEPROMInfo(crc)
                 var s = data.split("\n");
                 var info = $("#debugInfo").empty();
                 info.append("Hardware Chip: " + chip + "\n");
+
+                var vr = HexShift(s,e_VReg);
+                vrchip = "TP4056";
+                if(vr == 1) {
+                    vrchip = "WS78L05";
+                }else if(vr == 2) {
+                    vrchip = "LM2731";
+                }else if(vr == 3) {
+                    vrchip = "TPL5110";
+                }
+                info.append("Solar Regulator: " + vrchip + "\n");
                 info.append("Firmware Version: " + s[0].charAt(0) + "." + s[0].charAt(1));
 
-                var sl = HexShift(s,6);
-                var pt = HexShift(s,4);
-                var so = HexShift(s,2);
+                var sl = HexShift(s,e_runSolar);
+                var pt = HexShift(s,e_potSize);
+                var so = HexShift(s,e_sensorMoisture);
 
                 console.log("Solar: " + sl);
                 console.log("Pot: " + pt);
@@ -183,7 +278,7 @@ function getEEPROMInfo(crc)
 
                 var instance = $("#slider-soil").data("ionRangeSlider");
                 instance.update({
-                   from: soil_values.indexOf(so)
+                   from: so
                 });
 
             }else{
@@ -209,22 +304,42 @@ function getEEPROM()
                 var s = data.split("\n");
                 var debug = $("#debugOutput").empty();
 
-                var sl = (5 * HexShift(s,10) / 1024); //0xA
-                var so = (4.8 * HexShift(s,26) / 1024); //0x1A
-                var er = HexShift(s,42); //0x2A
+                var sl = HexShift(s,e_VSolar);
+                sl = (5 * sl / 888);
 
-                console.log(HexShift(s,26));
+                var so = HexShift(s,e_moisture);
+                if(so > moistureOffset) { //Calibration Offset
+                    so -= moistureOffset;
+                }
+                so = (4.8 * so / 800);
+                var wt = HexShift(s,e_water);
+                var er = HexShift(s,e_errorCode);
+
+                //console.log(HexShift(s,26));
+                console.log("Solar:" + HexShift(s,e_VSolar));
+                console.log("Sensor:" + HexShift(s,e_moisture));
+                console.log("Water:" + wt);
+                console.log("Error:" + er);
 
                 if(sl > 0) {
-                    debug.append("Solar Voltage: " + sl.toFixed(2) + "V\n");
+                    debug.append("Solar Voltage: " + sl.toFixed(2) + "V (" + (sl/5*100).toFixed(0) + "%)\n");
                 }
 
-                debug.append("Soil Moisture: " + so.toFixed(2) + "V (" + (so/4.8*100).toFixed(0)+ "%)\n");
+                if (so > 1.51 && so < 1.56) { //AVR anomaly with ADC
+                    so = 0;
+                }
+                debug.append("Soil Moisture: " + so.toFixed(2) + "V (" + (so/4.8*100).toFixed(0) + "%)\n");
 
-                if(er == 69) {
-                    debug.append("Error Code: Empty Bottle\n");
-                }else if (so < 4) {
+                if (so < 0.2) {
                     debug.append("Error Code: Sensor not in Soil\n");
+                }
+                if(er == 1) {
+                    debug.append("Error Code: No Water!\n");
+                }else if(er == 200) {
+                    debug.append("Error Code: Water Refilled? ...Reseting\n");
+                }
+                if(wt > 11) {
+                    debug.append("Error Code: Overwater Protection\n");
                 }
             }else{
                 $.notify({ message: "Cannot read EEPROM" }, { type: "danger" });
@@ -306,10 +421,11 @@ function saveSettings()
         //$.notify({ message: "... Flashing new Firmware" }, { type: "warning" });
         $.notify({ message: "... Saving Settings" }, { type: "warning" });
 
-        $.ajax("usbasp.php?eeprom=write&offset=6,4,2&value=" + solar_values[$("#slider-solar").data().from] + "," + pot_values[$("#slider-pot").data().from] + "," + soil_values[$("#slider-soil").data().from] , {
+        $.ajax("usbasp.php?eeprom=write&offset=" + e_runSolar + "," + e_potSize + "," + e_sensorMoisture + "&value=" + solar_values[$("#slider-solar").data().from] + "," + pot_values[$("#slider-pot").data().from] + "," + $("#slider-soil").data().from , {
             success: function(data) {
                 console.log(data);
 
+                clearTimeout(saveReminder);
                 $.notify({ message: "Happy Plant &#127807;" }, { type: "success" });
                 stopConsole();
             }
@@ -365,6 +481,7 @@ function loadTheme() {
     switchTheme("i.icons","text-white","text-dark");
     switchTheme("div","bg-primary","bg-light");
     switchTheme("div","text-white","text-dark");
+    switchTheme("img","bg-secondary","bg-light");
 };
 
 function checkFirmwareUpdates()
@@ -420,6 +537,10 @@ function progressCounter() {
     if(p == 100) {
         clearInterval(progressTimer);
     }
+};
+
+function saveReminderCounter() {
+    $.notify({ message: "Don't forget to Save Settings!" }, { type: "warning" });
 };
 
 function deleteCookie(name, path, domain) {
