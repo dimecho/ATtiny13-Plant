@@ -1,10 +1,9 @@
 MCU=attiny13a
-#FUSE_L=0x6A
-#FUSE_H=0xFF #0xFE
-#F_CPU=1200000
-FUSE_L=0x6B
-FUSE_H=0xFF
-F_CPU=128000
+FUSE_H=0xFF #0xFE
+FUSE_L=0x6A
+F_CPU=1200000
+#FUSE_L=0x7B
+#F_CPU=128000
 CC=avr-gcc
 LD=avr-ld
 OBJCOPY=avr-objcopy
@@ -38,13 +37,13 @@ guibuild:
 	${SIZE} -C --mcu=${MCU} ${TARGET}.elf;
 
 	#ATtiny45
-	${CC} -std=c99 -Wall -g -Os -mmcu=attiny45 -DF_CPU=${F_CPU} -I. -I.. -o ${TARGET}.o ${SRCS};
+	${CC} -std=gnu99 -Wall -g -Os -mmcu=attiny45 -DF_CPU=1000000 -I. -I.. -o ${TARGET}.o ${SRCS};
 	${LD} -o ${TARGET}.elf ${TARGET}.o;
 	${OBJCOPY} -j .text -j .data -O ihex ${TARGET}.o gui/Web/firmware/attiny45.hex;
 	${SIZE} -C --mcu=attiny45 ${TARGET}.elf;
 
 	#ATtiny85
-	${CC} -std=c99 -Wall -g -Os -mmcu=attiny85 -DF_CPU=${F_CPU} -I. -I.. -o ${TARGET}.o ${SRCS};
+	${CC} -std=gnu99 -Wall -g -Os -mmcu=attiny85 -DF_CPU=1000000 -I. -I.. -o ${TARGET}.o ${SRCS};
 	${LD} -o ${TARGET}.elf ${TARGET}.o;
 	${OBJCOPY} -j .text -j .data -O ihex ${TARGET}.o gui/Web/firmware/attiny85.hex;
 	${SIZE} -C --mcu=attiny85 ${TARGET}.elf;

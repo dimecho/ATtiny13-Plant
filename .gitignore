@@ -3,4 +3,7 @@
 *.elf
 *.hex
 *.bin
+*.out
+*.map
+*.lst
 build

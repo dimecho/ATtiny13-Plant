@@ -14706,6 +14706,9 @@ USART&lt;p&gt;
 <part name="P+8" library="supply1" deviceset="VCC" device=""/>
 <part name="GND9" library="supply1" deviceset="GND" device=""/>
 <part name="GND11" library="supply1" deviceset="GND" device=""/>
+<part name="R8" library="rcl" deviceset="R-EU_" device="M0805" value="10k"/>
+<part name="GND12" library="supply1" deviceset="GND" device=""/>
+<part name="R9" library="rcl" deviceset="R-EU_" device="M0805" value="1k"/>
 </parts>
 <sheets>
 <sheet>
@@ -14726,11 +14729,11 @@ USART&lt;p&gt;
 <text x="10.16" y="104.14" size="5.08" layer="97">Microcontroller</text>
 <text x="10.16" y="162.56" size="5.08" layer="97">USB</text>
 <text x="91.44" y="162.56" size="5.08" layer="97">LEDs</text>
-<wire x1="139.7" y1="170.18" x2="198.12" y2="170.18" width="0.1524" layer="97"/>
-<wire x1="198.12" y1="170.18" x2="198.12" y2="137.16" width="0.1524" layer="97"/>
-<wire x1="198.12" y1="137.16" x2="139.7" y2="137.16" width="0.1524" layer="97"/>
-<wire x1="139.7" y1="137.16" x2="139.7" y2="170.18" width="0.1524" layer="97"/>
-<text x="142.24" y="162.56" size="5.08" layer="97">ISP</text>
+<wire x1="137.16" y1="170.18" x2="200.66" y2="170.18" width="0.1524" layer="97"/>
+<wire x1="200.66" y1="170.18" x2="200.66" y2="137.16" width="0.1524" layer="97"/>
+<wire x1="200.66" y1="137.16" x2="137.16" y2="137.16" width="0.1524" layer="97"/>
+<wire x1="137.16" y1="137.16" x2="137.16" y2="170.18" width="0.1524" layer="97"/>
+<text x="144.78" y="162.56" size="5.08" layer="97">ISP</text>
 <text x="208.28" y="162.56" size="5.08" layer="97">Slow clock</text>
 <text x="208.28" y="124.46" size="5.08" layer="97">Self prog</text>
 <text x="208.28" y="88.9" size="5.08" layer="97">VCC out</text>
@@ -14742,10 +14745,12 @@ USART&lt;p&gt;
 <wire x1="254" y1="104.14" x2="205.74" y2="104.14" width="0.1524" layer="97"/>
 <wire x1="205.74" y1="104.14" x2="205.74" y2="132.08" width="0.1524" layer="97"/>
 <wire x1="205.74" y1="132.08" x2="254" y2="132.08" width="0.1524" layer="97"/>
-<wire x1="205.74" y1="96.52" x2="254" y2="96.52" width="0.1524" layer="97"/>
+<wire x1="203.2" y1="96.52" x2="254" y2="96.52" width="0.1524" layer="97"/>
 <wire x1="254" y1="96.52" x2="254" y2="40.64" width="0.1524" layer="97"/>
-<wire x1="254" y1="40.64" x2="205.74" y2="40.64" width="0.1524" layer="97"/>
-<wire x1="205.74" y1="40.64" x2="205.74" y2="96.52" width="0.1524" layer="97"/>
+<wire x1="254" y1="40.64" x2="203.2" y2="40.64" width="0.1524" layer="97"/>
+<wire x1="203.2" y1="40.64" x2="203.2" y2="96.52" width="0.1524" layer="97"/>
+<text x="205.74" y="71.12" size="1.778" layer="91">R8 Optional pull-up
+resistor to adjust VCCOUT</text>
 </plain>
 <instances>
 <instance part="FRAME1" gate="G$1" x="0" y="0" smashed="yes">
@@ -14844,8 +14849,8 @@ USART&lt;p&gt;
 <attribute name="NAME" x="240.03" y="111.125" size="1.778" layer="95" rot="MR180"/>
 <attribute name="VALUE" x="240.03" y="121.92" size="1.778" layer="96" rot="MR180"/>
 </instance>
-<instance part="GND8" gate="1" x="182.88" y="144.78" smashed="yes">
-<attribute name="VALUE" x="180.34" y="142.24" size="1.778" layer="96"/>
+<instance part="GND8" gate="1" x="185.42" y="144.78" smashed="yes">
+<attribute name="VALUE" x="182.88" y="142.24" size="1.778" layer="96"/>
 </instance>
 <instance part="GND10" gate="1" x="236.22" y="48.26" smashed="yes" rot="MR0">
 <attribute name="VALUE" x="238.76" y="45.72" size="1.778" layer="96" rot="MR0"/>
@@ -14863,9 +14868,9 @@ USART&lt;p&gt;
 <attribute name="VALUE" x="40.64" y="132.08" size="1.778" layer="96"/>
 </instance>
 <instance part="X1" gate="G$1" x="17.78" y="147.32" smashed="yes" rot="R180"/>
-<instance part="ISP1" gate="A" x="167.64" y="152.4" smashed="yes">
-<attribute name="NAME" x="161.29" y="158.115" size="1.778" layer="95"/>
-<attribute name="VALUE" x="161.29" y="144.78" size="1.778" layer="96"/>
+<instance part="ISP1" gate="A" x="170.18" y="152.4" smashed="yes">
+<attribute name="NAME" x="163.83" y="158.115" size="1.778" layer="95"/>
+<attribute name="VALUE" x="163.83" y="144.78" size="1.778" layer="96"/>
 </instance>
 <instance part="TP1" gate="G$1" x="132.08" y="55.88" smashed="yes" rot="R270">
 <attribute name="NAME" x="134.62" y="55.88" size="1.778" layer="95"/>
@@ -14910,6 +14915,17 @@ USART&lt;p&gt;
 </instance>
 <instance part="GND11" gate="1" x="22.86" y="17.78" smashed="yes">
 <attribute name="VALUE" x="20.32" y="15.24" size="1.778" layer="96"/>
+</instance>
+<instance part="R8" gate="G$1" x="218.44" y="66.04" smashed="yes" rot="MR180">
+<attribute name="NAME" x="214.63" y="64.5414" size="1.778" layer="95" rot="MR180"/>
+<attribute name="VALUE" x="214.63" y="69.342" size="1.778" layer="96" rot="MR180"/>
+</instance>
+<instance part="GND12" gate="1" x="213.36" y="48.26" smashed="yes" rot="MR0">
+<attribute name="VALUE" x="215.9" y="45.72" size="1.778" layer="96" rot="MR0"/>
+</instance>
+<instance part="R9" gate="G$1" x="152.4" y="154.94" smashed="yes" rot="MR0">
+<attribute name="NAME" x="156.21" y="156.4386" size="1.778" layer="95" rot="MR0"/>
+<attribute name="VALUE" x="151.13" y="156.718" size="1.778" layer="96" rot="MR0"/>
 </instance>
 </instances>
 <busses>
@@ -14995,8 +15011,8 @@ USART&lt;p&gt;
 <junction x="27.94" y="58.42"/>
 </segment>
 <segment>
-<wire x1="172.72" y1="149.86" x2="182.88" y2="149.86" width="0.1524" layer="91"/>
-<wire x1="182.88" y1="149.86" x2="182.88" y2="147.32" width="0.1524" layer="91"/>
+<wire x1="175.26" y1="149.86" x2="185.42" y2="149.86" width="0.1524" layer="91"/>
+<wire x1="185.42" y1="149.86" x2="185.42" y2="147.32" width="0.1524" layer="91"/>
 <pinref part="GND8" gate="1" pin="GND"/>
 <pinref part="ISP1" gate="A" pin="6"/>
 </segment>
@@ -15020,6 +15036,11 @@ USART&lt;p&gt;
 <pinref part="C1" gate="G$1" pin="1"/>
 <pinref part="GND11" gate="1" pin="GND"/>
 <wire x1="22.86" y1="20.32" x2="22.86" y2="22.86" width="0.1524" layer="91"/>
+</segment>
+<segment>
+<pinref part="R8" gate="G$1" pin="1"/>
+<pinref part="GND12" gate="1" pin="GND"/>
+<wire x1="213.36" y1="66.04" x2="213.36" y2="50.8" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="VCC" class="1">
@@ -15141,8 +15162,8 @@ USART&lt;p&gt;
 <junction x="236.22" y="63.5"/>
 </segment>
 <segment>
-<wire x1="172.72" y1="154.94" x2="193.04" y2="154.94" width="0.1524" layer="91"/>
-<label x="193.04" y="154.94" size="1.778" layer="95" rot="MR0"/>
+<wire x1="175.26" y1="154.94" x2="195.58" y2="154.94" width="0.1524" layer="91"/>
+<label x="195.58" y="154.94" size="1.778" layer="95" rot="MR0"/>
 <pinref part="ISP1" gate="A" pin="2"/>
 </segment>
 </net>
@@ -15153,8 +15174,8 @@ USART&lt;p&gt;
 <pinref part="IC1" gate="G$1" pin="PB3(MOSI/OC2)"/>
 </segment>
 <segment>
-<wire x1="172.72" y1="152.4" x2="193.04" y2="152.4" width="0.1524" layer="91"/>
-<label x="193.04" y="152.4" size="1.778" layer="95" rot="MR0"/>
+<wire x1="175.26" y1="152.4" x2="195.58" y2="152.4" width="0.1524" layer="91"/>
+<label x="195.58" y="152.4" size="1.778" layer="95" rot="MR0"/>
 <pinref part="ISP1" gate="A" pin="4"/>
 </segment>
 </net>
@@ -15165,9 +15186,9 @@ USART&lt;p&gt;
 <pinref part="IC1" gate="G$1" pin="PB4(MISO)"/>
 </segment>
 <segment>
-<wire x1="165.1" y1="154.94" x2="144.78" y2="154.94" width="0.1524" layer="91"/>
-<label x="144.78" y="154.94" size="1.778" layer="95"/>
-<pinref part="ISP1" gate="A" pin="1"/>
+<wire x1="147.32" y1="154.94" x2="139.7" y2="154.94" width="0.1524" layer="91"/>
+<pinref part="R9" gate="G$1" pin="2"/>
+<label x="139.7" y="154.94" size="1.778" layer="95"/>
 </segment>
 </net>
 <net name="SCK" class="0">
@@ -15177,8 +15198,8 @@ USART&lt;p&gt;
 <pinref part="IC1" gate="G$1" pin="PB5(SCK)"/>
 </segment>
 <segment>
-<wire x1="165.1" y1="152.4" x2="144.78" y2="152.4" width="0.1524" layer="91"/>
-<label x="144.78" y="152.4" size="1.778" layer="95"/>
+<wire x1="167.64" y1="152.4" x2="147.32" y2="152.4" width="0.1524" layer="91"/>
+<label x="147.32" y="152.4" size="1.778" layer="95"/>
 <pinref part="ISP1" gate="A" pin="3"/>
 </segment>
 </net>
@@ -15262,8 +15283,8 @@ USART&lt;p&gt;
 <pinref part="SELF" gate="G$1" pin="1"/>
 </segment>
 <segment>
-<wire x1="165.1" y1="149.86" x2="144.78" y2="149.86" width="0.1524" layer="91"/>
-<label x="144.78" y="149.86" size="1.778" layer="95"/>
+<wire x1="167.64" y1="149.86" x2="147.32" y2="149.86" width="0.1524" layer="91"/>
+<label x="147.32" y="149.86" size="1.778" layer="95"/>
 <pinref part="ISP1" gate="A" pin="5"/>
 </segment>
 </net>
@@ -15273,6 +15294,9 @@ USART&lt;p&gt;
 <wire x1="243.84" y1="66.04" x2="236.22" y2="66.04" width="0.1524" layer="91"/>
 <pinref part="R7" gate="G$1" pin="2"/>
 <pinref part="VCCOUT" gate="G$1" pin="2"/>
+<pinref part="R8" gate="G$1" pin="2"/>
+<wire x1="223.52" y1="66.04" x2="236.22" y2="66.04" width="0.1524" layer="91"/>
+<junction x="236.22" y="66.04"/>
 </segment>
 </net>
 <net name="N$9" class="0">
@@ -15289,6 +15313,13 @@ USART&lt;p&gt;
 <pinref part="TP2" gate="G$1" pin="TP"/>
 </segment>
 </net>
+<net name="N$1" class="0">
+<segment>
+<pinref part="R9" gate="G$1" pin="1"/>
+<pinref part="ISP1" gate="A" pin="1"/>
+<wire x1="157.48" y1="154.94" x2="167.64" y2="154.94" width="0.1524" layer="91"/>
+</segment>
+</net>
 </nets>
 </sheet>
 </sheets>
@@ -15302,4 +15333,10 @@ USART&lt;p&gt;
 </errors>
 </schematic>
 </drawing>
+<compatibility>
+<note version="6.3" minversion="6.2.2" severity="warning">
+Since Version 6.2.2 text objects can contain more than one line,
+which will not be processed correctly with this version.
+</note>
+</compatibility>
 </eagle>

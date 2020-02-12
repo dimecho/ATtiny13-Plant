@@ -63,14 +63,19 @@ avr-objcopy -O ihex main.o main.hex
 
 ## Flash
 
-### Option 1 - USBasp (Recommended)
+### Option 1 - USBTiny (Recommended)
+```
+sudo avrdude -p t13 -c usbtiny -Uhfuse:w:0xFF:m -Ulfuse:w:0x6A:m -U flash:w:main.hex:i
+```
+
+### Option 2 - USBasp
 ```
 sudo avrdude -p t13 -c usbasp -Uhfuse:w:0xFF:m -Ulfuse:w:0x6A:m -U flash:w:main.hex:i
 ```
 
 ![USBASP](img/attiny_programmer_usbasp.png?raw=true)
 
-### Option 2 - Raspberry Pi (Using linuxgpio)
+### Option 3 - Raspberry Pi (Using linuxgpio)
 ```
 sudo avrdude -p t13 -c linuxgpio -Uhfuse:w:0xFF:m -Ulfuse:w:0x6A:m -U flash:w:main.hex:i
 ```

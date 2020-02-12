@@ -8,6 +8,7 @@
         avrConnect();
 
         $file = $_FILES['file']['tmp_name'];
+        $fuses = "";
 
         if (strpos($uname, "darwin") !== false) {
             $command = "/usr/local/bin/avrdude";
@@ -17,7 +18,16 @@
             $command = "avrdude";
         }
 
-        $command .= " -c usbasp -p " .$_SESSION["chip"]. " -U hfuse:w:0xFF:m -U lfuse:w:0x6A:m -U flash:w:" . $file . ":i";
+        if($_SESSION["chip"] == "ATtiny13"){
+        	$fuses = " -U hfuse:w:0xFF:m -U lfuse:w:0x6A:m"; //CPU @ 1.2Mhz
+            //$fuses = " -U hfuse:w:0xFF:m -U lfuse:w:0x7B:m"; //CPU @ 128Khz
+        }else if($_SESSION["chip"] == "ATtiny45"){
+        	$fuses = " -U hfuse:w:0xDF:m -U lfuse:w:0x62:m";
+        }else if($_SESSION["chip"] == "ATtiny85"){
+        	$fuses = " -U hfuse:w:0xDF:m -U lfuse:w:0x62:m";
+        }
+
+        $command .= " -c usbasp -p " .$_SESSION["chip"] . $fuses . " -U flash:w:" . $file . ":i";
         /*
         if (strpos($file, ".hex") !== false) {
             $command .= ":i";
@@ -91,10 +101,17 @@
 
         if($_GET["eeprom"] == "erase") {
 
-            //header("Refresh:3; url=index.html");
+            header("Refresh:3; url=index.html");
+
+            $esize = 64;
+            if($_SESSION["chip"] == "ATtiny45"){
+                $esize = 256;
+            }else if($_SESSION["chip"] == "ATtiny85"){
+                $esize = 512;
+            }
 
         	$f = fopen($tmp_dir . $eeprom_file, 'wb');
-			for ($i=0; $i<64; $i++) {
+			for ($i=0; $i<$esize; $i++) {
 			    fwrite($f, pack("C*", 0xFF));
 			}
 			fclose($f);

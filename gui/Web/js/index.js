@@ -1,22 +1,22 @@
 
 var theme = detectTheme();
 var refreshTimer;
-var refreshSpeed = 5000;
+var refreshSpeed = 8000;
 var progressTimer;
 var deepSleep = 40; //8seconds x 40 = 5.5 min
-var moistureOffset =260; //this is caused by double 10k pullup resistor (on both sides "out" and sense "in")
+var moistureOffset = 260; //this is caused by double 10k pullup resistor (on both sides "out" and sense "in")
 var saveReminder;
 
 var solar_values = [0,1];
 var solar_labels = ["OFF", "ON"];
 
-var pot_values = [40,60,80];
+var pot_values = [10,20,40];
 var pot_labels = ["Small", "Medium", "Large"];
 
-var soil_values = [280, 480];
+var soil_values = [220, 480];
 var soil_labels = ["Dry (Cactus)", "Wet (Tropical)"];
 
-var soil_type_values = [300, 320, 380, 420, 464];
+var soil_type_values = [380, 320, 380, 280, 460];
 var soil_type_labels = ["Sand", "Clay", "Dirt", "Loam", "Moss"];
 
 var connectMessage = "Connect Plant to Computer";
@@ -24,6 +24,7 @@ var connectMessage = "Connect Plant to Computer";
 var p = 1;
 var os = "";
 var chip = "";
+var errorCode = "";
 
 /*==========
 EEPROM Map
@@ -31,7 +32,6 @@ EEPROM Map
 var ee = parseInt(0x01);
 var e_versionID = parseInt(0x00);
 var e_sensorMoisture = parseInt(0x02);
-
 var e_potSize = parseInt(0x04);
 var e_runSolar = parseInt(0x06);
 var e_deepSleep = parseInt(0x08);
@@ -40,6 +40,8 @@ var e_VSolar = parseInt(0xC);
 var e_moisture = parseInt(0x1A);
 var e_water = parseInt(0x1C);
 var e_errorCode = parseInt(0x2A);
+var e_empty = parseInt(0x38);
+var e_log = parseInt(0x3A);
 
 $(document).ready(function ()
 {
@@ -80,14 +82,14 @@ $(document).ready(function ()
     $("#slider-soil").ionRangeSlider({
         skin: "big",
         from: 0,
-        min: 280,
-        max: 480,
+        min: soil_values[0],
+        max: soil_values[1],
         step: 1,
         prettify: function (n) {
             //console.log(n);
-            if(n == 280){
+            if(n == soil_values[0]){
                 return soil_labels[0];
-            }else if(n == 480){
+            }else if(n == soil_values[1]){
                 return soil_labels[1];
             }
             return n;
@@ -171,9 +173,9 @@ function startConsole(hex,delay)
             progressTimer = setInterval(progressCounter, 12);
         }
 
-        $.ajax("usbasp.php?eeprom=write&offset=" + ee + ","+ e_deepSleep +"," + e_VSolar + "," + e_moisture + "," + e_water + "," + e_errorCode + "&value=" + parseInt(hex) + "," + parseInt(delay) + ",255,255,255,255", {
+        $.ajax("usbasp.php?eeprom=write&offset=" + ee + "," + e_deepSleep + "," + e_VSolar + "," + e_moisture + "," + e_water + "," + e_errorCode + "," + e_empty + "," + e_log + "&value=" + parseInt(hex) + "," + parseInt(delay) + ",255,255,255,255,0,0", {
             success: function(data) {
-                console.log(data);
+                consoleHex(data);
                 if(data.length >= 64) {
 
                     var btn = $("#debugConsole");
@@ -214,7 +216,7 @@ function checkEEPROM()
 {
     $.ajax("usbasp.php?eeprom=erase", {
         success: function(data) {
-            console.log(data);
+            consoleHex(data);
             if(data.length >= 64) {
                getEEPROMInfo(1);
             }else{
@@ -228,7 +230,7 @@ function getEEPROMInfo(crc)
 {
     $.ajax("usbasp.php?eeprom=read", {
         success: function(data) {
-            console.log(data);
+            consoleHex(data);
             if(data.length >= 64) {
 
                 var s = data.split("\n");
@@ -296,7 +298,7 @@ function getEEPROM()
         async: true,
         timeout: refreshSpeed + 500,
         success: function(data) {
-            //console.log(data);
+            //consoleHex(data);
             if(data.indexOf("could not find USB") !=-1) {
                 $.notify({ message: "USB Disconnected" }, { type: "danger" });
                 stopConsole();
@@ -312,14 +314,18 @@ function getEEPROM()
                     so -= moistureOffset;
                 }
                 so = (4.8 * so / 800);
-                var wt = HexShift(s,e_water);
-                var er = HexShift(s,e_errorCode);
+
+                var water = HexShift(s,e_water);
+                var empty = HexShift(s,e_empty);
+                var err = HexShift(s,e_errorCode);
 
                 //console.log(HexShift(s,26));
                 console.log("Solar:" + HexShift(s,e_VSolar));
-                console.log("Sensor:" + HexShift(s,e_moisture));
-                console.log("Water:" + wt);
-                console.log("Error:" + er);
+                console.log("Sensor:" + HexShift(s,e_moisture) + "(" + HexShift(s,e_sensorMoisture) + ")");
+                console.log("Water:" + water);
+                console.log("Empty:" + empty);
+                console.log("Log:" + HexShift(s,e_log));
+                console.log("Error:" + err);
 
                 if(sl > 0) {
                     debug.append("Solar Voltage: " + sl.toFixed(2) + "V (" + (sl/5*100).toFixed(0) + "%)\n");
@@ -333,14 +339,31 @@ function getEEPROM()
                 if (so < 0.2) {
                     debug.append("Error Code: Sensor not in Soil\n");
                 }
-                if(er == 1) {
-                    debug.append("Error Code: No Water!\n");
-                }else if(er == 200) {
-                    debug.append("Error Code: Water Refilled? ...Reseting\n");
+
+                if(err == 0 && errorCode == 8) {
+                    //Debug only
+                    //$.ajax("usbasp.php?eeprom=write&offset=" + e_log + "&value=0");
+
+                    debug.append("Error Code: Water Refilled!\n");
                 }
-                if(wt > 11) {
+
+                if(empty == 3) {
                     debug.append("Error Code: Overwater Protection\n");
                 }
+
+                if(empty == 11) {
+                    debug.append("Error Code: No Water (Sensorless)\n");
+                }
+                if(empty == 12) {
+                    debug.append("Error Code: No Water (Sensored)\n");
+                }
+
+                if(water > 10 && water < 255) {
+                    debug.append("Error Code: Overwater Protection\n");
+                }
+
+                errorCode = err;
+
             }else{
                 $.notify({ message: "Cannot read EEPROM" }, { type: "danger" });
             }
@@ -350,6 +373,18 @@ function getEEPROM()
     refreshTimer = setTimeout(function () {
         getEEPROM();
     }, refreshSpeed);
+};
+
+function consoleHex(data)
+{
+    var _data = "";
+
+    var s = data.split("\n");
+    for (i = 0; i < s.length-1; i++) {
+        _data += "[" +  parseInt(i).toString(16) + "] " + s[i] + "\n";
+    }
+
+    console.log(_data);
 };
 
 function HexShift(hex,bit)
@@ -423,7 +458,7 @@ function saveSettings()
 
         $.ajax("usbasp.php?eeprom=write&offset=" + e_runSolar + "," + e_potSize + "," + e_sensorMoisture + "&value=" + solar_values[$("#slider-solar").data().from] + "," + pot_values[$("#slider-pot").data().from] + "," + $("#slider-soil").data().from , {
             success: function(data) {
-                console.log(data);
+                consoleHex(data);
 
                 clearTimeout(saveReminder);
                 $.notify({ message: "Happy Plant &#127807;" }, { type: "success" });
