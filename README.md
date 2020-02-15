@@ -68,6 +68,8 @@ avr-objcopy -O ihex main.o main.hex
 sudo avrdude -p t13 -c usbtiny -Uhfuse:w:0xFF:m -Ulfuse:w:0x6A:m -U flash:w:main.hex:i
 ```
 
+![USBTINY](img/attiny_programmer_usbtiny.png?raw=true)
+
 ### Option 2 - USBasp
 ```
 sudo avrdude -p t13 -c usbasp -Uhfuse:w:0xFF:m -Ulfuse:w:0x6A:m -U flash:w:main.hex:i

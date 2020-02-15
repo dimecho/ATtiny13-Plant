@@ -86,8 +86,8 @@ do                          \
 #ifdef EEPROM_ENABLED
     //#include <avr/eeprom.h>
     static uint8_t EEPROM_read(uint8_t ucAddress);
-    static void EEPROM_write(uint8_t ucAddress, uint8_t ucData);
-    static void EEPROM_save(uint16_t ucCode, uint16_t ucValue, uint8_t ee);
+    static void EEPROM_write(uint8_t ucAddress, uint8_t ucValue);
+    static void EEPROM_save(uint8_t ucAddress, uint16_t ucValue, uint8_t ee);
 #endif
 
 #define UART_BAUDRATE   (9600)
@@ -138,7 +138,7 @@ https://ww1.microchip.com/downloads/en/AppNotes/doc8453.pdf
         return EEDR;
     }
 
-    void EEPROM_write(uint8_t ucAddress, uint8_t ucData)
+    void EEPROM_write(uint8_t ucAddress, uint8_t ucValue)
     {
         // Wait for completion of previous write
         while(EECR & (1<<EEPE))
@@ -148,30 +148,30 @@ https://ww1.microchip.com/downloads/en/AppNotes/doc8453.pdf
         EECR = (0<<EEPM1)|(0<<EEPM0);
         // Set up address and data registers
         EEARL = ucAddress;
-        EEDR = ucData;
+        EEDR = ucValue;
         // Write logical one to EEMPE
         EECR |= (1<<EEMPE);
         // Start eeprom write by setting EEPE
         EECR |= (1<<EEPE);
     }
 
-    void EEPROM_save(uint16_t ucCode, uint16_t ucValue, uint8_t ee)
+    void EEPROM_save(uint8_t ucAddress, uint16_t ucValue, uint8_t ee)
     {
         if (ee == 0xEE) //EEPROM wear reduction
         {
             if(ucValue > 255) //split into two epprom fields -> 388 = 38 + 8
             {
                 //uint8_t hi_lo[] = { (uint8_t)(ucValue >> 8), (uint8_t)ucValue }; //0xAAFF = { 0xAA, 0xFF }
-                //EEPROM_write(ucCode, hi_lo[0]);
-                //EEPROM_write((ucCode + 1), hi_lo[1]);
+                //EEPROM_write(ucAddress, hi_lo[0]);
+                //EEPROM_write((ucAddress + 1), hi_lo[1]);
 
                 uint8_t lo_hi[] = { (uint8_t)ucValue, (uint8_t)(ucValue >> 8) }; //0xAAFF = { 0xFF, 0xAA }
-                EEPROM_write(ucCode, lo_hi[0]);
-                EEPROM_write((ucCode + 1), lo_hi[1]);
+                EEPROM_write(ucAddress, lo_hi[0]);
+                EEPROM_write((ucAddress + 1), lo_hi[1]);
 
             }else{
-                EEPROM_write(ucCode, ucValue);
-                //eeprom_write_word((uint16_t*)ucCode, ucValue);
+                EEPROM_write(ucAddress, ucValue);
+                //eeprom_write_word((uint16_t*)ucAddress, ucValue);
             }
         }
     }
@@ -317,9 +317,10 @@ int main(void)
         if(runSolar == 1) {
 
             suitableMoisture += sensorMoistureOffset;
-            delayRefillReset *= 4;
+            delayRefillReset = deepSleep * 2;
+            deepSleep = 0;
 
-            //set_sleep_mode(SLEEP_MODE_IDLE);
+            set_sleep_mode(SLEEP_MODE_IDLE);
             WDTCR |= (0<<WDP3) | (1<<WDP2) | (1<<WDP1) | (1<<WDP0); //Set timer 2s
 
         }else{

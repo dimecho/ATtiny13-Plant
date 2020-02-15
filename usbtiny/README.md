@@ -1,8 +1,10 @@
 http://www.simpleavr.com/avr/vusbtiny
 
 
-Description from http://www.xs4all.nl/~dicks/avr/usbtiny/
+Description
 -------
+
+From http://www.xs4all.nl/~dicks/avr/usbtiny/
 
 USBtiny is a software implementation of the USB low-speed protocol for the Atmel ATtiny microcontrollers. Of course, it will also work on the ATmega series. The software is written for an AVR clocked at 12 MHz. At this frequency, each bit on the USB bus takes 8 clock cycles, and with a lot of trickery, it is possible to decode and encode the USB waveforms by software. The USB driver needs approximately 1250 to 1350 bytes of flash space (excluding the optional identification strings), depending on the configuration and compiler version, and 46 bytes RAM (excluding stack space). The C interface consists of 3 to 5 functions, depending on the configuration.
 
@@ -10,7 +12,7 @@ USBtiny is a software implementation of the USB low-speed protocol for the Atmel
 vUSB
 -------
 
-description from http://www.obdev.at/products/vusb/
+From http://www.obdev.at/products/vusb/
 
 V-USB is a software-only implementation of a low-speed USB device for Atmel's AVR microcontrollers, making it possible to build USB hardware with almost any AVR microcontroller, not requiring any additional chip.
 
@@ -87,7 +89,7 @@ make install
 ```
 After flashing firmware, we need to properly set the fuse, we are using pin 1 reset as IO in this project
 
-* ppl clock used as required by v-usb layer for usb timing
+* PLL clock used as required by v-usb layer for usb timing (16.5Mhz)
 * reset pin disabled as we need to use it as IO
 ```
 avrdude -c usbtiny -p t45 -V -U lfuse:w:0xe1:m -U hfuse:w:0x5d:m -U efuse:w:0xff:m

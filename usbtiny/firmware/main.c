@@ -44,7 +44,7 @@
 #include <stdlib.h>
 
 #include "usbdrv.h"
-#include "oddebug.h"
+//#include "oddebug.h"
 
 enum
 {
@@ -415,7 +415,7 @@ int main(void) {
     if(calibrationValue != 0xff){
         OSCCAL = calibrationValue;
     }
-    odDebugInit();
+    //odDebugInit();
     usbDeviceDisconnect();
     for(i=0;i<20;i++){  /* 300 ms disconnect */
         _delay_ms(15);

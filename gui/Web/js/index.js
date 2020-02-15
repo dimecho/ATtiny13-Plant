@@ -150,7 +150,7 @@ function stopConsole()
 
     var btn = $("#debugConsole");
     btn.text("Start Console");
-    btn.attr("onclick","startConsole(0xEE,1)");
+    btn.attr("onclick","startConsole(0xEE,0)");
     btn.removeClass("btn-danger");
     btn.addClass("btn-primary");
 
@@ -212,6 +212,31 @@ function startConsole(hex,delay)
     }
 };
 
+function EEPROM_T85()
+{
+	/*
+	Strange bug, ATtiny85 eeprom is large (uint16_t) starts write @ address 0x100 (256)
+
+	It is flash-costly to handle uint16_t in attiny ...so offset it here
+
+	Wastefull, but backwards compatible with ATtiny13
+	*/
+
+	ee += 256;
+	e_versionID += 256;
+	e_sensorMoisture += 256;
+	e_potSize += 256;
+	e_runSolar += 256;
+	e_deepSleep += 256;
+	e_VReg += 256;
+	e_VSolar += 256;
+	e_moisture += 256;
+	e_water += 256;
+	e_errorCode += 256;
+	e_empty += 256;
+	e_log += 256;
+};
+
 function checkEEPROM()
 {
     $.ajax("usbasp.php?eeprom=erase", {
@@ -237,17 +262,19 @@ function getEEPROMInfo(crc)
                 var info = $("#debugInfo").empty();
                 info.append("Hardware Chip: " + chip + "\n");
 
-                var vr = HexShift(s,e_VReg);
-                vrchip = "TP4056";
-                if(vr == 1) {
-                    vrchip = "WS78L05";
-                }else if(vr == 2) {
-                    vrchip = "LM2731";
-                }else if(vr == 3) {
-                    vrchip = "TPL5110";
+                var vr = HexShift(s,e_versionID).toString();
+                var vreg = HexShift(s,e_VReg);
+
+                var vchip = "TP4056";
+                if(vreg == 1) {
+                    vchip = "WS78L05";
+                }else if(vreg== 2) {
+                    vchip = "LM2731";
+                }else if(vreg == 3) {
+                    vchip = "TPL5110";
                 }
-                info.append("Solar Regulator: " + vrchip + "\n");
-                info.append("Firmware Version: " + s[0].charAt(0) + "." + s[0].charAt(1));
+                info.append("Solar Regulator: " + vchip + "\n");
+                info.append("Firmware Version: " + vr.charAt(0) + "." + vr.charAt(1));
 
                 var sl = HexShift(s,e_runSolar);
                 var pt = HexShift(s,e_potSize);
@@ -406,6 +433,10 @@ function connectPlant(async)
             async: async,
             success: function(data) {
                 if(data == "ATtiny13" || data == "ATtiny45" || data == "ATtiny85") {
+                	if (data == "ATtiny85") {
+                		EEPROM_T85();
+                		refreshSpeed = 10000; //EEPROM takes longer to read, do not force early interrupt
+                	}
                     chip = data;
                     $.notify({ message: "Plant Connected" }, { type: "success" });
                     $(".icon-chip").attr("data-original-title", "<h6 class='text-white'>" + data + "</h6>");
