@@ -1,4 +1,3 @@
-
 var theme = detectTheme();
 var refreshTimer;
 var refreshSpeed = 8000;
@@ -159,7 +158,7 @@ function stopConsole()
 
 function sendStop()
 {
-    $.ajax("usbasp.php?eeprom=write&offset=" + ee + "," + e_deepSleep + "&value=255," + deepSleep);
+    $.ajax("usb.php?eeprom=write&offset=" + ee + "," + e_deepSleep + "&value=255," + deepSleep);
 };
 
 function startConsole(hex,delay)
@@ -173,7 +172,7 @@ function startConsole(hex,delay)
             progressTimer = setInterval(progressCounter, 12);
         }
 
-        $.ajax("usbasp.php?eeprom=write&offset=" + ee + "," + e_deepSleep + "," + e_VSolar + "," + e_moisture + "," + e_water + "," + e_errorCode + "," + e_empty + "," + e_log + "&value=" + parseInt(hex) + "," + parseInt(delay) + ",255,255,255,255,0,0", {
+        $.ajax("usb.php?eeprom=write&offset=" + ee + "," + e_deepSleep + "," + e_VSolar + "," + e_moisture + "," + e_water + "," + e_errorCode + "," + e_empty + "," + e_log + "&value=" + parseInt(hex) + "," + parseInt(delay) + ",255,255,255,255,0,0", {
             success: function(data) {
                 consoleHex(data);
                 if(data.length >= 64) {
@@ -199,7 +198,7 @@ function startConsole(hex,delay)
                         
                         stopConsole();
                         
-                        $.ajax("usbasp.php?reset=1");
+                        $.ajax("usb.php?reset=1");
                     }
                     
                 }else{
@@ -212,7 +211,7 @@ function startConsole(hex,delay)
     }
 };
 
-function EEPROM_T85()
+function EEPROM_T85(offset)
 {
 	/*
 	Strange bug, ATtiny85 eeprom is large (uint16_t) starts write @ address 0x100 (256)
@@ -222,24 +221,26 @@ function EEPROM_T85()
 	Wastefull, but backwards compatible with ATtiny13
 	*/
 
-	ee += 256;
-	e_versionID += 256;
-	e_sensorMoisture += 256;
-	e_potSize += 256;
-	e_runSolar += 256;
-	e_deepSleep += 256;
-	e_VReg += 256;
-	e_VSolar += 256;
-	e_moisture += 256;
-	e_water += 256;
-	e_errorCode += 256;
-	e_empty += 256;
-	e_log += 256;
+    if(e_versionID == 0) {
+    	ee += offset;
+    	e_versionID += offset;
+    	e_sensorMoisture += offset;
+    	e_potSize += offset;
+    	e_runSolar += offset;
+    	e_deepSleep += offset;
+    	e_VReg += offset;
+    	e_VSolar += offset;
+    	e_moisture += offset;
+    	e_water += offset;
+    	e_errorCode += offset;
+    	e_empty += offset;
+    	e_log += offset;
+    }
 };
 
 function checkEEPROM()
 {
-    $.ajax("usbasp.php?eeprom=erase", {
+    $.ajax("usb.php?eeprom=erase", {
         success: function(data) {
             consoleHex(data);
             if(data.length >= 64) {
@@ -253,7 +254,7 @@ function checkEEPROM()
 
 function getEEPROMInfo(crc)
 {
-    $.ajax("usbasp.php?eeprom=read", {
+    $.ajax("usb.php?eeprom=read", {
         success: function(data) {
             consoleHex(data);
             if(data.length >= 64) {
@@ -285,14 +286,32 @@ function getEEPROMInfo(crc)
                 console.log("Soil: " + so);
 
                 if(sl == 0 && pt == 0 && so == 0) {
-                    if(crc == undefined){
-                        $.notify({ message: "EEPROM is Corrupt ...Trying to Fix" }, { type: "danger" });
+                    if(crc == undefined) {
+                        $.notify({ message: "EEPROM is Corrupt ...Trying to Fix" }, { type: "warning" });
                         checkEEPROM();
                     }else{
-                        $.notify({ message: "Cannot Fix EEPROM, re-Flash Firmware" }, { type: "danger" });
+                        $.notify({ message: "Cannot fix EEPROM" }, { type: "danger" });
+                        $.notify({ message: "Flashing Firmware ..." }, { type: "warning" });
+
+                        $.ajax("usb.php?eeprom=flash" , {
+				            success: function(data) {
+				                console.log(data);
+                                if(data.indexOf("flash verified") !=-1) {
+                                    $.notify({ message: "Firmware Fixed!" }, { type: "success" });
+                                }else{
+                                    $.notify({ message: "Cannot fix Firmware, try manually (.hex File)" }, { type: "danger" });
+                                }
+				            }
+				        });
                     }
                 }else if (crc == 1) {
                     $.notify({ message: "EEPROM Fixed!" }, { type: "success" });
+                }else{
+                    if(s[ee] == parseInt(0xEE)) {
+                        $.notify({ message: "Plant was left in Debug mode" }, { type: "danger" });
+                        sendStop();
+                        $.notify({ message: "Next time 'Stop Console' before disconnecting" }, { type: "warning" });
+                    }
                 }
 
                 var instance = $("#slider-solar").data("ionRangeSlider");
@@ -321,7 +340,7 @@ function getEEPROM()
 {
     clearTimeout(refreshTimer);
 
-    $.ajax("usbasp.php?eeprom=read", {
+    $.ajax("usb.php?eeprom=read", {
         async: true,
         timeout: refreshSpeed + 500,
         success: function(data) {
@@ -369,7 +388,7 @@ function getEEPROM()
 
                 if(err == 0 && errorCode == 8) {
                     //Debug only
-                    //$.ajax("usbasp.php?eeprom=write&offset=" + e_log + "&value=0");
+                    //$.ajax("usb.php?eeprom=write&offset=" + e_log + "&value=0");
 
                     debug.append("Error Code: Water Refilled!\n");
                 }
@@ -429,12 +448,14 @@ function HexShift(hex,bit)
 function connectPlant(async)
 {
     if(chip == "") {
-        $.ajax("usbasp.php?connect=plant", {
+        $.ajax("usb.php?connect=plant", {
             async: async,
             success: function(data) {
                 if(data == "ATtiny13" || data == "ATtiny45" || data == "ATtiny85") {
-                	if (data == "ATtiny85") {
-                		EEPROM_T85();
+                    if (data == "ATtiny45") {
+                        EEPROM_T85(128);
+                	}else if (data == "ATtiny85") {
+                		EEPROM_T85(256);
                 		refreshSpeed = 10000; //EEPROM takes longer to read, do not force early interrupt
                 	}
                     chip = data;
@@ -443,7 +464,7 @@ function connectPlant(async)
                     getEEPROMInfo();
                 }else if(data == "fix") {
                     $.notify({ message: "... Fixing USB Driver" }, { type: "danger" });
-                    $.ajax("usbasp.php?driver=fix", {
+                    $.ajax("usb.php?driver=fix", {
                         success: function(data) {
                             if(data == "ok") {
                                 $.notify({ message: "USB Driver Installed" }, { type: "success" });
@@ -487,7 +508,7 @@ function saveSettings()
         //$.notify({ message: "... Flashing new Firmware" }, { type: "warning" });
         $.notify({ message: "... Saving Settings" }, { type: "warning" });
 
-        $.ajax("usbasp.php?eeprom=write&offset=" + e_runSolar + "," + e_potSize + "," + e_sensorMoisture + "&value=" + solar_values[$("#slider-solar").data().from] + "," + pot_values[$("#slider-pot").data().from] + "," + $("#slider-soil").data().from , {
+        $.ajax("usb.php?eeprom=write&offset=" + e_runSolar + "," + e_potSize + "," + e_sensorMoisture + "&value=" + solar_values[$("#slider-solar").data().from] + "," + pot_values[$("#slider-pot").data().from] + "," + $("#slider-soil").data().from , {
             success: function(data) {
                 consoleHex(data);
 

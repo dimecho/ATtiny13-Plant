@@ -17,6 +17,7 @@ public class ATtinyPlant
 	static string profile = Environment.GetEnvironmentVariable("USERPROFILE") + "\\";
 	static string appdata = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData)+ "\\ATtiny-Plant\\";
 
+	[STAThread]
     public static void Main(string[] args)
     {
     	ServicePointManager.ServerCertificateValidationCallback = new System.Net.Security.RemoteCertificateValidationCallback(AcceptAllCertifications);
@@ -29,19 +30,18 @@ public class ATtinyPlant
 			Directory.CreateDirectory(appdata);
 
 			Console.WriteLine("...Installing Web-Interface");
-			extractEmbedResource("APP", "ATtiny-Plant-Web.zip", temp);
-			ZipFile.ExtractToDirectory(temp + "ATtiny-Plant-Web.zip", appdata);
-			File.Delete(temp + "ATtiny-Plant-Web.zip");
+			extractEmbedResource("APP", "Web.zip", temp);
+			ZipFile.ExtractToDirectory(temp + "Web.zip", appdata);
+			File.Delete(temp + "Web.zip");
+
+			extractEmbedResource("AVR", "avrdude.conf", appdata + @"Web\");
+			extractEmbedResource("AVR", "avrdude.exe", appdata + @"Web\");
+
+			extractEmbedResource("APP", "Drivers.zip", temp);
+			ZipFile.ExtractToDirectory(temp + "Drivers.zip", appdata);
+			File.Delete(temp + "Drivers.zip");
 		}
 
-		extractEmbedResource("AVR", "avrdude.conf", appdata + @"Web\");
-		extractEmbedResource("AVR", "avrdude.exe", appdata + @"Web\");
-		extractEmbedResource("AVR", "libusb0.dll", appdata + @"Web\");
-
-		extractEmbedResource("Drivers", "install-filter.exe", temp);
-		extractEmbedResource("Drivers", "libusb0.dll", temp);
-		extractEmbedResource("Drivers", "libusb0.sys", temp);
-		
 		if (!File.Exists(appdata + @"php\php.exe")) {
 
 			string phpFile = "php-7.4.0-Win32-vc15-x64.zip";
@@ -105,8 +105,11 @@ public class ATtinyPlant
 			}
 		}
 
-		//checkDriver();
-		//checkDriverFilter();
+		//checkDriver("VID_0403&PID_6001");
+		checkDriver("VID_16C0&PID_05DC");
+
+		//checkDriverFilter("VID_0403&PID_6001");
+		//checkDriverFilter("VID_16C0&PID_05DC");
 
 		Process php = new Process();
 		php.StartInfo.FileName = appdata + @"php\php.exe";
@@ -120,18 +123,24 @@ public class ATtinyPlant
 		//Console.Read();
     }
 
-	public static void checkDriver()
+	public static void checkDriver(string id)
 	{
 		Runspace runspace = RunspaceFactory.CreateRunspace();
 		runspace.Open();
 
 		PowerShell powerShell = PowerShell.Create();
 		powerShell.Runspace = runspace;
-		powerShell.AddScript("Get-WmiObject Win32_PNPEntity | Where { $_.Status -match \"Error\" -and $_.HardwareID -like \"*VID_16C0&PID_05DC*\"}");
+		powerShell.AddScript("Get-WmiObject Win32_PNPEntity | Where { $_.Status -match \"Error\" -and $_.HardwareID -like \"*" + id + "*\"}");
 		var results = powerShell.Invoke();
 
 		if(results.Count > 0)
 		{
+			Console.WriteLine("...Installing Driver");
+
+			powerShell.AddScript("powershell.exe -ExecutionPolicy Bypass -File .\\" + appdata + "Drivers\\usbtiny.ps1");
+			powerShell.Invoke();
+			
+			/*
 			string zadig = "zadig-2.4.exe";
 			extractEmbedResource("Drivers", zadig, temp);
 
@@ -160,13 +169,14 @@ public class ATtinyPlant
 			{
 			    proc.WaitForExit();
 			}
+			*/
 		}
 		runspace.Close();
 	}
 
-	public static void checkDriverFilter()
+	public static void checkDriverFilter(string id)
 	{
-		RegistryKey key = Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Enum\USB\VID_16C0&PID_05DC");
+		RegistryKey key = Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Enum\USB\" + id);
 
 		if (key != null) {
 			foreach (var v in key.GetSubKeyNames()) {
@@ -187,17 +197,17 @@ public class ATtinyPlant
 	            }
 	        }
 		}
-		installDriverFilter();
+		installDriverFilter(id);
 	}
 
-    public static void installDriverFilter()
+    public static void installDriverFilter(string id)
 	{
 		Runspace runspace = RunspaceFactory.CreateRunspace();
 		runspace.Open();
 
 		PowerShell powerShell = PowerShell.Create();
 		powerShell.Runspace = runspace;
-		powerShell.AddScript("Get-WmiObject Win32_PNPEntity | Where {$_.HardwareID -like \"*VID_16C0&PID_05DC*\"} | Select -ExpandProperty HardwareID");
+		powerShell.AddScript("Get-WmiObject Win32_PNPEntity | Where {$_.HardwareID -like \"*" + id + "*\"} | Select -ExpandProperty HardwareID");
 		var results = powerShell.Invoke();
 
 		if(results.Count > 0)
@@ -209,7 +219,7 @@ public class ATtinyPlant
 			    Console.WriteLine(result.ToString());
 
 			    ProcessStartInfo start = new ProcessStartInfo();
-				start.FileName = temp + "install-filter.exe";
+				start.FileName = appdata + @"Drivers\amd64\install-filter.exe";
 				start.Arguments = "install \"--device=" + result.ToString() + "\"";
 				start.Verb = "runas";
 				using (Process proc = Process.Start(start))

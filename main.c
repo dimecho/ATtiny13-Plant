@@ -80,8 +80,9 @@ do                          \
 #define solarSensorPin              PB3 //Input/Output
 #define moistureSensorPin           PB4 //Input
 #define delayWatering               40  //8seconds x 40 = 5.5 min
+#define delayBetweenRefillReset     20  //8seconds x 40 x 20 = 2 hours
+#define delayBetweenOverfloodReset  100 //8seconds x 40 x 100 = 8 hours
 #define delayBetweenSolarDischarge  4   //8seconds x 5 = .5 min
-#define delayBetweenRefillReset     1024 //8seconds x 1024 = 2 hours
 
 #ifdef EEPROM_ENABLED
     //#include <avr/eeprom.h>
@@ -191,7 +192,6 @@ int main(void)
     uint16_t suitableMoisture = sensorMoisture; //Analog value with 10k pull-up resistor
     uint8_t deepSleep = delayWatering;
     uint8_t potSize = potSizeTimer;
-    uint16_t delayRefillReset = delayBetweenRefillReset;
     uint8_t runSolar = 0;
     uint8_t ee = 0xFF;
     uint16_t errorCode = 0;
@@ -313,12 +313,11 @@ int main(void)
         moistureLog = EEPROM_read(0x3A);
 
     }else{
-        
+
         if(runSolar == 1) {
 
             suitableMoisture += sensorMoistureOffset;
-            delayRefillReset = deepSleep * 2;
-            deepSleep = 0;
+            //deepSleep = 0;
 
             set_sleep_mode(SLEEP_MODE_IDLE);
             WDTCR |= (0<<WDP3) | (1<<WDP2) | (1<<WDP1) | (1<<WDP0); //Set timer 2s
@@ -386,9 +385,12 @@ int main(void)
                 blink(9,254);
 
                 //Retry every 2 hours ...when someone refilled the bottle but did not cycle power.
-                if(ee == 0xFF && emptyBottle == 11 && sleepLoop > delayRefillReset)
+                if(ee == 0xFF)
                 {
-                    soft_reset();
+                    if((emptyBottle > 10 && sleepLoop > delayBetweenRefillReset) || (emptyBottle < 10 && sleepLoop > delayBetweenOverfloodReset))
+                    {
+                        soft_reset();
+                    }
                 }else{
                     emptyBottle = 0;
                     moistureLog = 0;
@@ -669,8 +671,14 @@ uint16_t ReadADC(uint8_t pin) {
 
     //http://maxembedded.com/2011/06/the-adc-of-the-avr/
 
-    ADMUX = (0 << REFS0);     //Set VCC as reference voltage (5V)
-    //ADMUX |= (1 << REFS0);  //Set VCC as reference voltage (Internal 1.1V)
+    #if defined __AVR_ATtiny45__ || defined __AVR_ATtiny85__
+       ADMUX = ((0 << REFS2) | (0 << REFS1) | (0 << REFS0)); //5V
+       //ADMUX = ((0 << REFS2) | (1 << REFS1) | (0 << REFS0)) //1.1V
+       //ADMUX = ((1 << REFS2) | (1 << REFS1) | (0 << REFS0)) //2.56V
+    #else
+        ADMUX = (0 << REFS0);     //Set VCC as reference voltage (5V)
+        //ADMUX = (1 << REFS0);  //Set VCC as reference voltage (Internal 1.1V)
+    #endif
 
     /*
     if(pin == PB5) { // ADC0

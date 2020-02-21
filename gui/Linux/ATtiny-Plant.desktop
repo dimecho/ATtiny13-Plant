@@ -1,0 +1,6 @@
+[Desktop Entry]
+Type=Application
+Terminal=true
+Name=ATtiny-Plant
+Exec=bash -c '"$(dirname "$1")"/ATtiny-Plant.sh' dummy %k
+Icon=driver-manager

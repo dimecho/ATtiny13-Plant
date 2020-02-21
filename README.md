@@ -14,6 +14,8 @@ Monitor soil moisture and water plant. Portable and high efficiency with lithium
 
 ![Windows](img/win.png?raw=true) [Windows](../../releases/download/1.0/ATTiny13.Plant.zip)
 
+![Linux](img/linux.png?raw=true) [Linux](../../releases/download/1.0/ATTiny13.Plant.tgz)
+
 ![Firmware](img/chip.png?raw=true) [Firmware](../../releases/download/1.0/ATTiny13.Plant.Firmware.zip)
 
 ## BOM (Bill of Materials)
@@ -45,7 +47,9 @@ Designed with [EagleCAD](https://www.autodesk.com/products/eagle/free-download)
 
 ## Diagram
 
-![Screenshot](img/diagram.png?raw=true)
+![Diagram](img/diagram.png?raw=true)
+
+![Technical](img/technical.png?raw=true)
 
 ## Compile
 
@@ -65,21 +69,21 @@ avr-objcopy -O ihex main.o main.hex
 
 ### Option 1 - USBTiny (Recommended)
 ```
-sudo avrdude -p t13 -c usbtiny -Uhfuse:w:0xFF:m -Ulfuse:w:0x6A:m -U flash:w:main.hex:i
+avrdude -p t13 -c usbtiny -Uhfuse:w:0xFF:m -Ulfuse:w:0x6A:m -U flash:w:main.hex:i
 ```
 
 ![USBTINY](img/attiny_programmer_usbtiny.png?raw=true)
 
 ### Option 2 - USBasp
 ```
-sudo avrdude -p t13 -c usbasp -Uhfuse:w:0xFF:m -Ulfuse:w:0x6A:m -U flash:w:main.hex:i
+avrdude -p t13 -c usbasp -Uhfuse:w:0xFF:m -Ulfuse:w:0x6A:m -U flash:w:main.hex:i
 ```
 
 ![USBASP](img/attiny_programmer_usbasp.png?raw=true)
 
 ### Option 3 - Raspberry Pi (Using linuxgpio)
 ```
-sudo avrdude -p t13 -c linuxgpio -Uhfuse:w:0xFF:m -Ulfuse:w:0x6A:m -U flash:w:main.hex:i
+avrdude -p t13 -c linuxgpio -Uhfuse:w:0xFF:m -Ulfuse:w:0x6A:m -U flash:w:main.hex:i
 ```
 
 ![PI](img/attiny_programmer_pi.png?raw=true)
@@ -104,39 +108,12 @@ programmer
   miso  = 9;
 ```
 
-### Bootloader (Optional - No Longer Used in Design)
-
-Bootloader is usefull for updating the firmware over UART without desoldering the chip.
-
-Compile
-```
-cd ./bootloader
-make
-```
-One-Time Flash
-```
-sudo avrdude -p t13 -c linuxgpio -Uhfuse:w:0xEE:m -Ulfuse:w:0x6A:m -e -U flash:w:bootload.hex:i
-```
-Update (MacOS)
-```
-./fastboot/osx/bootloader -d /dev/cu.usbserial -b 9600 -p main.hex
-```
-Update (Windows)
-```
-./fastboot/win/FBOOT.EXE -C2 -B9600 -Pmain.hex
-```
-**Note 1:** Ready the chip for flashing by resetting it - short Pin4 (GND) and Pin8 (VCC) for 1 second.
-
-**Note 2:** Disconnect UART Pin3 (RX) after flashing - sensor will read false-positive if UART has +5V.
-
-**Caution:** RESET Pin1 (PB5) if fuses set HFuse 0xFE (or 0xEE), ATTiny13 can only be flashed once. Future flashing requires "High-Voltage programmer" to clear the fuse.
-
 ## Licenses
 
 > ATtiny13 Plant
 >
 > [![CC0](http://i.creativecommons.org/l/zero/1.0/88x31.png)](https://creativecommons.org/publicdomain/zero/1.0/)
 >
-> Fastboot
+> USBasp / USBtiny
 >
-> [![BSD](https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/Heckert_GNU_white.svg/38px-Heckert_GNU_white.svg.png)](https://www.gnu.org/licenses/)
+> [![GNU](https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/Heckert_GNU_white.svg/38px-Heckert_GNU_white.svg.png)](https://www.gnu.org/licenses/)

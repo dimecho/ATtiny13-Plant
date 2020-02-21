@@ -5,7 +5,7 @@
 
     if(count($_FILES)) {
         
-        avrConnect();
+        avrConnect("usbtiny",0);
 
         $file = $_FILES['file']['tmp_name'];
         $fuses = "";
@@ -27,7 +27,7 @@
         	$fuses = " -U hfuse:w:0xDF:m -U lfuse:w:0x62:m";
         }
 
-        $command .= " -c usbasp -p " .$_SESSION["chip"] . $fuses . " -U flash:w:" . $file . ":i";
+        $command .= " -c " . $_SESSION["usb"] . " -p " . $_SESSION["chip"] . $fuses . " -U flash:w:" . $file . ":i";
         /*
         if (strpos($file, ".hex") !== false) {
             $command .= ":i";
@@ -49,7 +49,7 @@
     }
     else if(isset($_GET["connect"]))
     {
-        echo avrConnect();
+        echo avrConnect("usbtiny",0);
     }
     else if(isset($_GET["reset"]))
     {
@@ -61,7 +61,7 @@
             $command = "avrdude";
         }
 
-        $command .= " -c usbasp -p " .$_SESSION["chip"]. " -Ulfuse:v:0x00:m";
+        $command .= " -c " . $_SESSION["usb"] . " -p " .$_SESSION["chip"]. " -Ulfuse:v:0x00:m";
 
         $output = shell_exec($command. " 2>&1");
     }
@@ -97,8 +97,6 @@
 
         $eeprom_file = "/attiny-read.eeprom";
 
-        $command .= " -c usbasp -p " .$_SESSION["chip"]. " -U eeprom:r:" . $tmp_dir . $eeprom_file .":r";
-
         if($_GET["eeprom"] == "erase") {
 
             header("Refresh:3; url=index.html");
@@ -116,9 +114,13 @@
 			}
 			fclose($f);
 
-        	$command = str_replace("eeprom:r:", "eeprom:w:", $command);
+            $command .= " -c " . $_SESSION["usb"] . " -p " .$_SESSION["chip"]. " -U eeprom:w:" . $tmp_dir . $eeprom_file .":r";
+        }else if($_GET["eeprom"] == "flash") {
+            $command .= " -c " . $_SESSION["usb"] . " -p " .$_SESSION["chip"]. " -U flash:w:" . dirname(__FILE__) . "/firmware/" . strtolower($_SESSION["chip"]) . ".hex:i";
+        }else{
+            $command .= " -c " . $_SESSION["usb"] . " -p " .$_SESSION["chip"]. " -U eeprom:r:" . $tmp_dir . $eeprom_file .":r";
         }
-
+        
         $output = shell_exec($command. " 2>&1");
 
         if (file_exists($tmp_dir . $eeprom_file)) {
@@ -194,16 +196,16 @@
         }
     }
 
-    function avrConnect()
+    function avrConnect($programmer,$t)
     {
         $uname = strtolower(php_uname('s'));
 
         if (strpos($uname, "darwin") !== false) {
-            $command = "/usr/local/bin/avrdude -c usbasp -p t13 -n";
+            $command = "/usr/local/bin/avrdude -c " . $programmer . " -p t13 -n";
         }else if (strpos($uname, "win") !== false) {
-            $command = "avrdude.exe -c usbasp t13 -n";
+            $command = "avrdude.exe -c " . $programmer . " -p t13 -n";
         }else{
-            $command = "avrdude -c usbasp -p t13 -n";
+            $command = "avrdude -c " . $programmer . " -p t13 -n";
         }
 
         $output = shell_exec($command. " 2>&1");
@@ -212,6 +214,9 @@
         session_destroy();
         session_start();
 
+        $_SESSION["usb"] = $programmer;
+        $_SESSION["chip"] = "";
+
         if (strpos($output, "0x1e9007") !== false) {
             $_SESSION["chip"] = "ATtiny13";
         }else if (strpos($output, "0x1e9206") !== false) {
@@ -219,11 +224,12 @@
         }else if (strpos($output, "0x1e930b") !== false) {
             $_SESSION["chip"] = "ATtiny85";
         }else if (strpos($output, "could not find USB device") !== false) {
+
             if (strpos($uname, "darwin") !== false) {
                 return "";
             }else if (strpos($uname, "win") !== false) {
                 $command = "powershell.exe -ExecutionPolicy Bypass -Command \"Get-WmiObject Win32_PNPEntity | Where { \$_.HardwareID -like \\\"*VID_16C0*PID_05DC*\\\" }\"";
-                $output = shell_exec($command. " 2>&1");
+                $output = shell_exec($command . " 2>&1");
 
                 if(strlen($output) > 0 )
                 {
@@ -232,14 +238,14 @@
                 //echo $output;
             }
         }else{
-            $count = 0;
-            while($count < 4 && strpos($output, "error:") == false) {
+            if($t < 4 && strpos($output, "error:") == false) {
                 sleep(1);
-                $output = shell_exec($command. " 2>&1");
-                $count++;
+                $t = $t + 1;
+                $output = avrConnect("usbasp",$t);
+            }else{
+                return "sck";
             }
-
-            return"sck";
+            return $output;
         }
 
         return $_SESSION["chip"];

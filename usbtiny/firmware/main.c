@@ -105,8 +105,8 @@ static	uchar		res[4];		// SPI result buffer
 // ----------------------------------------------------------------------
 // Delay exactly <sck_period> times 0.5 microseconds (6 cycles).
 // ----------------------------------------------------------------------
-__attribute__((always_inline)) inline
-static	void	delay ( void )
+__attribute__((always_inline))
+static inline void delay ( void )
 {
 	asm volatile(
 		"	mov	__tmp_reg__,%0	\n"

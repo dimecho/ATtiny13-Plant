@@ -92,7 +92,7 @@ After flashing firmware, we need to properly set the fuse, we are using pin 1 re
 * PLL clock used as required by v-usb layer for usb timing (16.5Mhz)
 * reset pin disabled as we need to use it as IO
 ```
-avrdude -c usbtiny -p t45 -V -U lfuse:w:0xe1:m -U hfuse:w:0x5d:m -U efuse:w:0xff:m
+avrdude -c usbtiny -p t85 -V -U lfuse:w:0xe1:m -U hfuse:w:0x5d:m -U efuse:w:0xff:m
 ```
 
 This setting disables further programming via 5V SPI as we need the RESET pin (pin1) for IO. you will need access to a HVSP programmer to recover the fuse.
