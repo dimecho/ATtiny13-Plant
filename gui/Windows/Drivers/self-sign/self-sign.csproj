@@ -1,0 +1,16 @@
+<Project>
+	<Import Project="$(MSBuildSDKsPath)\Microsoft.NET.Sdk\Sdk\Sdk.props" />
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<TargetFramework>netcoreapp5.0</TargetFramework>
+		<RuntimeIdentifier>win-x64</RuntimeIdentifier>
+		<IlcInvariantGlobalization>true</IlcInvariantGlobalization>
+	</PropertyGroup>
+	<ItemGroup>
+		<PackageReference Include="System.Net.Http" Version="4.3.4" />
+		<PackageReference Include="System.Security.Cryptography.Pkcs" Version="5.0.0-preview.1.20120.5" />
+		<PackageReference Include="System.Security.Cryptography.X509Certificates" Version="4.3.2" />
+	</ItemGroup>
+  <Import Project="$(MSBuildSDKsPath)\Microsoft.NET.Sdk\Sdk\Sdk.targets" />
+  <Import Project="$(IlcPath)\build\Microsoft.NETCore.Native.targets" />
+</Project>

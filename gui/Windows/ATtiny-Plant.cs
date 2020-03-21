@@ -3,8 +3,9 @@ using System.IO;
 using System.Net;
 using System.Diagnostics;
 using System.IO.Compression;
-using System.Management.Automation;
-using System.Management.Automation.Runspaces;
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
+using System.Management;
 using System.Reflection;
 using Microsoft.Win32;
 
@@ -36,6 +37,7 @@ public class ATtinyPlant
 
 			extractEmbedResource("AVR", "avrdude.conf", appdata + @"Web\");
 			extractEmbedResource("AVR", "avrdude.exe", appdata + @"Web\");
+			extractEmbedResource("AVR", "libusb0.dll", appdata + @"Web\");
 
 			extractEmbedResource("APP", "Drivers.zip", temp);
 			ZipFile.ExtractToDirectory(temp + "Drivers.zip", appdata);
@@ -44,7 +46,7 @@ public class ATtinyPlant
 
 		if (!File.Exists(appdata + @"php\php.exe")) {
 
-			string phpFile = "php-7.4.0-Win32-vc15-x64.zip";
+			string phpFile = "php-7.4.3-Win32-vc15-x64.zip";
 			extractEmbedResource("PHP",phpFile,temp);
 
 			if (File.Exists(temp + phpFile)) {
@@ -71,7 +73,7 @@ public class ATtinyPlant
 			File.Move(appdata + @"php\php.ini-production", appdata + @"php\php.ini");
 		}
 
-		var vc2019 = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Classes\Installer\Dependencies\VC,redist.x64,amd64,14.24,bundle\Dependents\{282975d8-55fe-4991-bbbb-06a72581ce58}");
+		var vc2019 = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Classes\Installer\Dependencies\VC,redist.x64,amd64,14.25,bundle\Dependents\{6913e92a-b64e-41c9-a5e6-cef39207fe89}");
 
 		if (vc2019 == null)
 		{
@@ -105,11 +107,8 @@ public class ATtinyPlant
 			}
 		}
 
-		//checkDriver("VID_0403&PID_6001");
-		checkDriver("VID_16C0&PID_05DC");
-
-		//checkDriverFilter("VID_0403&PID_6001");
-		//checkDriverFilter("VID_16C0&PID_05DC");
+		checkDriver("VID_1781&PID_0C9F");
+		//checkDriver("VID_16C0&PID_05DC");
 
 		Process php = new Process();
 		php.StartInfo.FileName = appdata + @"php\php.exe";
@@ -125,53 +124,53 @@ public class ATtinyPlant
 
 	public static void checkDriver(string id)
 	{
-		Runspace runspace = RunspaceFactory.CreateRunspace();
-		runspace.Open();
+		try
+        {
+            ManagementObjectSearcher searcher = new ManagementObjectSearcher("root\\CIMV2", "SELECT * FROM Win32_PNPEntity WHERE Status LIKE '%Error%' AND DeviceID LIKE '%" + id + "%'"); 
 
-		PowerShell powerShell = PowerShell.Create();
-		powerShell.Runspace = runspace;
-		powerShell.AddScript("Get-WmiObject Win32_PNPEntity | Where { $_.Status -match \"Error\" -and $_.HardwareID -like \"*" + id + "*\"}");
-		var results = powerShell.Invoke();
-
-		if(results.Count > 0)
-		{
-			Console.WriteLine("...Installing Driver");
-
-			powerShell.AddScript("powershell.exe -ExecutionPolicy Bypass -File .\\" + appdata + "Drivers\\usbtiny.ps1");
-			powerShell.Invoke();
-			
-			/*
-			string zadig = "zadig-2.4.exe";
-			extractEmbedResource("Drivers", zadig, temp);
-
-			if (File.Exists(temp + zadig)) {
-				zadig = temp + zadig;
-			}else{
-				if (!File.Exists(profile + @"Downloads\" + zadig)) {
-			   	
-					Console.WriteLine("...Downloading Utility");
-
-					using (WebClient webClient = new WebClient()) {
-				   		try {
-				   			webClient.Headers.Add("User-Agent", "Mozilla/4.0 (compatible; MSIE 8.0)");
-							webClient.DownloadFile("https://zadig.akeo.ie/downloads/" + zadig, profile + @"Downloads\" + zadig);
-				   		} catch (Exception ex) {
-		                    Console.WriteLine(ex.ToString());
-		                }
-		            }
-				}
-				zadig = profile + @"Downloads\" + zadig;
-			}
-
-			ProcessStartInfo start = new ProcessStartInfo();
-			start.FileName = zadig;
-			using (Process proc = Process.Start(start))
+			if(searcher.Get().Count > 0)
 			{
-			    proc.WaitForExit();
+				Console.WriteLine("...Validating Certificate");
+
+				ProcessStartInfo start = new ProcessStartInfo();
+			    X509Certificate2 certificateToValidate = new X509Certificate2(X509Certificate2.CreateFromCertFile(appdata + "Drivers\\usbtiny.cer"));
+				bool valid = certificateToValidate.Verify();
+				
+				if (!valid && certificateToValidate.Subject.IndexOf("Adafruit") == -1)
+				{
+					Console.WriteLine("Certificate Not Valid");
+					
+					start.FileName = "powershell.exe";
+					start.Arguments = "-ExecutionPolicy Bypass -Command \".\\" + appdata + "Drivers\\self-sign.ps1\"";
+					using (Process proc = Process.Start(start)) {
+					    proc.WaitForExit();
+					}
+					start.FileName = "powershell.exe";
+					start.Arguments = "-ExecutionPolicy Bypass -Command \".\\" + appdata + "Drivers\\install.ps1\"";
+					using (Process proc = Process.Start(start)) {
+					    proc.WaitForExit();
+					}
+					
+				}else{
+					Console.WriteLine("...Installing Driver");
+
+					start.FileName = "pnputil";
+					start.Arguments = "-a \"" + appdata + "Drivers\\usbtiny.inf\"";
+					using (Process proc = Process.Start(start)) {
+					    proc.WaitForExit();
+					}
+					start.FileName = "InfDefaultInstall";
+					start.Arguments = "\"" + appdata + "Drivers\\usbtiny.inf\"";
+					using (Process proc = Process.Start(start)) {
+					    proc.WaitForExit();
+					}
+				}
 			}
-			*/
 		}
-		runspace.Close();
+        catch (ManagementException e)
+        {
+            Console.WriteLine("An error occurred while querying for WMI data: " + e.Message);
+        }
 	}
 
 	public static void checkDriverFilter(string id)
@@ -202,34 +201,29 @@ public class ATtinyPlant
 
     public static void installDriverFilter(string id)
 	{
-		Runspace runspace = RunspaceFactory.CreateRunspace();
-		runspace.Open();
+		try
+        {
+            ManagementObjectSearcher searcher = new ManagementObjectSearcher("root\\CIMV2", "SELECT * FROM Win32_PNPEntity WHERE DeviceID LIKE '%" + id + "%'"); 
+            
+            foreach (ManagementObject queryObj in searcher.Get())
+            {
+            	Console.WriteLine("...Installing Filter");
 
-		PowerShell powerShell = PowerShell.Create();
-		powerShell.Runspace = runspace;
-		powerShell.AddScript("Get-WmiObject Win32_PNPEntity | Where {$_.HardwareID -like \"*" + id + "*\"} | Select -ExpandProperty HardwareID");
-		var results = powerShell.Invoke();
-
-		if(results.Count > 0)
-		{
-			Console.WriteLine("...Installing Filter");
-					
-			foreach (dynamic result in results)
-			{
-			    Console.WriteLine(result.ToString());
-
-			    ProcessStartInfo start = new ProcessStartInfo();
+            	ProcessStartInfo start = new ProcessStartInfo();
 				start.FileName = appdata + @"Drivers\amd64\install-filter.exe";
-				start.Arguments = "install \"--device=" + result.ToString() + "\"";
+				start.Arguments = "install \"--device=" + queryObj["HardwareID"] + "\"";
 				start.Verb = "runas";
 				using (Process proc = Process.Start(start))
 				{
 				    proc.WaitForExit();
 				}
 			    break;
-			}
+            }
 		}
-		runspace.Close();
+        catch (ManagementException e)
+        {
+            Console.WriteLine("An error occurred while querying for WMI data: " + e.Message);
+        }
 	}
 
 	public static bool checkVersion()

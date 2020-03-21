@@ -196,6 +196,8 @@ int main(void)
     uint8_t ee = 0xFF;
     uint16_t errorCode = 0;
 
+    blink(8,4); //Delay before setting IO pins (helps usbtiny load libusb driver)
+
     //=============
     //WATCHDOG
     //=============
@@ -290,8 +292,6 @@ int main(void)
         //uart_putc('\r');
         //uart_putc('\n');
     #endif
-        
-    blink(2,4);
     //================
 
     #ifdef SENSORLESS_ENABLED
@@ -410,7 +410,7 @@ int main(void)
                 }
                 */
                 //======================
-                //blink(4,2); //DEBUG
+                blink(4,2); //DEBUG
 
                 uint16_t moisture = sensorRead(sensorPin,moistureSensorPin,8);
 
@@ -670,7 +670,7 @@ uint16_t ReadADCHighest(uint8_t pin, uint8_t loop)
 uint16_t ReadADC(uint8_t pin) {
 
     //http://maxembedded.com/2011/06/the-adc-of-the-avr/
-
+    /*
     #if defined __AVR_ATtiny45__ || defined __AVR_ATtiny85__
        ADMUX = ((0 << REFS2) | (0 << REFS1) | (0 << REFS0)); //5V
        //ADMUX = ((0 << REFS2) | (1 << REFS1) | (0 << REFS0)) //1.1V
@@ -679,6 +679,7 @@ uint16_t ReadADC(uint8_t pin) {
         ADMUX = (0 << REFS0);     //Set VCC as reference voltage (5V)
         //ADMUX = (1 << REFS0);  //Set VCC as reference voltage (Internal 1.1V)
     #endif
+    */
 
     /*
     if(pin == PB5) { // ADC0
@@ -686,13 +687,15 @@ uint16_t ReadADC(uint8_t pin) {
     }else if(pin == PB2) { // ADC1
         ADMUX |= (1 << MUX0) | (0 << MUX1); //ADC1 PB2 as analog input channel
     }*/
+
     if(pin == PB3) { // ADC3
-        ADMUX |= (1 << MUX0) | (1 << MUX1); //ADC3 PB3 as analog input channel
+        ADMUX = (1 << MUX0) | (1 << MUX1); //ADC3 PB3 as analog input channel
     }else if (pin == PB4){ // ADC2
-        ADMUX |= (0 << MUX0) | (1 << MUX1); //ADC2 PB4 as analog input channel
+        ADMUX = (0 << MUX0) | (1 << MUX1); //ADC2 PB4 as analog input channel
     }
-    
+
     //--------------
+    //ADMUX |= (0 << ADLAR);  //Right adjust for 10-bit resolution
     //ADMUX |= (1 << ADLAR);  //Left adjusts for 8-bit resolution
     //--------------
     // See ATtiny13 datasheet, Table 14.4.
@@ -715,10 +718,12 @@ uint16_t ReadADC(uint8_t pin) {
 
     // Read values
     uint16_t result = ADC; // For 10-bit resolution (includes ADCL + ADCH)
+    //--------------
     //uint8_t low = ADCL;
-    //uint8_t high = ADCH;
+    //uint8_t high = ADCH; //(for 8-bit only)
     //uint16_t result = (high << 8) | low; // Combine two bytes
     //result = 1125300L / result; // Calculate Vcc (in mV); 1125300 = 1.1*1023*1000
+    //--------------
 
     ADCSRA &= ~ (1 << ADEN); // Disables ADC
 

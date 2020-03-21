@@ -9,8 +9,8 @@ Export-Certificate -Cert $cert -FilePath $PSScriptRoot\usbtiny.cer
 
 #inf2cat.exe /driver:$PSScriptRoot /os:10_X64 /verbose
 
-Set-AuthenticodeSignature $PSScriptRoot\usbtiny.cat -Certificate $cert -TimeStampServer "http://timestamp.verisign.com/scripts/timstamp.dll"
+Set-AuthenticodeSignature $PSScriptRoot\usbtiny.cat -Certificate $cert -TimeStampServer "http://timestamp.comodoca.com"
 Get-AuthenticodeSignature $PSScriptRoot\usbtiny.cat -Verbose | fl
 
-#Import-Certificate -FilePath $PSScriptRoot\usbtiny.cer -CertStoreLocation cert:\CurrentUser\Root
-#Import-Certificate -FilePath $PSScriptRoot\usbtiny.cer -CertStoreLocation cert:\CurrentUser\TrustedPublisher
+#Import-Certificate -FilePath $PSScriptRoot\usbtiny.cer -CertStoreLocation cert:\LocalMachine\Root
+#Import-Certificate -FilePath $PSScriptRoot\usbtiny.cer -CertStoreLocation cert:\LocalMachine\TrustedPublisher

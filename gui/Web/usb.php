@@ -196,7 +196,7 @@
         }
     }
 
-    function avrConnect($programmer,$t)
+    function avrConnect($programmer,$timeout)
     {
         $uname = strtolower(php_uname('s'));
 
@@ -238,10 +238,9 @@
                 //echo $output;
             }
         }else{
-            if($t < 4 && strpos($output, "error:") == false) {
+            if($timeout < 4 && strpos($output, "error:") == false) {
                 sleep(1);
-                $t = $t + 1;
-                $output = avrConnect("usbasp",$t);
+                $output = avrConnect("usbasp",$timeout++);
             }else{
                 return "sck";
             }

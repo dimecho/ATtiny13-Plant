@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE eagle SYSTEM "eagle.dtd">
-<eagle version="9.5.2">
+<eagle version="9.6.0">
 <drawing>
 <settings>
 <setting alwaysvectorfont="no"/>
@@ -25940,6 +25940,7 @@ Based on the following sources:
 <part name="R13" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="R-EU_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/2" value="1.5k"/>
 <part name="GND4" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="GND" device=""/>
 <part name="R14" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:26058/1" value="0R"/>
+<part name="R15" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:26058/1" value="0R"/>
 </parts>
 <sheets>
 <sheet>
@@ -26190,6 +26191,10 @@ Based on the following sources:
 <instance part="R14" gate="G$1" x="160.02" y="55.88" smashed="yes" rot="R180">
 <attribute name="NAME" x="158.75" y="59.4614" size="1.778" layer="95" rot="R180"/>
 <attribute name="VALUE" x="163.83" y="59.182" size="1.778" layer="96" rot="R180"/>
+</instance>
+<instance part="R15" gate="G$1" x="170.18" y="58.42" smashed="yes" rot="R180">
+<attribute name="NAME" x="168.91" y="62.0014" size="1.778" layer="95" rot="R180"/>
+<attribute name="VALUE" x="173.99" y="61.722" size="1.778" layer="96" rot="R180"/>
 </instance>
 </instances>
 <busses>
@@ -26539,9 +26544,8 @@ Based on the following sources:
 <wire x1="91.44" y1="63.5" x2="91.44" y2="58.42" width="0.1524" layer="91"/>
 <junction x="91.44" y="63.5"/>
 <junction x="91.44" y="58.42"/>
-<pinref part="IC5" gate="G$1" pin="PB0"/>
-<wire x1="175.26" y1="38.1" x2="175.26" y2="58.42" width="0.1524" layer="91"/>
-<wire x1="175.26" y1="58.42" x2="127" y2="58.42" width="0.1524" layer="91"/>
+<pinref part="R15" gate="G$1" pin="2"/>
+<wire x1="165.1" y1="58.42" x2="127" y2="58.42" width="0.1524" layer="91"/>
 <junction x="127" y="58.42"/>
 </segment>
 </net>
@@ -26611,6 +26615,13 @@ Based on the following sources:
 <wire x1="177.8" y1="38.1" x2="177.8" y2="55.88" width="0.1524" layer="91"/>
 <pinref part="R14" gate="G$1" pin="1"/>
 <wire x1="165.1" y1="55.88" x2="177.8" y2="55.88" width="0.1524" layer="91"/>
+</segment>
+</net>
+<net name="N$16" class="0">
+<segment>
+<pinref part="IC5" gate="G$1" pin="PB0"/>
+<wire x1="175.26" y1="38.1" x2="175.26" y2="58.42" width="0.1524" layer="91"/>
+<pinref part="R15" gate="G$1" pin="1"/>
 </segment>
 </net>
 </nets>

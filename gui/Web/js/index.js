@@ -15,7 +15,8 @@ var pot_labels = ["Small", "Medium", "Large"];
 var soil_values = [220, 480];
 var soil_labels = ["Dry (Cactus)", "Wet (Tropical)"];
 
-var soil_type_values = [380, 320, 380, 280, 460];
+var soil_type_values = [380, 320, 380, 350, 460];
+var soil_pot_offsets = [[0,0,0], [0,0,0], [0,0,0], [0,0,0], [0,0,0]];
 var soil_type_labels = ["Sand", "Clay", "Dirt", "Loam", "Moss"];
 
 var connectMessage = "Connect Plant to Computer";
@@ -177,30 +178,33 @@ function startConsole(hex,delay)
                 consoleHex(data);
                 if(data.length >= 64) {
 
-                    var btn = $("#debugConsole");
+                    if(data.indexOf("libusb: debug") != -1) {
+                        $.notify({ message: "LibUSB Driver Error" }, { type: "danger" });
+                    }else{
+                        var btn = $("#debugConsole");
 
-                    var s = data.split("\n");
-                    if(s[ee] == parseInt(0xEE))
-                    {
-                        //console.log(data);
-                        $.notify({ message: "EEPROM Debug Enabled" }, { type: "success" });
+                        var s = data.split("\n");
+                        if(s[ee] == parseInt(0xEE))
+                        {
+                            //console.log(data);
+                            $.notify({ message: "EEPROM Debug Enabled" }, { type: "success" });
 
-                        $("#debugOutput").empty();
-                        btn.text("Stop Console");
-                        btn.attr("onclick","startConsole(0xFF," + deepSleep  + ")");
-                        btn.removeClass("btn-primary");
-                        btn.addClass("btn-danger");
+                            $("#debugOutput").empty();
+                            btn.text("Stop Console");
+                            btn.attr("onclick","startConsole(0xFF," + deepSleep  + ")");
+                            btn.removeClass("btn-primary");
+                            btn.addClass("btn-danger");
 
-                        getEEPROM();
-                      
-                    }else if(s[ee] == parseInt(0xFF)) {
-                        $.notify({ message: "EEPROM Debug Disabled" }, { type: "warning" });
-                        
-                        stopConsole();
-                        
-                        $.ajax("usb.php?reset=1");
+                            getEEPROM();
+                          
+                        }else if(s[ee] == parseInt(0xFF)) {
+                            $.notify({ message: "EEPROM Debug Disabled" }, { type: "warning" });
+                            
+                            stopConsole();
+                            
+                            $.ajax("usb.php?reset=1");
+                        }
                     }
-                    
                 }else{
                     $.notify({ message: "Cannot read EEPROM" }, { type: "danger" });
                 }
@@ -213,6 +217,7 @@ function startConsole(hex,delay)
 
 function EEPROM_T85(offset)
 {
+    console.log("EEPROM Offset: " + offset);
 	/*
 	Strange bug, ATtiny85 eeprom is large (uint16_t) starts write @ address 0x100 (256)
 
@@ -258,77 +263,86 @@ function getEEPROMInfo(crc)
         success: function(data) {
             consoleHex(data);
             if(data.length >= 64) {
-
-                var s = data.split("\n");
-                var info = $("#debugInfo").empty();
-                info.append("Hardware Chip: " + chip + "\n");
-
-                var vr = HexShift(s,e_versionID).toString();
-                var vreg = HexShift(s,e_VReg);
-
-                var vchip = "TP4056";
-                if(vreg == 1) {
-                    vchip = "WS78L05";
-                }else if(vreg== 2) {
-                    vchip = "LM2731";
-                }else if(vreg == 3) {
-                    vchip = "TPL5110";
-                }
-                info.append("Solar Regulator: " + vchip + "\n");
-                info.append("Firmware Version: " + vr.charAt(0) + "." + vr.charAt(1));
-
-                var sl = HexShift(s,e_runSolar);
-                var pt = HexShift(s,e_potSize);
-                var so = HexShift(s,e_sensorMoisture);
-
-                console.log("Solar: " + sl);
-                console.log("Pot: " + pt);
-                console.log("Soil: " + so);
-
-                if(sl == 0 && pt == 0 && so == 0) {
+                if(data.indexOf("libusb: debug") != -1) {
+                    $.notify({ message: "LibUSB Driver Error" }, { type: "danger" });
+                }else if(data.indexOf("initialization failed") != -1) {
                     if(crc == undefined) {
-                        $.notify({ message: "EEPROM is Corrupt ...Trying to Fix" }, { type: "warning" });
-                        checkEEPROM();
+                        //$.notify({ message: "Initialization Failed ..." }, { type: "warning" });
+                        getEEPROMInfo();
                     }else{
-                        $.notify({ message: "Cannot fix EEPROM" }, { type: "danger" });
-                        $.notify({ message: "Flashing Firmware ..." }, { type: "warning" });
-
-                        $.ajax("usb.php?eeprom=flash" , {
-				            success: function(data) {
-				                console.log(data);
-                                if(data.indexOf("flash verified") !=-1) {
-                                    $.notify({ message: "Firmware Fixed!" }, { type: "success" });
-                                }else{
-                                    $.notify({ message: "Cannot fix Firmware, try manually (.hex File)" }, { type: "danger" });
-                                }
-				            }
-				        });
+                        $.notify({ message: "Check USB Cable" }, { type: "danger" });
                     }
-                }else if (crc == 1) {
-                    $.notify({ message: "EEPROM Fixed!" }, { type: "success" });
                 }else{
-                    if(s[ee] == parseInt(0xEE)) {
-                        $.notify({ message: "Plant was left in Debug mode" }, { type: "danger" });
-                        sendStop();
-                        $.notify({ message: "Next time 'Stop Console' before disconnecting" }, { type: "warning" });
+                    var s = data.split("\n");
+                    var info = $("#debugInfo").empty();
+                    info.append("Hardware Chip: " + chip + "\n");
+
+                    var vr = HexShift(s,e_versionID).toString();
+                    var vreg = HexShift(s,e_VReg);
+
+                    var vchip = "TP4056";
+                    if(vreg == 1) {
+                        vchip = "WS78L05";
+                    }else if(vreg== 2) {
+                        vchip = "LM2731";
+                    }else if(vreg == 3) {
+                        vchip = "TPL5110";
                     }
+                    info.append("Solar Regulator: " + vchip + "\n");
+                    info.append("Firmware Version: " + vr.charAt(0) + "." + vr.charAt(1));
+
+                    var sl = HexShift(s,e_runSolar);
+                    var pt = HexShift(s,e_potSize);
+                    var so = HexShift(s,e_sensorMoisture);
+
+                    console.log("Solar: " + sl);
+                    console.log("Pot: " + pt);
+                    console.log("Soil: " + so);
+
+                    if(sl == 0 && pt == 0 && so == 0) {
+                        if(crc == undefined) {
+                            $.notify({ message: "EEPROM is Corrupt ...Trying to Fix" }, { type: "warning" });
+                            checkEEPROM();
+                        }else{
+                            $.notify({ message: "Cannot fix EEPROM" }, { type: "danger" });
+                            $.notify({ message: "Flashing Firmware ..." }, { type: "warning" });
+
+                            $.ajax("usb.php?eeprom=flash" , {
+    				            success: function(data) {
+    				                console.log(data);
+                                    if(data.indexOf("flash verified") !=-1) {
+                                        $.notify({ message: "Firmware Fixed!" }, { type: "success" });
+                                    }else{
+                                        $.notify({ message: "Cannot fix Firmware, try manually (.hex File)" }, { type: "danger" });
+                                    }
+    				            }
+    				        });
+                        }
+                    }else if (crc == 1) {
+                        $.notify({ message: "EEPROM Fixed!" }, { type: "success" });
+                    }else{
+                        if(s[ee] == parseInt(0xEE)) {
+                            $.notify({ message: "Plant was left in Debug mode" }, { type: "danger" });
+                            sendStop();
+                            $.notify({ message: "Next time 'Stop Console' before disconnecting" }, { type: "warning" });
+                        }
+                    }
+
+                    var instance = $("#slider-solar").data("ionRangeSlider");
+                    instance.update({
+                       from: solar_values.indexOf(sl)
+                    });
+
+                    var instance = $("#slider-pot").data("ionRangeSlider");
+                    instance.update({
+                        from: pot_values.indexOf(pt)
+                    });
+
+                    var instance = $("#slider-soil").data("ionRangeSlider");
+                    instance.update({
+                       from: so
+                    });
                 }
-
-                var instance = $("#slider-solar").data("ionRangeSlider");
-                instance.update({
-                   from: solar_values.indexOf(sl)
-                });
-
-                var instance = $("#slider-pot").data("ionRangeSlider");
-                instance.update({
-                    from: pot_values.indexOf(pt)
-                });
-
-                var instance = $("#slider-soil").data("ionRangeSlider");
-                instance.update({
-                   from: so
-                });
-
             }else{
                 $.notify({ message: "Cannot read EEPROM" }, { type: "danger" });
             }
@@ -345,7 +359,7 @@ function getEEPROM()
         timeout: refreshSpeed + 500,
         success: function(data) {
             //consoleHex(data);
-            if(data.indexOf("could not find USB") !=-1) {
+            if(data.indexOf("could not find USB") != -1) {
                 $.notify({ message: "USB Disconnected" }, { type: "danger" });
                 stopConsole();
             }if(data.length >= 64) {

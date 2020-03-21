@@ -85,7 +85,7 @@ PROJECTNAME=vusbtiny
 # Use .cc, .cpp or .C suffix for C++ files, use .S 
 # (NOT .s !!!) for assembly source code files.
 # PRJSRC=main.c myclass.cpp lowlevelstuff.S
-PRJSRC=main.c usbdrv/usbdrv.c usbdrv/usbdrvasm.S
+PRJSRC=main.c usbdrv/usbdrv.c usbdrv/usbdrvasm.S usbdrv/oddebug.c
 
 # additional includes (e.g. -I/path/to/mydir)
 # INC=-I/path/to/include
