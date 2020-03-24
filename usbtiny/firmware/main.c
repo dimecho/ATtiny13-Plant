@@ -333,96 +333,56 @@ uchar	usbFunctionSetup(uchar data[8])
 	return 0;
 }
 
-
-/* ------------------------------------------------------------------------- */
-/* ------------------------ Oscillator Calibration ------------------------- */
-/* ------------------------------------------------------------------------- */
-
-/* Calibrate the RC oscillator to 8.25 MHz. The core clock of 16.5 MHz is
- * derived from the 66 MHz peripheral clock by dividing. Our timing reference
- * is the Start Of Frame signal (a single SE0 bit) available immediately after
- * a USB RESET. We first do a binary search for the OSCCAL value and then
- * optimize this value with a neighboorhod search.
- * This algorithm may also be used to calibrate the RC oscillator directly to
- * 12 MHz (no PLL involved, can therefore be used on almost ALL AVRs), but this
- * is wide outside the spec for the OSCCAL value and the required precision for
- * the 12 MHz clock! Use the RC oscillator calibrated to 12 MHz for
- * experimental purposes only!
- */
-static void calibrateOscillator(void)
-{
-uchar       step = 128;
-uchar       trialValue = 0, optimumValue;
-int         x, optimumDev, targetValue = (unsigned)(1499 * (double)F_CPU / 10.5e6 + 0.5);
-
-    /* do a binary search: */
-    do{
-        OSCCAL = trialValue + step;
-        x = usbMeasureFrameLength();    /* proportional to current real frequency */
-        if(x < targetValue)             /* frequency still too low */
-            trialValue += step;
-        step >>= 1;
-    }while(step > 0);
-    /* We have a precision of +/- 1 for optimum OSCCAL here */
-    /* now do a neighborhood search for optimum value */
-    optimumValue = trialValue;
-    optimumDev = x; /* this is certainly far away from optimum */
-    for(OSCCAL = trialValue - 1; OSCCAL <= trialValue + 1; OSCCAL++){
-        x = usbMeasureFrameLength() - targetValue;
-        if(x < 0)
-            x = -x;
-        if(x < optimumDev){
-            optimumDev = x;
-            optimumValue = OSCCAL;
-        }
-    }
-    OSCCAL = optimumValue;
-}
-/*
-Note: This calibration algorithm may try OSCCAL values of up to 192 even if
-the optimum value is far below 192. It may therefore exceed the allowed clock
-frequency of the CPU in low voltage designs!
-You may replace this search algorithm with any other algorithm you like if
-you have additional constraints such as a maximum CPU clock.
-For version 5.x RC oscillators (those with a split range of 2x128 steps, e.g.
-ATTiny25, ATTiny45, ATTiny85), it may be useful to search for the optimum in
-both regions.
-*/
-
-void    usbEventResetReady(void)
-{
-    calibrateOscillator();
-    eeprom_write_byte(0, OSCCAL);   /* store the calibrated value in EEPROM */
-}
-
 /* ------------------------------------------------------------------------- */
 /* --------------------------------- main ---------------------------------- */
 /* ------------------------------------------------------------------------- */
 
-int main(void) {
-	uchar   i;
-	uchar   calibrationValue;
+static void hardwareInit(void)
+{
+    /* activate pull-ups except on USB lines */
+    USB_CFG_IOPORT   = (uchar)~((1<<USB_CFG_DMINUS_BIT)|(1<<USB_CFG_DPLUS_BIT));
+    /* all pins input except USB (-> USB reset) */
+	#ifdef USB_CFG_PULLUP_IOPORT    /* use usbDeviceConnect()/usbDeviceDisconnect() if available */
+	    USBDDR    = 0;    /* we do RESET by deactivating pullup */
+	    usbDeviceDisconnect();
+	#else
+	    USBDDR    = (1<<USB_CFG_DMINUS_BIT)|(1<<USB_CFG_DPLUS_BIT);
+	#endif
 
-	//DDRB  = (RESET_MASK|SCK_MASK|MOSI_MASK);
-	DDRB  = RESET_MASK;
-	PORTB = RESET_MASK;
+    /* 300 ms disconnect */
+    wdt_reset();
+    _delay_ms(300);
+
+	#ifdef USB_CFG_PULLUP_IOPORT
+	    usbDeviceConnect();
+	#else
+	    USBDDR    = 0;      /*  remove USB reset condition */
+	#endif
+}
+
+int main(void)
+{
+	#if USB_CFG_HAVE_MEASURE_FRAME_LENGTH
+		//oscInit();
+		calibrateOscillatorASM();
+	#endif
+
+	wdt_enable(WDTO_1S);
+    /* If you don't use the watchdog, replace the call above with a wdt_disable().
+    * On newer devices, the status of the watchdog (on/off, period) is PRESERVED
+    * OVER RESET!
+    */
 	/*
 	_delay_ms(25);
 	uchar pgm[] = { 0xac, 0x53, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, };
 	spi(pgm, pgm+4);
 	*/
-    calibrationValue = eeprom_read_byte(0); /* calibration value from last time */
-    if(calibrationValue != 0xff){
-        OSCCAL = calibrationValue;
-    }
     odDebugInit();
-    usbDeviceDisconnect();
-    for(i=0;i<20;i++){  /* 300 ms disconnect */
-        _delay_ms(15);
-    }
-    usbDeviceConnect();
-
-    wdt_enable(WDTO_1S);
+    /* RESET status: all port bits are inputs without pull-up.
+    * That's the way we need D+ and D-. Therefore we don't need any
+    * additional hardware initialization.
+    */
+    hardwareInit();
 
     usbInit();
     sei();
