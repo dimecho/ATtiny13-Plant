@@ -136,6 +136,8 @@ public class ATtinyPlant
 			    X509Certificate2 certificateToValidate = new X509Certificate2(X509Certificate2.CreateFromCertFile(appdata + "Drivers\\usbtiny.cer"));
 				bool valid = certificateToValidate.Verify();
 				
+				//https://github.com/adafruit/Adafruit_Windows_Drivers
+				
 				if (!valid && certificateToValidate.Subject.IndexOf("Adafruit") == -1)
 				{
 					Console.WriteLine("Certificate Not Valid");

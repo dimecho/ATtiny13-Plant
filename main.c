@@ -70,7 +70,7 @@ do                          \
     #define sensorMoistureOffset    20  //ADC calibration offset
 #endif
 #ifndef potSize
- #define potSizeTimer               10 //20x2x100 = 4000 miliseconds = 4 seconds
+ #define potSizeTimer               20 //20x2x100 = 4000 miliseconds = 4 seconds
 #endif
 
 #define pumpPin                     PB1 //Output
@@ -196,7 +196,7 @@ int main(void)
     uint8_t ee = 0xFF;
     uint16_t errorCode = 0;
 
-    blink(8,4); //Delay before setting IO pins (helps usbtiny load libusb driver)
+    blink(2,4); //Delay before setting IO pins (helps usbtiny load libusb driver)
 
     //=============
     //WATCHDOG
