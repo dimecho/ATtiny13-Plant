@@ -31,6 +31,7 @@ var p = 1;
 var os = "";
 var chip = "";
 var errorCode = "";
+var xhr;
 
 /*==========
 EEPROM Map
@@ -175,6 +176,7 @@ function setSoil(value)
 
 function stopConsole()
 {
+    xhr.abort();
     clearTimeout(refreshTimer);
 
     var btn = $("#debugConsole");
@@ -214,20 +216,19 @@ function startConsole(hex,delay)
                         var btn = $("#debugConsole");
 
                         var s = data.split("\n");
-                        if(s[ee] == parseInt(0xEE))
-                        {
+                        var d = s[ee+1]; //+1 to skip debug path
+                        console.log("EEPROM Debug Value:" + d);
+
+                        if(d == parseInt(0xEE)) {
                             //console.log(data);
                             $.notify({ message: "EEPROM Debug Enabled" }, { type: "success" });
-
                             $("#debugOutput").empty();
                             btn.text("Stop Console");
                             btn.attr("onclick","startConsole(0xFF," + deepSleep  + ")");
                             btn.removeClass("btn-primary");
                             btn.addClass("btn-danger");
-
                             getEEPROM();
-                          
-                        }else if(s[ee] == parseInt(0xFF)) {
+                        }else if(d == parseInt(0xFF)) {
                             $.notify({ message: "EEPROM Debug Disabled" }, { type: "warning" });
                             stopConsole();
                             //$.ajax("usb.php?reset=1");
@@ -287,7 +288,7 @@ function checkEEPROM()
 
 function getEEPROMInfo(crc)
 {
-    $.ajax("usb.php?eeprom=read", {
+    xhr = $.ajax("usb.php?eeprom=read", {
         success: function(data) {
             consoleHex(data);
             if(data.length >= 64) {
@@ -300,9 +301,7 @@ function getEEPROMInfo(crc)
                     var info = $("#debugInfo").empty();
                     info.append("Hardware Chip: " + chip + "\n");
 
-                    var vr = HexShift(s,e_versionID).toString();
                     var vreg = HexShift(s,e_VReg);
-
                     var vchip = "TP4056";
                     if(vreg == 1) {
                         vchip = "WS78L05";
@@ -312,11 +311,19 @@ function getEEPROMInfo(crc)
                         vchip = "TPL5110";
                     }
                     info.append("Solar Regulator: " + vchip + "\n");
-                    info.append("Firmware Version: " + vr.charAt(0) + "." + vr.charAt(1));
+                    info.append("Firmware Version: ");
+
+                    var fv = s[e_versionID+1] + "0";
+                    if(parseInt(fv) > 0) {
+	                    info.append(fv.charAt(0) + "." + fv.charAt(1));
+	                }else{
+	                	info.append("1.0");
+	                }
 
                     var sl = HexShift(s,e_runSolar);
                     var pt = HexShift(s,e_potSize);
                     var so = HexShift(s,e_sensorMoisture);
+                    var d = s[ee+1]; //+1 to skip debug path
 
                     console.log("Solar: " + sl);
                     console.log("Pot: " + pt);
@@ -343,8 +350,10 @@ function getEEPROMInfo(crc)
                         }
                     }else if (crc == 1) {
                         $.notify({ message: "EEPROM Fixed!" }, { type: "success" });
+                    }else if(data.indexOf("avrdude:") != -1) {
+						$.notify({ message: "Cannot Syncronize (unplug USB and plug back in)" }, { type: "danger" });
                     }else{
-                        if(s[ee] == parseInt(0xEE)) {
+                        if(d == parseInt(0xEE)) {
                             $.notify({ message: "Plant was left in Debug mode" }, { type: "danger" });
                             sendStop();
                             $.notify({ message: "Next time 'Stop Console' before disconnecting" }, { type: "warning" });
@@ -473,7 +482,7 @@ function consoleHex(data)
         if(s[i].indexOf(".eeprom") != -1) { //debugging path
             _data +=  s[i] + "\n";
         }else{
-            _data += "[" +  parseInt(i).toString(16) + "] " + s[i] + "\n";
+            _data += "[" +  parseInt(i-1).toString(16) + "] " + s[i] + "\n";
         }
     }
 
@@ -519,7 +528,7 @@ function connectPlant(async)
                     $(".icon-chip").attr("data-original-title", "<h6 class='text-white'>" + data + "</h6>");
                     getEEPROMInfo();
                 }else if(data == "fix") {
-                    $.notify({ message: "Check USB Cable" }, { type: "danger" });
+                    $.notify({ message: "Power cycle USB" }, { type: "warning" });
                     /*
                     $.notify({ message: "... Fixing USB Driver" }, { type: "danger" });
                     $.ajax("usb.php?driver=fix", {
@@ -532,7 +541,11 @@ function connectPlant(async)
                     */
                 }else if(data == "sck") {
                     $.notify({ message: "... Waiting for Plant to Connect" }, { type: "warning" });
+                }else if(data.indexOf("dyld: Library not loaded") != -1) {
+                    $.notify({ message: "MacOS LibUSB Issue" }, { type: "danger" });
+                    $.notify({ message: data }, { type: "warning" });
                 }else{
+
                     setTimeout(function () {
                         connectPlant();
                     }, 4000);
@@ -542,12 +555,12 @@ function connectPlant(async)
     }
 };
 
-function flashFirmware()
+function flashFirmware(emergency)
 {
     if(chip.length == 0)
         connectPlant(false);
 
-    if(chip.length > 0) {
+    if(chip.length > 0 || emergency === true) {
 
         //stopConsole();
         $(".fileUpload").trigger("click");
@@ -558,6 +571,7 @@ function flashFirmware()
         });
     }else{
         $.notify({ message: connectMessage }, { type: "danger" });
+        $.notify({ message: "<a href='#' onClick='flashFirmware(true)'>Emergency Flash</a>" }, { type: "warning" });
     }
 };
 
@@ -575,18 +589,21 @@ function saveSettings()
                 consoleHex(data);
                 if(data.indexOf("initialization failed") != -1) {
                     $.notify({ message: "Check USB Cable" }, { type: "danger" });
-                }else if(data.indexOf("Input/output error") != -1) {
-                    if(data.indexOf("eeprom verified") != -1) {
+                }else if(data.indexOf("eeprom verified") != -1) {
+                    if(data.indexOf("Input/output error") != -1) {
                         $.notify({ message: "EEPROM Saved ..." }, { type: "success" });
                         $.notify({ message: "Detected Input/Output Errors" }, { type: "warning" });
-                    }else if(data.indexOf("verification error") != -1) {
-                        $.notify({ message: "EEPROM Verification Error ..." }, { type: "danger" });
-                        $.notify({ message: "Check MOSI Resistor" }, { type: "warning" });
                     }else{
-                        $.notify({ message: "Input/Output Error" }, { type: "danger" });
+                        $.notify({ message: "Happy Plant &#127807;" }, { type: "success" });
                     }
-                }else if(data.indexOf("eeprom verified") != -1) {
-                    $.notify({ message: "Happy Plant &#127807;" }, { type: "success" });
+                }else if(data.indexOf("verification error") != -1) {
+                    $.notify({ message: "EEPROM Verification Error ..." }, { type: "danger" });
+                    $.notify({ message: "Check MISO Resistor" }, { type: "warning" });
+                }else if(data.indexOf("Broken pipe") != -1) {
+                    $.notify({ message: "EEPROM Saved ..." }, { type: "success" });
+                    $.notify({ message: "Power cycle USB" }, { type: "warning" });
+                }else if(data.indexOf("Input/output error") != -1) {
+                    $.notify({ message: "Input/Output Error" }, { type: "danger" });
                 }else{
                     $.notify({ message: "Chip Reset, Try Again" }, { type: "danger" });
                 }

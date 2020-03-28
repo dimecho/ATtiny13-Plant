@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE eagle SYSTEM "eagle.dtd">
-<eagle version="9.5.2">
+<eagle version="9.6.0">
 <drawing>
 <settings>
 <setting alwaysvectorfont="no"/>
@@ -14695,7 +14695,7 @@ USART&lt;p&gt;
 <part name="ISP1" library="balto" deviceset="ISP-AVR910" device="SMD"/>
 <part name="TP1" library="testpad" deviceset="TP" device="B1,27"/>
 <part name="TP2" library="testpad" deviceset="TP" device="B1,27"/>
-<part name="R7" library="rcl" deviceset="R-EU_" device="M0805" value="10"/>
+<part name="R7" library="rcl" deviceset="R-EU_" device="M0805" value="10R"/>
 <part name="VCCOUT" library="pinhead" deviceset="PINHD-1X2" device=""/>
 <part name="LICENSE1" library="balto" deviceset="CC_BY-SA" device="" value="Fabio Baltieri"/>
 <part name="GND5" library="supply1" deviceset="GND" device=""/>
@@ -14706,17 +14706,16 @@ USART&lt;p&gt;
 <part name="P+8" library="supply1" deviceset="VCC" device=""/>
 <part name="GND9" library="supply1" deviceset="GND" device=""/>
 <part name="GND11" library="supply1" deviceset="GND" device=""/>
-<part name="R8" library="rcl" deviceset="R-EU_" device="M0805" value="10k"/>
-<part name="GND12" library="supply1" deviceset="GND" device=""/>
-<part name="R9" library="rcl" deviceset="R-EU_" device="M0805" value="1k"/>
+<part name="LED1" library="led" deviceset="LED" device="CHIP-LED0805"/>
+<part name="LED2" library="led" deviceset="LED" device="CHIP-LED0805"/>
 </parts>
 <sheets>
 <sheet>
 <plain>
 <text x="218.44" y="20.32" size="1.778" layer="94">(c) 2011 Fabio Baltieri</text>
-<wire x1="7.62" y1="170.18" x2="78.74" y2="170.18" width="0.1524" layer="97"/>
-<wire x1="78.74" y1="170.18" x2="78.74" y2="116.84" width="0.1524" layer="97"/>
-<wire x1="78.74" y1="116.84" x2="7.62" y2="116.84" width="0.1524" layer="97"/>
+<wire x1="7.62" y1="170.18" x2="81.28" y2="170.18" width="0.1524" layer="97"/>
+<wire x1="81.28" y1="170.18" x2="81.28" y2="116.84" width="0.1524" layer="97"/>
+<wire x1="81.28" y1="116.84" x2="7.62" y2="116.84" width="0.1524" layer="97"/>
 <wire x1="7.62" y1="116.84" x2="7.62" y2="170.18" width="0.1524" layer="97"/>
 <wire x1="88.9" y1="170.18" x2="129.54" y2="170.18" width="0.1524" layer="97"/>
 <wire x1="129.54" y1="170.18" x2="129.54" y2="116.84" width="0.1524" layer="97"/>
@@ -14749,8 +14748,7 @@ USART&lt;p&gt;
 <wire x1="254" y1="96.52" x2="254" y2="40.64" width="0.1524" layer="97"/>
 <wire x1="254" y1="40.64" x2="203.2" y2="40.64" width="0.1524" layer="97"/>
 <wire x1="203.2" y1="40.64" x2="203.2" y2="96.52" width="0.1524" layer="97"/>
-<text x="205.74" y="71.12" size="1.778" layer="91">R8 Optional pull-up
-resistor to adjust VCCOUT</text>
+<text x="48.26" y="119.38" size="1.778" layer="91">Zener Diodes or LED to GND</text>
 </plain>
 <instances>
 <instance part="FRAME1" gate="G$1" x="0" y="0" smashed="yes">
@@ -14796,17 +14794,17 @@ resistor to adjust VCCOUT</text>
 <instance part="GND3" gate="1" x="27.94" y="53.34" smashed="yes">
 <attribute name="VALUE" x="25.4" y="50.8" size="1.778" layer="96"/>
 </instance>
-<instance part="R2" gate="G$1" x="48.26" y="149.86" smashed="yes" rot="R90">
-<attribute name="NAME" x="50.8" y="152.4" size="1.778" layer="95"/>
-<attribute name="VALUE" x="50.8" y="149.86" size="1.778" layer="96"/>
+<instance part="R2" gate="G$1" x="50.8" y="149.86" smashed="yes" rot="R90">
+<attribute name="NAME" x="53.34" y="152.4" size="1.778" layer="95"/>
+<attribute name="VALUE" x="53.34" y="149.86" size="1.778" layer="96"/>
 </instance>
-<instance part="R3" gate="G$1" x="58.42" y="139.7" smashed="yes" rot="R180">
-<attribute name="NAME" x="50.8" y="139.7" size="1.778" layer="95"/>
-<attribute name="VALUE" x="63.5" y="139.7" size="1.778" layer="96"/>
+<instance part="R3" gate="G$1" x="60.96" y="139.7" smashed="yes" rot="R180">
+<attribute name="NAME" x="53.34" y="139.7" size="1.778" layer="95"/>
+<attribute name="VALUE" x="66.04" y="139.7" size="1.778" layer="96"/>
 </instance>
-<instance part="R4" gate="G$1" x="58.42" y="142.24" smashed="yes" rot="R180">
-<attribute name="NAME" x="50.8" y="142.24" size="1.778" layer="95"/>
-<attribute name="VALUE" x="63.5" y="142.24" size="1.778" layer="96"/>
+<instance part="R4" gate="G$1" x="60.96" y="142.24" smashed="yes" rot="R180">
+<attribute name="NAME" x="53.34" y="142.24" size="1.778" layer="95"/>
+<attribute name="VALUE" x="66.04" y="142.24" size="1.778" layer="96"/>
 </instance>
 <instance part="P+4" gate="VCC" x="236.22" y="83.82" smashed="yes" rot="MR0">
 <attribute name="VALUE" x="238.76" y="81.28" size="1.778" layer="96" rot="MR90"/>
@@ -14859,13 +14857,13 @@ resistor to adjust VCCOUT</text>
 <attribute name="NAME" x="78.74" y="86.36" size="1.778" layer="95"/>
 <attribute name="VALUE" x="78.74" y="83.82" size="1.778" layer="96"/>
 </instance>
-<instance part="D2" gate="G$1" x="48.26" y="132.08" smashed="yes" rot="R90">
-<attribute name="NAME" x="50.8" y="134.62" size="1.778" layer="95"/>
-<attribute name="VALUE" x="50.8" y="132.08" size="1.778" layer="96"/>
+<instance part="D2" gate="G$1" x="50.8" y="132.08" smashed="yes" rot="R90">
+<attribute name="NAME" x="45.72" y="129.54" size="1.778" layer="95"/>
+<attribute name="VALUE" x="45.72" y="127" size="1.778" layer="96"/>
 </instance>
 <instance part="D1" gate="G$1" x="38.1" y="132.08" smashed="yes" rot="R90">
-<attribute name="NAME" x="40.64" y="134.62" size="1.778" layer="95"/>
-<attribute name="VALUE" x="40.64" y="132.08" size="1.778" layer="96"/>
+<attribute name="NAME" x="33.02" y="129.54" size="1.778" layer="95"/>
+<attribute name="VALUE" x="33.02" y="127" size="1.778" layer="96"/>
 </instance>
 <instance part="X1" gate="G$1" x="17.78" y="147.32" smashed="yes" rot="R180"/>
 <instance part="ISP1" gate="A" x="170.18" y="152.4" smashed="yes">
@@ -14895,11 +14893,11 @@ resistor to adjust VCCOUT</text>
 <instance part="GND5" gate="1" x="38.1" y="124.46" smashed="yes">
 <attribute name="VALUE" x="35.56" y="121.92" size="1.778" layer="96"/>
 </instance>
-<instance part="GND6" gate="1" x="48.26" y="124.46" smashed="yes">
-<attribute name="VALUE" x="45.72" y="121.92" size="1.778" layer="96"/>
+<instance part="GND6" gate="1" x="50.8" y="124.46" smashed="yes">
+<attribute name="VALUE" x="48.26" y="121.92" size="1.778" layer="96"/>
 </instance>
-<instance part="P+6" gate="VCC" x="48.26" y="160.02" smashed="yes">
-<attribute name="VALUE" x="45.72" y="157.48" size="1.778" layer="96" rot="R90"/>
+<instance part="P+6" gate="VCC" x="50.8" y="160.02" smashed="yes">
+<attribute name="VALUE" x="48.26" y="157.48" size="1.778" layer="96" rot="R90"/>
 </instance>
 <instance part="P+7" gate="VCC" x="68.58" y="96.52" smashed="yes">
 <attribute name="VALUE" x="66.04" y="93.98" size="1.778" layer="96" rot="R90"/>
@@ -14916,16 +14914,11 @@ resistor to adjust VCCOUT</text>
 <instance part="GND11" gate="1" x="22.86" y="17.78" smashed="yes">
 <attribute name="VALUE" x="20.32" y="15.24" size="1.778" layer="96"/>
 </instance>
-<instance part="R8" gate="G$1" x="218.44" y="66.04" smashed="yes" rot="MR180">
-<attribute name="NAME" x="214.63" y="64.5414" size="1.778" layer="95" rot="MR180"/>
-<attribute name="VALUE" x="214.63" y="69.342" size="1.778" layer="96" rot="MR180"/>
+<instance part="LED1" gate="G$1" x="43.18" y="134.62" smashed="yes">
+<attribute name="VALUE" x="48.895" y="130.048" size="1.778" layer="96" rot="R90"/>
 </instance>
-<instance part="GND12" gate="1" x="213.36" y="48.26" smashed="yes" rot="MR0">
-<attribute name="VALUE" x="215.9" y="45.72" size="1.778" layer="96" rot="MR0"/>
-</instance>
-<instance part="R9" gate="G$1" x="152.4" y="154.94" smashed="yes" rot="MR0">
-<attribute name="NAME" x="156.21" y="156.4386" size="1.778" layer="95" rot="MR0"/>
-<attribute name="VALUE" x="151.13" y="156.718" size="1.778" layer="96" rot="MR0"/>
+<instance part="LED2" gate="G$1" x="55.88" y="134.62" smashed="yes">
+<attribute name="VALUE" x="61.595" y="130.048" size="1.778" layer="96" rot="R90"/>
 </instance>
 </instances>
 <busses>
@@ -14981,11 +14974,17 @@ resistor to adjust VCCOUT</text>
 <pinref part="GND5" gate="1" pin="GND"/>
 <pinref part="D1" gate="G$1" pin="A"/>
 <wire x1="38.1" y1="129.54" x2="38.1" y2="127" width="0.1524" layer="91"/>
+<pinref part="LED1" gate="G$1" pin="C"/>
+<wire x1="43.18" y1="129.54" x2="38.1" y2="129.54" width="0.1524" layer="91"/>
+<junction x="38.1" y="129.54"/>
 </segment>
 <segment>
 <pinref part="GND6" gate="1" pin="GND"/>
 <pinref part="D2" gate="G$1" pin="A"/>
-<wire x1="48.26" y1="129.54" x2="48.26" y2="127" width="0.1524" layer="91"/>
+<wire x1="50.8" y1="129.54" x2="50.8" y2="127" width="0.1524" layer="91"/>
+<pinref part="LED2" gate="G$1" pin="C"/>
+<wire x1="55.88" y1="129.54" x2="50.8" y2="129.54" width="0.1524" layer="91"/>
+<junction x="50.8" y="129.54"/>
 </segment>
 <segment>
 <wire x1="20.32" y1="144.78" x2="27.94" y2="144.78" width="0.1524" layer="91"/>
@@ -15037,11 +15036,6 @@ resistor to adjust VCCOUT</text>
 <pinref part="GND11" gate="1" pin="GND"/>
 <wire x1="22.86" y1="20.32" x2="22.86" y2="22.86" width="0.1524" layer="91"/>
 </segment>
-<segment>
-<pinref part="R8" gate="G$1" pin="1"/>
-<pinref part="GND12" gate="1" pin="GND"/>
-<wire x1="213.36" y1="66.04" x2="213.36" y2="50.8" width="0.1524" layer="91"/>
-</segment>
 </net>
 <net name="VCC" class="1">
 <segment>
@@ -15051,7 +15045,7 @@ resistor to adjust VCCOUT</text>
 </segment>
 <segment>
 <pinref part="P+6" gate="VCC" pin="VCC"/>
-<wire x1="48.26" y1="154.94" x2="48.26" y2="157.48" width="0.1524" layer="91"/>
+<wire x1="50.8" y1="154.94" x2="50.8" y2="157.48" width="0.1524" layer="91"/>
 <pinref part="R2" gate="G$1" pin="2"/>
 </segment>
 <segment>
@@ -15107,30 +15101,37 @@ resistor to adjust VCCOUT</text>
 <segment>
 <wire x1="20.32" y1="142.24" x2="38.1" y2="142.24" width="0.1524" layer="91"/>
 <wire x1="38.1" y1="142.24" x2="38.1" y2="134.62" width="0.1524" layer="91"/>
-<wire x1="38.1" y1="142.24" x2="53.34" y2="142.24" width="0.1524" layer="91"/>
+<wire x1="38.1" y1="142.24" x2="43.18" y2="142.24" width="0.1524" layer="91"/>
 <junction x="38.1" y="142.24"/>
 <pinref part="R4" gate="G$1" pin="2"/>
 <pinref part="D1" gate="G$1" pin="C"/>
 <pinref part="X1" gate="G$1" pin="D-"/>
+<pinref part="LED1" gate="G$1" pin="A"/>
+<wire x1="43.18" y1="142.24" x2="55.88" y2="142.24" width="0.1524" layer="91"/>
+<wire x1="43.18" y1="137.16" x2="43.18" y2="142.24" width="0.1524" layer="91"/>
+<junction x="43.18" y="142.24"/>
 </segment>
 </net>
 <net name="N$7" class="0">
 <segment>
-<wire x1="20.32" y1="139.7" x2="48.26" y2="139.7" width="0.1524" layer="91"/>
-<wire x1="48.26" y1="139.7" x2="48.26" y2="134.62" width="0.1524" layer="91"/>
-<wire x1="48.26" y1="139.7" x2="48.26" y2="144.78" width="0.1524" layer="91"/>
-<wire x1="48.26" y1="139.7" x2="53.34" y2="139.7" width="0.1524" layer="91"/>
-<junction x="48.26" y="139.7"/>
+<wire x1="20.32" y1="139.7" x2="50.8" y2="139.7" width="0.1524" layer="91"/>
+<wire x1="50.8" y1="139.7" x2="50.8" y2="134.62" width="0.1524" layer="91"/>
+<wire x1="50.8" y1="139.7" x2="50.8" y2="144.78" width="0.1524" layer="91"/>
+<wire x1="50.8" y1="139.7" x2="55.88" y2="139.7" width="0.1524" layer="91"/>
+<junction x="50.8" y="139.7"/>
 <pinref part="R2" gate="G$1" pin="1"/>
 <pinref part="R3" gate="G$1" pin="2"/>
 <pinref part="D2" gate="G$1" pin="C"/>
 <pinref part="X1" gate="G$1" pin="D+"/>
+<pinref part="LED2" gate="G$1" pin="A"/>
+<wire x1="55.88" y1="137.16" x2="55.88" y2="139.7" width="0.1524" layer="91"/>
+<junction x="55.88" y="139.7"/>
 </segment>
 </net>
 <net name="D-" class="0">
 <segment>
-<wire x1="63.5" y1="139.7" x2="73.66" y2="139.7" width="0.1524" layer="91"/>
-<label x="71.12" y="139.7" size="1.778" layer="95"/>
+<wire x1="66.04" y1="139.7" x2="76.2" y2="139.7" width="0.1524" layer="91"/>
+<label x="73.66" y="139.7" size="1.778" layer="95"/>
 <pinref part="R3" gate="G$1" pin="1"/>
 </segment>
 <segment>
@@ -15141,8 +15142,8 @@ resistor to adjust VCCOUT</text>
 </net>
 <net name="D+" class="0">
 <segment>
-<wire x1="63.5" y1="142.24" x2="73.66" y2="142.24" width="0.1524" layer="91"/>
-<label x="71.12" y="142.24" size="1.778" layer="95"/>
+<wire x1="66.04" y1="142.24" x2="76.2" y2="142.24" width="0.1524" layer="91"/>
+<label x="73.66" y="142.24" size="1.778" layer="95"/>
 <pinref part="R4" gate="G$1" pin="1"/>
 </segment>
 <segment>
@@ -15186,9 +15187,9 @@ resistor to adjust VCCOUT</text>
 <pinref part="IC1" gate="G$1" pin="PB4(MISO)"/>
 </segment>
 <segment>
-<wire x1="147.32" y1="154.94" x2="139.7" y2="154.94" width="0.1524" layer="91"/>
-<pinref part="R9" gate="G$1" pin="2"/>
-<label x="139.7" y="154.94" size="1.778" layer="95"/>
+<label x="147.32" y="154.94" size="1.778" layer="95"/>
+<pinref part="ISP1" gate="A" pin="1"/>
+<wire x1="147.32" y1="154.94" x2="167.64" y2="154.94" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="SCK" class="0">
@@ -15294,9 +15295,6 @@ resistor to adjust VCCOUT</text>
 <wire x1="243.84" y1="66.04" x2="236.22" y2="66.04" width="0.1524" layer="91"/>
 <pinref part="R7" gate="G$1" pin="2"/>
 <pinref part="VCCOUT" gate="G$1" pin="2"/>
-<pinref part="R8" gate="G$1" pin="2"/>
-<wire x1="223.52" y1="66.04" x2="236.22" y2="66.04" width="0.1524" layer="91"/>
-<junction x="236.22" y="66.04"/>
 </segment>
 </net>
 <net name="N$9" class="0">
@@ -15313,13 +15311,6 @@ resistor to adjust VCCOUT</text>
 <pinref part="TP2" gate="G$1" pin="TP"/>
 </segment>
 </net>
-<net name="N$1" class="0">
-<segment>
-<pinref part="R9" gate="G$1" pin="1"/>
-<pinref part="ISP1" gate="A" pin="1"/>
-<wire x1="157.48" y1="154.94" x2="167.64" y2="154.94" width="0.1524" layer="91"/>
-</segment>
-</net>
 </nets>
 </sheet>
 </sheets>
@@ -15333,10 +15324,4 @@ resistor to adjust VCCOUT</text>
 </errors>
 </schematic>
 </drawing>
-<compatibility>
-<note version="6.3" minversion="6.2.2" severity="warning">
-Since Version 6.2.2 text objects can contain more than one line,
-which will not be processed correctly with this version.
-</note>
-</compatibility>
 </eagle>

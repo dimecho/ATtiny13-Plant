@@ -196,7 +196,7 @@ int main(void)
     uint8_t ee = 0xFF;
     uint16_t errorCode = 0;
 
-    blink(2,4); //Delay before setting IO pins (helps usbtiny load libusb driver)
+    blink(10,4); //Delay before setting IO pins
 
     //=============
     //WATCHDOG
@@ -213,8 +213,6 @@ int main(void)
     //=================================
     //AVR I/O pins are input by default
     //=================================
-    //Set OUTPUT to prevent 5V burning on start-up from USBasp
-
     DDRB |= (1<<solarPin); //Digital OUTPUT
     DDRB |= (1<<pumpPin); //Digital OUTPUT
     DDRB |= (1<<sensorPin); //Digital OUTPUT
@@ -606,7 +604,7 @@ uint16_t sensorRead(uint8_t enablePin, uint8_t readPin, uint8_t loop)
     uint16_t value = ReadADCHighest(readPin,loop);
     PORTB &= ~(1<<enablePin); //OFF
 
-    DDRB |= (1<<readPin);   //Digital OUTPUT
+    //DDRB |= (1<<readPin);   //Digital OUTPUT
     PORTB &= ~(1<<readPin); //OFF
 
     #ifdef UART_TX_ENABLED

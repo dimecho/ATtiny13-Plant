@@ -1,0 +1,6 @@
+#!/bin/sh
+
+echo "https://distfiles.macports.org/ports.tar.gz [default]" > /opt/local/etc/macports/sources.conf
+
+/opt/local/bin/port sync
+/opt/local/bin/port -q install libusb libusb-compat

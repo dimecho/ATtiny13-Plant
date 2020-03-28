@@ -44,25 +44,27 @@
 #include <stdlib.h>
 
 #include "usbdrv.h"
-#include "oddebug.h"
+//#include "oddebug.h"
 
 enum
 {
 	// Generic requests
-	USBTINY_ECHO,		// echo test
-	USBTINY_READ,		// read byte (wIndex:address)
-	USBTINY_WRITE,		// write byte (wIndex:address, wValue:value)
-	USBTINY_CLR,		// clear bit (wIndex:address, wValue:bitno)
-	USBTINY_SET,		// set bit (wIndex:address, wValue:bitno)
+	USBTINY_ECHO = 0,		// echo test
+	USBTINY_READ = 1,		// read byte
+	USBTINY_WRITE = 2,		// write byte
+	USBTINY_CLR = 3,		// clear bit 
+	USBTINY_SET = 4,		// set bit
 	// Programming requests
-	USBTINY_POWERUP,	// apply power (wValue:SCK-period, wIndex:RESET)
-	USBTINY_POWERDOWN,	// remove power from chip
-	USBTINY_SPI,		// issue SPI command (wValue:c1c0, wIndex:c3c2)
-	USBTINY_POLL_BYTES,	// set poll bytes for write (wValue:p1p2)
-	USBTINY_FLASH_READ,	// read flash (wIndex:address)
-	USBTINY_FLASH_WRITE,	// write flash (wIndex:address, wValue:timeout)
-	USBTINY_EEPROM_READ,	// read eeprom (wIndex:address)
-	USBTINY_EEPROM_WRITE,	// write eeprom (wIndex:address, wValue:timeout)
+	USBTINY_POWERUP = 5,	// apply power (wValue:SCK-period, wIndex:RESET)
+	USBTINY_POWERDOWN = 6,	// remove power from chip
+	USBTINY_SPI = 7,		// issue SPI command (wValue:c1c0, wIndex:c3c2)
+	USBTINY_POLL_BYTES = 8,	// set poll bytes for write (wValue:p1p2)
+	USBTINY_FLASH_READ = 9,	// read flash (wIndex:address)
+	USBTINY_FLASH_WRITE = 10,	// write flash (wIndex:address, wValue:timeout)
+	USBTINY_EEPROM_READ = 11,	// read eeprom (wIndex:address)
+	USBTINY_EEPROM_WRITE = 12,	// write eeprom (wIndex:address, wValue:timeout)
+	USBTINY_DDRWRITE = 13,	// set port direction
+	//USBTINY_SPI1 = 14		// a single SPI command
 };
 
 #define	PORT	PORTB
@@ -93,7 +95,7 @@ enum
 // ----------------------------------------------------------------------
 // Local data
 // ----------------------------------------------------------------------
-static	uchar		sck_period=50;	// SCK period in microseconds (1..250)
+static	uchar		sck_period = 10;	// SCK period in microseconds (1..250)
 static	uchar		poll1;		// first poll byte for write
 static	uchar		poll2;		// second poll byte for write
 static	unsigned		address;	// read/write address
@@ -112,8 +114,6 @@ static inline void delay ( void )
 		"	mov	__tmp_reg__,%0	\n"
 		"0:	rjmp	1f		\n"
 		"1:	nop			\n"
-		"2:	nop			\n"
-		"3:	nop			\n"
 		"	dec	__tmp_reg__	\n"
 		"	brne	0b		\n"
 		: : "r" (sck_period) );
@@ -122,15 +122,15 @@ static inline void delay ( void )
 // ----------------------------------------------------------------------
 // Issue one SPI command.
 // ----------------------------------------------------------------------
-static	void	spi ( uchar* cmd, uchar* res )
+static	void	spi ( uchar* cmd, uchar* res, uchar n )
 {
-	uchar	i;
 	uchar	c;
 	uchar	r;
 	uchar	mask;
 
-	for	( i = 0; i < 4; i++ )
+	while	( n != 0 )
 	{
+		n--;
 		c = *cmd++;
 		r = 0;
 		for	( mask = 0x80; mask; mask >>= 1 )
@@ -173,7 +173,7 @@ static	void	spi_rw ( void )
 	}
 	cmd[1] = a >> 9;
 	cmd[2] = a >> 1;
-	spi( cmd, res );
+	spi( cmd, res, 4 );
 }
 
 // ----------------------------------------------------------------------
@@ -209,7 +209,7 @@ uchar usbFunctionWrite(uchar *data, uchar len)
 		//
 		for	( usec = 0; usec < timeout; usec += 32 * sck_period )
 		{	// when timeout > 0, poll until byte is written
-			spi( cmd, res );
+			spi( cmd, res, 4 );
 			r = res[3];
 			if	( r == cmd[3] && r != poll1 && r != poll2 )
 			{
@@ -267,6 +267,10 @@ uchar	usbFunctionSetup(uchar data[8])
 		*addr |= mask;
 		return 0;
 	}
+	if	( req == USBTINY_DDRWRITE )
+	{
+		DDR = data[2];
+	}
 
 	// Programming requests
 	if	( req == USBTINY_POWERUP )
@@ -298,10 +302,17 @@ uchar	usbFunctionSetup(uchar data[8])
 	*/
 	if	( req == USBTINY_SPI )
 	{
-		spi( data + 2, data + 0 );
+		spi( data + 2, data + 0, 4 );
 		usbMsgPtr = data;
 		return 4;
 	}
+	// There are no single SPI transactions in the ISP protocol
+	/*if	( req == USBTINY_SPI1 )
+	{
+		spi( data + 2, data + 0, 1 );
+		usbMsgPtr = data;
+		return 1;
+	}*/
 	if	( req == USBTINY_POLL_BYTES )
 	{
 		poll1 = data[2];
@@ -312,25 +323,25 @@ uchar	usbFunctionSetup(uchar data[8])
 	if	( req == USBTINY_FLASH_READ )
 	{
 		cmd0 = 0x20;
-		return 0xff;	// usb_in() will be called to get the data
+		return USB_NO_MSG;;	// usbFunctionRead() will be called to get the data
 	}
 	if	( req == USBTINY_EEPROM_READ )
 	{
 		cmd0 = 0xa0;
-		return 0xff;	// usb_in() will be called to get the data
+		return USB_NO_MSG;;	// usbFunctionRead() will be called to get the data
 	}
 	timeout = * (unsigned*) & data[2];
 	if	( req == USBTINY_FLASH_WRITE )
 	{
 		cmd0 = 0x40;
-		return 0xff;	// data will be received by usb_out()
+		return USB_NO_MSG;	// data will be received by usbFunctionWrite()
 	}
 	if	( req == USBTINY_EEPROM_WRITE )
 	{
 		cmd0 = 0xc0;
-		return 0xff;	// data will be received by usb_out()
+		return USB_NO_MSG;	// data will be received by usbFunctionWrite()
 	}
-	return 0;
+	return 0; // ignore all unknown requests
 }
 
 /* ------------------------------------------------------------------------- */
@@ -339,24 +350,26 @@ uchar	usbFunctionSetup(uchar data[8])
 
 static void hardwareInit(void)
 {
-    /* activate pull-ups except on USB lines */
+    // activate pull-ups except on USB lines
     USB_CFG_IOPORT   = (uchar)~((1<<USB_CFG_DMINUS_BIT)|(1<<USB_CFG_DPLUS_BIT));
-    /* all pins input except USB (-> USB reset) */
-	#ifdef USB_CFG_PULLUP_IOPORT    /* use usbDeviceConnect()/usbDeviceDisconnect() if available */
-	    USBDDR    = 0;    /* we do RESET by deactivating pullup */
+    //all pins input except USB (-> USB reset)
+	#ifdef USB_CFG_PULLUP_IOPORT    // use usbDeviceConnect()/usbDeviceDisconnect() if available
+	    USBDDR    = 0;    //we do RESET by deactivating pullup
 	    usbDeviceDisconnect();
 	#else
 	    USBDDR    = (1<<USB_CFG_DMINUS_BIT)|(1<<USB_CFG_DPLUS_BIT);
 	#endif
 
-    /* 300 ms disconnect */
-    wdt_reset();
-    _delay_ms(300);
+	uchar i;
+    for(i = 0; i<250; i++) { // wait 500 ms
+        wdt_reset(); // keep the watchdog happy
+        _delay_ms(2);
+    }
 
 	#ifdef USB_CFG_PULLUP_IOPORT
 	    usbDeviceConnect();
 	#else
-	    USBDDR    = 0;      /*  remove USB reset condition */
+	    USBDDR    = 0;      //  remove USB reset condition
 	#endif
 }
 
@@ -367,27 +380,31 @@ int main(void)
 		calibrateOscillatorASM();
 	#endif
 
-	wdt_enable(WDTO_1S);
-    /* If you don't use the watchdog, replace the call above with a wdt_disable().
-    * On newer devices, the status of the watchdog (on/off, period) is PRESERVED
-    * OVER RESET!
+	//DDRB  = (RESET_MASK|SCK_MASK|MOSI_MASK);
+	DDRB  = RESET_MASK;
+	PORTB = RESET_MASK;
+    /* RESET status: all port bits are inputs without pull-up.
+    * That's the way we need D+ and D-. Therefore we don't need any
+    * additional hardware initialization.
     */
 	/*
 	_delay_ms(25);
 	uchar pgm[] = { 0xac, 0x53, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, };
 	spi(pgm, pgm+4);
 	*/
-    odDebugInit();
-    /* RESET status: all port bits are inputs without pull-up.
-    * That's the way we need D+ and D-. Therefore we don't need any
-    * additional hardware initialization.
+    //odDebugInit();
+    
+    wdt_enable(WDTO_1S);
+    /* If you don't use the watchdog, replace the call above with a wdt_disable().
+    * On newer devices, the status of the watchdog (on/off, period) is PRESERVED
+    * OVER RESET!
     */
     hardwareInit();
 
     usbInit();
     sei();
-    for(;;){    /* main event loop */
-        wdt_reset();
+    for(;;){    // main event loop
+        wdt_reset(); // keep the watchdog happy
         usbPoll();
     }
     return 0;

@@ -134,7 +134,7 @@ section at the end of this file).
 /* Define this to 1 if the device has its own power supply. Set it to 0 if the
  * device is powered from the USB bus.
  */
-#define USB_CFG_MAX_BUS_POWER           200
+#define USB_CFG_MAX_BUS_POWER           400
 /* Set this variable to the maximum USB bus power consumption of your device.
  * The value is in milliamperes. [It will be divided by two since USB
  * communicates power requirements in units of 2 mA.]
@@ -227,6 +227,7 @@ extern void calibrateOscillatorASM(void);
 extern void calibrateOscillator(void);
 */
 #endif
+//#define USB_RESET_HOOK(isReset)  if(!isReset){calibrateOscillatorASM();}
 #define USB_RESET_HOOK(resetStarts)  if(!resetStarts){cli(); calibrateOscillatorASM(); sei();}
 //#define USB_RESET_HOOK(resetStarts)  if(!resetStarts){cli(); calibrateOscillator(); sei();}
 /* This macro is a hook if you need to know when an USB RESET occurs. It has

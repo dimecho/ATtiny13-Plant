@@ -1,5 +1,7 @@
 <?php
     session_start();
+    set_time_limit(12);
+    error_reporting(E_ALL);
 
     Request(0);
 
@@ -13,7 +15,7 @@
 	        $fuses = "";
 
 	        if (strpos($uname, "darwin") !== false) {
-	            $command = "/usr/local/bin/avrdude";
+	            $command = getcwd(). "/avrdude -C " .getcwd(). "/avrdude.conf";
 	        }else if (strpos($uname, "win") !== false) {
 	            $command = "avrdude.exe";
 	        }else{
@@ -64,7 +66,7 @@
 	    else if(isset($_GET["reset"]))
 	    {
 	        if (strpos($uname, "darwin") !== false) {
-	            $command = "/usr/local/bin/avrdude";
+	            $command = getcwd(). "/avrdude -C " .getcwd(). "/avrdude.conf";
 	        }else if (strpos($uname, "win") !== false) {
 	            $command = "avrdude.exe";
 	        }else{
@@ -79,7 +81,7 @@
 	    else if(isset($_GET["eeprom"]))
 	    {
 	        if (strpos($uname, "darwin") !== false) {
-	            $command = "/usr/local/bin/avrdude";
+	            $command = getcwd(). "/avrdude -C " .getcwd(). "/avrdude.conf";
 	            //$tmp_dir = "/tmp";
 	            $tmp_dir = sys_get_temp_dir();
 	        }else if (strpos($uname, "win") !== false) {
@@ -116,7 +118,8 @@
 	            $command .= " -c " . $_SESSION["usb"] . " -p " .strtolower($_SESSION["chip"]). " -U eeprom:r:" . $tmp_dir . $eeprom_file .":r";
 	        }
 	        
-	        $output = Run($command);
+	        if(!file_exists($tmp_dir . $eeprom_file) || $_GET["eeprom"] == "read")
+	        	$output = Run($command);
 	        
 	        if (file_exists($tmp_dir . $eeprom_file)) {
 
@@ -153,11 +156,14 @@
 									fwrite($f, pack('c', $lo_hi[1]));
 				            	}else{
 									fwrite($f, pack('c', intval($value_array[$x])));
+									if($offset_array[$x] > 1)
+										fwrite($f, pack('c', 255));
 				            	}
 				            }
 				        }else{
 							fseek($f, intval($_GET["offset"]), SEEK_SET);
-							fwrite($f, pack('c', $_GET["value"]));
+							fwrite($f, pack('c', intval($_GET["value"])));
+							//fwrite($f, pack('c', 255));
 				        }
 
 	                    rewind($f);
@@ -168,18 +174,20 @@
 	                    }
 
 	                    //sleep(1);
-	                    $command = str_replace("eeprom:r:", "eeprom:w:", $command);
+	                    //$command = str_replace("-U eeprom:r:", "-v -U eeprom:w:", $command);
+	                    //$command = str_replace("-U eeprom:r:", "-B5 -v -U eeprom:w:", $command);
+	                    $command = str_replace("-U eeprom:r:", $_SESSION["bitrate"]. "-U eeprom:w:", $command);
 	                    $output = Run($command);
 
+	                    echo $command. "\n";
 	                    echo $output;
 	                }else{
 	                    foreach($unpacked as $value) {
 	                        echo $value. "\n";
 	                    }
 	                }
-
 	                fclose($f);
-	                unlink($tmp_dir . $eeprom_file);
+	                //unlink($tmp_dir . $eeprom_file);
 	            }else{
 	                echo $command;
 	            }
@@ -193,13 +201,21 @@
     {
     	$output = "";
     	$timeout = 3;
+    	$retry = array("timed out", "output error", "libusb: debug", "initialization failed", "Broken pipe");
 
     	while ($timeout > 0) {
     		$output = shell_exec($command. " 2>&1");
-    		//sleep(1);
-    		if (strpos($output, "libusb: debug") == false && strpos($output, "initialization failed") == false) {
-    			break;
+    		$run = true;
+    		foreach($retry as $item) {
+    			if (strpos($output, $item) !== false) {
+    				$run = false;
+    				break;
+    			}
+			}
+    		if ($run == true) {
+    			return $output;
     		}
+    		//sleep(1);
     		$timeout--;
     	}
 
@@ -211,7 +227,7 @@
         $uname = strtolower(php_uname('s'));
 
         if (strpos($uname, "darwin") !== false) {
-            $command = "/usr/local/bin/avrdude -c " . $programmer . " -p t13 -n";
+            $command = getcwd(). "/avrdude -C " .getcwd(). "/avrdude.conf -c " . $programmer . " -p t13 -n";
         }else if (strpos($uname, "win") !== false) {
             $command = "avrdude.exe -c " . $programmer . " -p t13 -n";
         }else{
@@ -225,6 +241,7 @@
         session_start();
 
         $_SESSION["usb"] = $programmer;
+        $_SESSION["bitrate"] = "-B250 ";
         $_SESSION["chip"] = "";
 
         if (strpos($output, "0x1e9007") !== false) {

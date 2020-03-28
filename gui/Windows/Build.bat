@@ -1,11 +1,9 @@
 del ATtiny-Plant.exe
-::Downloadable
 C:\Windows\Microsoft.NET\Framework\v4.0.30319\csc.exe -optimize+ -nostdlib ATtiny-Plant.cs /win32icon:icon.ico ^
 /resource:Web.zip,APP.Web.zip ^
 /resource:Drivers.zip,APP.Drivers.zip ^
 /resource:AVR\avrdude.conf,AVR.avrdude.conf ^
 /resource:AVR\avrdude.exe,AVR.avrdude.exe ^
-/resource:AVR\libusb0.dll,AVR.libusb0.dll ^
 /reference:System.dll ^
 /reference:System.IO.Compression.FileSystem.dll ^
 /reference:System.Security.Cryptography.X509Certificates.dll ^
