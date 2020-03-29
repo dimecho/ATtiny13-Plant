@@ -281,7 +281,7 @@ extern void calibrateOscillator(void);
  * with libusb: 0x16c0/0x5dc.  Use this VID/PID pair ONLY if you understand
  * the implications!
  */
-#define USB_CFG_DEVICE_VERSION  0x05, 0x01
+#define USB_CFG_DEVICE_VERSION  0x04, 0x01
 /* Version number of the device: Minor number first, then major number.
  */
 #define USB_CFG_VENDOR_NAME     't', 'i', 'n', 'y', 'p', 'l', 'a', 'n', 't', '.', 'c', 'a'

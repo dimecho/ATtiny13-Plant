@@ -347,7 +347,7 @@ uchar	usbFunctionSetup(uchar data[8])
 /* ------------------------------------------------------------------------- */
 /* --------------------------------- main ---------------------------------- */
 /* ------------------------------------------------------------------------- */
-
+/*
 static void hardwareInit(void)
 {
     // activate pull-ups except on USB lines
@@ -372,7 +372,7 @@ static void hardwareInit(void)
 	    USBDDR    = 0;      //  remove USB reset condition
 	#endif
 }
-
+*/
 int main(void)
 {
 	#if USB_CFG_HAVE_MEASURE_FRAME_LENGTH
@@ -387,11 +387,6 @@ int main(void)
     * That's the way we need D+ and D-. Therefore we don't need any
     * additional hardware initialization.
     */
-	/*
-	_delay_ms(25);
-	uchar pgm[] = { 0xac, 0x53, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, };
-	spi(pgm, pgm+4);
-	*/
     //odDebugInit();
     
     wdt_enable(WDTO_1S);
@@ -399,7 +394,14 @@ int main(void)
     * On newer devices, the status of the watchdog (on/off, period) is PRESERVED
     * OVER RESET!
     */
-    hardwareInit();
+    //hardwareInit();
+    usbDeviceDisconnect();
+    uchar i;
+    for(i = 0; i<250; i++) { // wait 500 ms
+        wdt_reset(); // keep the watchdog happy
+        _delay_ms(2);
+    }
+    usbDeviceConnect();
 
     usbInit();
     sei();

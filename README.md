@@ -10,13 +10,13 @@ Monitor soil moisture and water plant. Portable and high efficiency with lithium
 
 ## Download
 
-![MacOS](img/mac.png?raw=true) [MacOS](../../releases/download/1.0/ATTiny13.Plant.dmg)
+![MacOS](img/mac.png?raw=true) [MacOS](../../releases/download/1.0/ATtiny13-Plant.dmg)
 
-![Windows](img/win.png?raw=true) [Windows](../../releases/download/1.0/ATTiny13.Plant.zip)
+![Windows](img/win.png?raw=true) [Windows](../../releases/download/1.0/ATtiny13-Plant.zip)
 
-![Linux](img/linux.png?raw=true) [Linux](../../releases/download/1.0/ATTiny13.Plant.tgz)
+![Linux](img/linux.png?raw=true) [Linux](../../releases/download/1.0/ATtiny13-Plant.tgz)
 
-![Firmware](img/chip.png?raw=true) [Firmware](../../releases/download/1.0/ATTiny13.Plant.Firmware.zip)
+![Firmware](img/chip.png?raw=true) [Firmware](../../releases/download/1.0/ATtiny13-Plant-Firmware.zip)
 
 ## BOM (Bill of Materials)
 
@@ -25,7 +25,7 @@ Monitor soil moisture and water plant. Portable and high efficiency with lithium
 | IC1   | ATTINY13A  | SOP-8 or DIP-8      | CPU      |
 | C1    | 100nF      | 0805 or 0603 (104)  | CPU      |
 | T1A/B | 2N4401 NPN | TO-92 or SOT-23     | Pump     |
-| R1    | 1k         | 0805 or 0603 (102)  | Pump     |
+| R1    | 100R       | 0805 or 0603 (101)  | Pump     |
 | R2    | 10k        | 0805 or 0603 (103)  | Pump     |
 | R3    | 330R       | 0805 or 0603 (331)  | Solar    |
 | T2A/B | 2N4401 NPN | TO-92 or SOT-23     | Solar    |

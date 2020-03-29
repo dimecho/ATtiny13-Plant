@@ -12,6 +12,7 @@
 	    if(count($_FILES)) {
 	        
 	        $file = $_FILES['file']['tmp_name'];
+	        $chip = "t13";
 	        $fuses = "";
 
 	        if (strpos($uname, "darwin") !== false) {
@@ -31,7 +32,10 @@
 	        	$fuses = " -U hfuse:w:0xDF:m -U lfuse:w:0x62:m";
 	        }
 
-	        $command .= " -c " . $_SESSION["usb"] . " -p " .strtolower($_SESSION["chip"]). $fuses . " -U flash:w:" . $file . ":i";
+	        if($_SESSION["chip"] !== "")
+	        	$chip = strtolower($_SESSION["chip"]);
+
+	        $command .= " -c " . $_SESSION["usb"] . " -p " .$chip. $fuses . " -U flash:w:" . $file . ":i";
 	        /*
 	        if (strpos($file, ".hex") !== false) {
 	            $command .= ":i";
@@ -241,7 +245,7 @@
         session_start();
 
         $_SESSION["usb"] = $programmer;
-        $_SESSION["bitrate"] = "-B250 ";
+        $_SESSION["bitrate"] = "";
         $_SESSION["chip"] = "";
 
         if (strpos($output, "0x1e9007") !== false) {
@@ -257,6 +261,7 @@
         }else{
             if($timeout < 4) {
             	if(strpos(strtolower($output), "error:") !== false) {
+            		$_SESSION["bitrate"] = "-B250 ";
 	                if($programmer == "usbtiny") { //try another programmer
 	                	$programmer = "usbasp";
 	                }else{
