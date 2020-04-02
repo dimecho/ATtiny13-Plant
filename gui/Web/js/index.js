@@ -1,31 +1,27 @@
 var theme = detectTheme();
+var debug = 0xFF;
 var refreshTimer;
 var refreshSpeed = 8000;
 var progressTimer;
-var deepSleep = 40; //8seconds x 40 = 5.5 min
+var deepSleep = 50; //8seconds x 50 = 6.5 min
 var moistureOffset = 260; //this is caused by double 10k pullup resistor (on both sides "out" and sense "in")
 var saveReminder;
 
 var solar_values = [0, 1];
 var solar_labels = ["OFF", "ON"];
+var solar_adc_offset = 20; //with solar add offset
 
 var pot_values = [20, 70, 120];
 var pot_labels = ["Small", "Medium", "Large"];
 
-var soil_values = [220, 480];
+var soil_values = [280, 520];
 var soil_labels = ["Dry (Cactus)", "Wet (Tropical)"];
 
 var soil_type_values = [380, 320, 380, 350, 460];
-var soil_pot_offsets = [[0,-10,-20], [0,0,0], [0,0,0], [20,0,0], [0,0,0]];
+var soil_pot_offsets = [[0,-10,-20], [0,0,0], [0,0,0], [5,10,0], [0,0,0]];
 var soil_type_labels = ["Sand", "Clay", "Dirt", "Loam", "Moss"];
 
 var connectMessage = "Connect Plant to Computer";
-
-var ADC_mvSolar = 888;
-var ADC_solar = 5; //Assume always 5V with regulator
-
-var ADC_mvSensor = 800;
-var ADC_sensor = 4.8; //approximate max after resistance
 
 var p = 1;
 var os = "";
@@ -36,13 +32,13 @@ var xhr;
 /*==========
 EEPROM Map
 ============*/
-var ee = parseInt(0x01);
+var ee = parseInt(0xA);
 var e_versionID = parseInt(0x00);
 var e_sensorMoisture = parseInt(0x02);
 var e_potSize = parseInt(0x04);
 var e_runSolar = parseInt(0x06);
 var e_deepSleep = parseInt(0x08);
-var e_VReg = parseInt(0xA);
+var e_VReg = parseInt(0xB);
 var e_VSolar = parseInt(0xC);
 var e_moisture = parseInt(0x1A);
 var e_water = parseInt(0x1C);
@@ -112,8 +108,9 @@ $(document).ready(function ()
             }else if(n == soil_values[1]){
                 return soil_labels[1];
             }
-            n = n / ADC_mvSensor;
-            return (n*100).toFixed(0) + "% (" + (n * ADC_sensor).toFixed(2) + " mV)";
+            var ref = n / 1023;
+            var v = 5 * (ref * 1.1); // Calculate Vcc from 5V
+            return (ref * 100).toFixed(0) + "% " + (v).toFixed(2) + "V (" + n + ")";
         },
         onChange: function (e) {
             clearTimeout(saveReminder);
@@ -174,6 +171,18 @@ function setSoil(value)
     });
 };
 
+function stopLEDMonitor()
+{
+    var btn = $("#ledMonitor");
+    btn.text("Enable LED Monitor");
+    btn.attr("onclick","startConsole(0xEF,1)");
+    btn.removeClass("btn-danger");
+    btn.addClass("btn-primary");
+
+	sendStop();
+	debug = 0xFF;
+}
+
 function stopConsole()
 {
     xhr.abort();
@@ -182,15 +191,15 @@ function stopConsole()
     var btn = $("#debugConsole");
     btn.text("Start Console");
     btn.attr("onclick","startConsole(0xEE,0)");
-    btn.removeClass("btn-danger");
-    btn.addClass("btn-primary");
 
     sendStop();
+    debug = 0xFF;
 };
 
 function sendStop()
 {
-    $.ajax("usb.php?eeprom=write&offset=" + ee + "," + e_deepSleep + "&value=255," + deepSleep, { async: true});
+	if(debug != 0xFF)
+    	$.ajax("usb.php?eeprom=write&offset=" + ee + "," + e_deepSleep + "&value=255," + deepSleep, { async: true});
 };
 
 function startConsole(hex,delay)
@@ -213,26 +222,47 @@ function startConsole(hex,delay)
                     if(data.indexOf("libusb: debug") != -1) {
                         $.notify({ message: "LibUSB Driver Error" }, { type: "danger" });
                     }else{
-                        var btn = $("#debugConsole");
-
                         var s = data.split("\n");
                         var d = s[ee+1]; //+1 to skip debug path
                         console.log("EEPROM Debug Value:" + d);
 
-                        if(d == parseInt(0xEE)) {
+                        if(d == parseInt(0xEF)) {
                             //console.log(data);
-                            $.notify({ message: "EEPROM Debug Enabled" }, { type: "success" });
-                            $("#debugOutput").empty();
-                            btn.text("Stop Console");
+                            $.notify({ message: "LED Monitor Enabled" }, { type: "success" });
+                            $.notify({ message: "Battery usage will be higher!" }, { type: "warning" });
+                             setTimeout(function () {
+				                $.notify({ message: "Read moisture by counting LED blinks" }, { type: "success", delay: 12000});
+				            }, 4000);
+                            setTimeout(function () {
+				                $.notify({ message: "Example: ---___^___- is 301 (quick pulse = 0)" }, { type: "success", delay: 20000 });
+				            }, 6000);
+                            var btn = $("#ledMonitor");
+                            btn.text("Disable LED Monitor");
                             btn.attr("onclick","startConsole(0xFF," + deepSleep  + ")");
                             btn.removeClass("btn-primary");
                             btn.addClass("btn-danger");
+                        }else if(d == parseInt(0xEE)) {
+                            //console.log(data);
+                            $.notify({ message: "EEPROM Debug Enabled" }, { type: "success" });
+                            $("#debugOutput").empty();
+                            var btn = $("#debugConsole");
+                            btn.text("Stop Console");
+                            btn.attr("onclick","startConsole(0xFF," + deepSleep  + ")");
+                            setTimeout(function () {
+				            	$.notify({ message: "Limited write cycles! Don't forget to Disable" }, { type: "warning" });
+				            }, 4000);
                             getEEPROM();
                         }else if(d == parseInt(0xFF)) {
-                            $.notify({ message: "EEPROM Debug Disabled" }, { type: "warning" });
-                            stopConsole();
-                            //$.ajax("usb.php?reset=1");
+                        	if(debug == 0xEF) {
+                        		$.notify({ message: "LED Monitor Disabled" }, { type: "warning" });
+                        		stopLEDMonitor();
+                        	}else{
+                        		$.notify({ message: "EEPROM Debug Disabled" }, { type: "warning" });
+                            	stopConsole();
+                            	//$.ajax("usb.php?reset=1");
+                        	}
                         }
+                        debug = d;
                     }
                 }else{
                     $.notify({ message: "Cannot read EEPROM" }, { type: "danger" });
@@ -301,6 +331,19 @@ function getEEPROMInfo(crc)
                     var info = $("#debugInfo").empty();
                     info.append("Hardware Chip: " + chip + "\n");
 
+                    debug = s[ee+1];
+                    if(debug == 0xEF) {
+                        var btn = $("#ledMonitor")
+                        btn.text("Disable LED Monitor");
+                        btn.attr("onclick","startConsole(0xFF," + deepSleep  + ")");
+                        btn.removeClass("btn-primary");
+                        btn.addClass("btn-danger");
+                    }else if(debug == 0xEE) {
+                    	$.notify({ message: "EEPROM Debug was left enabled" }, { type: "warning" });
+                    	$.notify({ message: "Stop Debug before disconnecting plant" }, { type: "warning" });
+                        stopConsole();
+                    }
+
                     var vreg = HexShift(s,e_VReg);
                     var vchip = "TP4056";
                     if(vreg == 1) {
@@ -352,12 +395,6 @@ function getEEPROMInfo(crc)
                         $.notify({ message: "EEPROM Fixed!" }, { type: "success" });
                     }else if(data.indexOf("avrdude:") != -1) {
 						$.notify({ message: "Cannot Syncronize (unplug USB and plug back in)" }, { type: "danger" });
-                    }else{
-                        if(d == parseInt(0xEE)) {
-                            $.notify({ message: "Plant was left in Debug mode" }, { type: "danger" });
-                            sendStop();
-                            $.notify({ message: "Next time 'Stop Console' before disconnecting" }, { type: "warning" });
-                        }
                     }
 
                     var instance = $("#slider-solar").data("ionRangeSlider");
@@ -398,13 +435,11 @@ function getEEPROM()
                 var debug = $("#debugOutput").empty();
 
                 var sl = HexShift(s,e_VSolar);
-                sl = sl / ADC_mvSolar;
 
                 var so = HexShift(s,e_moisture);
-                if(so > moistureOffset) { //Calibration Offset
-                    so -= moistureOffset;
-                }
-                so = so / ADC_mvSensor;
+                //if(so > moistureOffset) { //Calibration Offset
+                //    so -= moistureOffset;
+                //}
 
                 var water = HexShift(s,e_water);
                 var empty = HexShift(s,e_empty);
@@ -419,13 +454,14 @@ function getEEPROM()
                 console.log("Error:" + err);
 
                 if(sl > 0) {
-                    debug.append("Solar Voltage: " + (sl * ADC_solar).toFixed(2) + "V (" + (sl * 100).toFixed(0) + "%)\n");
+                    var ref = sl / 1023;
+                    var v = (1125300 / (ref * 1.1)) / 1000; // Calculate Vcc (in mV); 1125300 = 1.1*1023*1000
+                    debug.append("Solar Voltage: " + v.toFixed(2) + "V (" + (ref * 100).toFixed(0) + "%)\n");
                 }
 
-                if (so > 1.51 && so < 1.56) { //AVR anomaly with ADC
-                    so = 0;
-                }
-                debug.append("Soil Moisture: " + (so * ADC_sensor).toFixed(2) + "V (" + (so * 100).toFixed(0) + "%)\n");
+                var ref = so / 1023;
+                var v = 5 * (ref * 1.1); // Calculate Vcc from 5V
+                debug.append("Soil Moisture: " + v.toFixed(2) + "V (" + (ref * 100).toFixed(0) + "%)\n");
 
                 if (so < 0.2) {
                     debug.append("Error Code: Sensor not in Soil\n");
@@ -555,7 +591,7 @@ function connectPlant(async)
     }
 };
 
-function flashFirmware(emergency)
+function updateFirmware(emergency)
 {
     if(chip.length == 0)
         connectPlant(false);
@@ -571,7 +607,7 @@ function flashFirmware(emergency)
         });
     }else{
         $.notify({ message: connectMessage }, { type: "danger" });
-        $.notify({ message: "<a href='#' onClick='flashFirmware(true)'>Emergency Flash</a>" }, { type: "warning" });
+        $.notify({ message: "<a href='#' onClick='updateFirmware(true)'>Emergency Flash</a>" }, { type: "warning" });
     }
 };
 
@@ -584,7 +620,11 @@ function saveSettings()
         $.notify({ message: "... Saving Settings" }, { type: "warning" });
         clearTimeout(saveReminder);
 
-        $.ajax("usb.php?eeprom=write&offset=" + e_runSolar + "," + e_potSize + "," + e_sensorMoisture + "&value=" + $("#slider-solar").data().from + "," + $("#slider-pot").data().from + "," + $("#slider-soil").data().from , {
+        //calibrate with solar
+        var moisture = $("#slider-soil").data().from;
+        if($("#slider-solar").data().from > 0){ moisture += solar_adc_offset; }
+        
+        $.ajax("usb.php?eeprom=write&offset=" + e_runSolar + "," + e_potSize + "," + e_sensorMoisture + "&value=" + $("#slider-solar").data().from + "," + $("#slider-pot").data().from + "," + moisture , {
             success: function(data) {
                 consoleHex(data);
                 if(data.indexOf("initialization failed") != -1) {

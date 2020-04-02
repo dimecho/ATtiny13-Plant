@@ -56,10 +56,10 @@
                     <div class="container border mt-4 p-4" style="background: rgba(60, 60, 60, 0.4);">
                         <div class="row p-2">
                             <div class="col">
-                                <button class="btn btn-primary" type="button" onClick="startConsole(0xEE,0)" id="debugConsole">Start Console</button>
+                                <button class="btn btn-primary" type="button" onClick="startConsole(0xEF,1)" id="ledMonitor">Enable LED Monitor</button>
                             </div>
                             <div class="col">
-                                <button class="btn btn-primary" type="button" onClick="flashFirmware()" id="flashFirmware">Flash Firmware</button>
+                                <button class="btn btn-primary" type="button" onClick="updateFirmware()" id="updateFirmware">Update Firmware</button>
                             </div>
 
                         </div>
@@ -78,8 +78,14 @@
                                 <br/><br/>
                                 <br/><br/>
                                 <br/><br/>
-                                <br/><br/>
-                                <center><a class="text-white" href="usb.php?eeprom=erase"><small>Erase EEPROM</small></a></center>
+                            </div>
+                        </div>
+                        <div class="row p-2">
+                            <div class="col" align="center" >
+                                <a class="text-white" href="#" onClick="startConsole(0xEE,0)" id="debugConsole"><small>Start Console</small></a>
+                            </div>
+                            <div class="col" align="center" >
+                                <a class="text-white" href="usb.php?eeprom=erase"><small>Erase EEPROM</small></a>
                             </div>
                         </div>
                     </div>

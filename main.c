@@ -66,8 +66,7 @@ do                          \
     #define versionID               10 //1.0
 #endif
 #ifndef sensorMoisture
-    #define sensorMoisture          388 //ADC value
-    #define sensorMoistureOffset    20  //ADC calibration offset
+    #define sensorMoisture          410 //ADC value
 #endif
 #ifndef potSize
  #define potSizeTimer               20 //20x2x100 = 4000 miliseconds = 4 seconds
@@ -79,10 +78,10 @@ do                          \
 #define ledPin                      PB2 //Output
 #define solarSensorPin              PB3 //Input/Output
 #define moistureSensorPin           PB4 //Input
-#define delayWatering               40  //8seconds x 40 = 5.5 min
-#define delayBetweenRefillReset     20  //8seconds x 40 x 20 = 2 hours
-#define delayBetweenOverfloodReset  100 //8seconds x 40 x 100 = 8 hours
-#define delayBetweenSolarDischarge  4   //8seconds x 5 = .5 min
+#define delayWatering               0  //8 seconds x 50 = 6.5 min
+#define delayBetweenRefillReset     20  //8 seconds x 40 x 20 = 2 hours
+#define delayBetweenOverfloodReset  100 //8 seconds x 40 x 100 = 8 hours
+#define delayBetweenSolarDischarge  4   //8 seconds x 5 = .5 min
 
 #ifdef EEPROM_ENABLED
     //#include <avr/eeprom.h>
@@ -114,12 +113,11 @@ do                          \
 #endif
 
 static void blink(uint8_t time, uint8_t duration);
-static uint16_t sensorRead(uint8_t enablePin,uint8_t readPin, uint8_t loop);
-static uint16_t ReadADCHighest(uint8_t pin, uint8_t loop);
+static uint16_t sensorRead(uint8_t enablePin,uint8_t readPin);
 static uint16_t ReadADC(uint8_t pin);
 
 static uint16_t div3(uint16_t n);
-
+//static uint16_t div10(uint16_t n);
 /*
 Tips and Tricks to Optimize Your C Code for 8-bit AVR Microcontrollers
 https://ww1.microchip.com/downloads/en/AppNotes/doc8453.pdf
@@ -169,9 +167,9 @@ https://ww1.microchip.com/downloads/en/AppNotes/doc8453.pdf
                 uint8_t lo_hi[] = { (uint8_t)ucValue, (uint8_t)(ucValue >> 8) }; //0xAAFF = { 0xFF, 0xAA }
                 EEPROM_write(ucAddress, lo_hi[0]);
                 EEPROM_write((ucAddress + 1), lo_hi[1]);
-
             }else{
                 EEPROM_write(ucAddress, ucValue);
+                EEPROM_write((ucAddress + 1), 255);
                 //eeprom_write_word((uint16_t*)ucAddress, ucValue);
             }
         }
@@ -239,13 +237,13 @@ int main(void)
             EEPROM_save(0x08,deepSleep,0xEE);
 
             #ifdef WS78L05
-            	EEPROM_save(0xA,WS78L05,0xEE);
+            	EEPROM_save(0xB,WS78L05,0xEE);
             #endif
             #ifdef LM2731
-            	EEPROM_save(0xA,LM2731,0xEE);
+            	EEPROM_save(0xB,LM2731,0xEE);
             #endif
             #ifdef TPL5110
-				EEPROM_save(0xA,TPL5110,0xEE);
+				EEPROM_save(0xB,TPL5110,0xEE);
             #endif
 
         }else{
@@ -263,8 +261,8 @@ int main(void)
         //deepSleep = eeprom_read_byte((uint8_t*)0x08);
         //EEPROM_save(0x08,delayWatering,0xEE); //reset for next time
 
-        ee = EEPROM_read(0x01);
-        //ee = eeprom_read_byte((uint8_t*)0x01);
+        ee = EEPROM_read(0xA);
+        //ee = eeprom_read_byte((uint8_t*)0xA);
         //EEPROM_save(0x01,0xFF,0xEE); //reset for next time
     #endif
 
@@ -314,7 +312,6 @@ int main(void)
 
         if(runSolar == 1) {
 
-            suitableMoisture += sensorMoistureOffset;
             //deepSleep = 0;
 
             set_sleep_mode(SLEEP_MODE_IDLE);
@@ -408,13 +405,37 @@ int main(void)
                 }
                 */
                 //======================
-                blink(4,2); //DEBUG
-
-                uint16_t moisture = sensorRead(sensorPin,moistureSensorPin,8);
+                uint16_t moisture = sensorRead(sensorPin,moistureSensorPin);
 
                 #ifdef EEPROM_ENABLED
                     EEPROM_save(0x1A,moisture,ee);
                 #endif
+                if(ee == 0xEF) { //LED Monitor enabled
+                    /*
+                    int number = 1234;
+                    (number) % 10 => 4
+                    (number / 10) % 10 => 3
+                    (number / 100) % 10 => 2
+                    (number / 1000) % 10 => 1
+                    */
+                    //=======================
+                    //DEBUG (LED MORSE CODE)
+                    //=======================
+                    //for (uint16_t i = 1000 ; i >= 1; i=div10(i)) {
+                    for (uint16_t i = 100 ; i >= 1; i /= 10) {
+                        uint8_t d = (moisture/i) % 10;
+                        d = d + d;
+                        blink(4,d); //blink a zero with a quick pulse
+                        _delay_ms(1200);
+                    }
+                    //=======================
+                }else{ //avoid this during the science project (data gathering)
+                	
+                	if((moisture - suitableMoisture) > 300) { //soil is too wet for set threshold, wait longer before checking again
+                		deepSleep = 255; //8 seconds x 255 = 35 min
+                	}
+                	blink(3,2);
+                }
 
                 if(moisture < 4) { //Sensor Not in Soil
 
@@ -424,7 +445,8 @@ int main(void)
                         //uart_putc('\n');
                     #endif
 
-                    blink(4,4);
+                    _delay_ms(3000);
+                    blink(1,18);
 
                 #ifdef EEPROM_ENABLED
                 }else if(moisture >= 1021) { //Sensor Manual Calibrate (cross/short both sensor leads)
@@ -434,7 +456,7 @@ int main(void)
                             PORTB |= (1<<ledPin); //ON
                         #endif
 
-                        for(uint8_t i = 0; i < 8; ++i) //Get ready to place into base-line soil
+                        for(uint8_t i = 0; i < 8; i++) //Get ready to place into base-line soil
                         {
                             uart_putc('.');
                             _delay_ms(800);
@@ -447,7 +469,7 @@ int main(void)
                         blink(9,9);
                     #endif
 
-                    suitableMoisture = sensorRead(sensorPin,moistureSensorPin,8);
+                    suitableMoisture = sensorRead(sensorPin,moistureSensorPin);
 
                     EEPROM_save(0x02,suitableMoisture,0xEE);
                 #endif
@@ -461,7 +483,8 @@ int main(void)
                         //uint8_t m = moisture / 10;
                         moistureLog = moistureLog + moisture;
 
-                        uint16_t mm = div3(moistureLog); //Average
+                        uint16_t mm = div3(moistureLog); //Average 3
+                        //uint16_t mm = (moistureLog >> 2); //Average 4
 
                         if (mm > (moisture - 10) && mm < (moisture + 10)) {
                             emptyBottle = 11; //Pump ran but no change in moisture
@@ -469,7 +492,6 @@ int main(void)
                         }
 
                         errorCode = mm;
-
                     #endif
 
                     //===================
@@ -480,8 +502,8 @@ int main(void)
                     given power from Pin5 (PB0) while turning on NPN transistor
                     more accurate than sensor-less detection
                     */
-                    
-                    moisture = sensorRead(pumpPin,moistureSensorPin,2);
+                    /*
+                    moisture = sensorRead(pumpPin,moistureSensorPin);
 
                     #ifdef EEPROM_ENABLED
                         EEPROM_save(0x1C,moisture,ee);
@@ -494,14 +516,14 @@ int main(void)
                             uart_putc('E');
                         #endif
                     }
-                    
+                    */
                     if(emptyBottle < 3) { //Prevent flooding
 
                         #ifdef UART_TX_ENABLED
                             uart_putc('P');
                         #endif
 
-                        if(ee == 0xFF) //prevent actual water pumping during debug
+                        if(ee != 0xEE) //prevent actual water pumping during debug
                         {
                             PORTB |= (1<<pumpPin); //ON
                         }
@@ -541,7 +563,7 @@ int main(void)
                 */
 
                 //DDRB &= ~(1<<solarSensorPin); //Shared pin with Sensor, Set Analog INPUT
-                uint16_t solarVoltage = ReadADCHighest(solarSensorPin,4); //Detect Solar intensity - 300R inline + 10k pullup
+                uint16_t solarVoltage = ReadADC(solarSensorPin); //Detect Solar intensity - 300R inline + 10k pullup
                 //DDRB |= (1<<solarSensorPin); //Shared pin with Sensor, set Digital OUTPUT
                 
                 #ifdef UART_TX_ENABLED
@@ -584,7 +606,7 @@ int main(void)
     return 0;
 }
 
-uint16_t div3(uint16_t n){
+uint16_t div3(uint16_t n) {
     uint16_t q = 0;
     while(1){
         if(!(n >>= 1)) return q;
@@ -594,18 +616,30 @@ uint16_t div3(uint16_t n){
     }
 }
 
-uint16_t sensorRead(uint8_t enablePin, uint8_t readPin, uint8_t loop)
+/*
+uint16_t div10(uint16_t n) {
+    uint16_t q = (n >> 1) + (n >> 2);
+    q = q + (q >> 4);
+    q = q + (q >> 8); // not needed for 8 bit version
+    q = q >> 3;
+    uint16_t r = n - (((q << 2) + q) << 1); // r = n - q*10; (mod)
+    return q + (r > 9); //div
+    //if (r > 9) mod = r - 10;
+    //else mod = r;
+}
+*/
+uint16_t sensorRead(uint8_t enablePin, uint8_t readPin)
 {
     DDRB |= (1<<enablePin); //Digital OUTPUT
     DDRB &= ~(1<<readPin); //Analog INPUT
 
     PORTB |= (1<<enablePin); //ON
     //uint16_t value = ReadADC(readPin);
-    uint16_t value = ReadADCHighest(readPin,loop);
+    uint16_t value = ReadADC(readPin);
     PORTB &= ~(1<<enablePin); //OFF
 
-    //DDRB |= (1<<readPin);   //Digital OUTPUT
-    PORTB &= ~(1<<readPin); //OFF
+    DDRB |= (1<<readPin);   //Digital OUTPUT
+    //PORTB &= ~(1<<readPin); //OFF
 
     #ifdef UART_TX_ENABLED
         uart_putc(',');
@@ -621,8 +655,13 @@ void blink(uint8_t time, uint8_t duration)
     //    time /= 16;
     //#endif
 
+    if(duration == 0) {
+        duration = 2;
+        time = 1;
+    }
+
     #ifdef ledPin
-        DDRB |= (1<<ledPin); //Digital OUTPUT
+        //DDRB |= (1<<ledPin); //Digital OUTPUT
         do {
             PORTB ^= (1<<ledPin); //Toggle ON/OFF
             uint8_t i = time;
@@ -636,48 +675,20 @@ void blink(uint8_t time, uint8_t duration)
     #endif
 }
 
-uint16_t ReadADCHighest(uint8_t pin, uint8_t loop)
+uint16_t ReadADC(uint8_t pin)
 {
-    uint16_t m = 0;
-
-    for(uint8_t i = 0; i < loop; ++i)
-    {
-        //uint16_t a = ReadADC(pin);
-        //=============
-        //Take Highest
-        //=============
-        //if (a > m) {
-        //    m = a;
-        //}
-        //=============
-        //Take Lowest
-        //=============
-        //if (a < moisture) {
-        //    m = a;
-        //}
-        //=============
-        //Average
-        //=============
-        m += ReadADC(pin);
-    }
-
-    return (m / loop);
-    //return m;
-}
-
-uint16_t ReadADC(uint8_t pin) {
-
-    //http://maxembedded.com/2011/06/the-adc-of-the-avr/
-    /*
+	/*
+	Set VCC as internal reference voltage
+    http://maxembedded.com/2011/06/the-adc-of-the-avr/
+	*/
     #if defined __AVR_ATtiny45__ || defined __AVR_ATtiny85__
-       ADMUX = ((0 << REFS2) | (0 << REFS1) | (0 << REFS0)); //5V
-       //ADMUX = ((0 << REFS2) | (1 << REFS1) | (0 << REFS0)) //1.1V
-       //ADMUX = ((1 << REFS2) | (1 << REFS1) | (0 << REFS0)) //2.56V
+       ADMUX = ((0 << REFS2) | (1 << REFS1) | (0 << REFS0)); // 1.1V
+       //ADMUX = ((1 << REFS2) | (1 << REFS1) | (0 << REFS0)); // 2.56V
+       //ADMUX = ((0 << REFS2) | (0 << REFS1) | (0 << REFS0)); // 5.0V
     #else
-        ADMUX = (0 << REFS0);     //Set VCC as reference voltage (5V)
-        //ADMUX = (1 << REFS0);  //Set VCC as reference voltage (Internal 1.1V)
+    	ADMUX = (1 << REFS0);  // 1.1V
+        //ADMUX = (0 << REFS0);  // 5.0V
     #endif
-    */
 
     /*
     if(pin == PB5) { // ADC0
@@ -699,33 +710,65 @@ uint16_t ReadADC(uint8_t pin) {
     // See ATtiny13 datasheet, Table 14.4.
     // Predefined division factors – 2, 4, 8, 16, 32, 64, and 128. For example, a prescaler of 64 implies F_ADC = F_CPU/64.
     // For F_CPU = 16MHz, F_ADC = 16M/64 = 250kHz. Greater the frequency, lesser the accuracy.
-
     //ADCSRA |= (1 << ADPS1) | (1 << ADPS0);                // Prescaler of 8
     //ADCSRA |= (1 << ADPS2) | (1 << ADPS1);                // Prescaler of 64
-    ADCSRA = (1 << ADPS2) | (1 << ADPS1) | (1 << ADPS0);  // Prescaler of 128
+    //ADCSRA = (1 << ADPS2) | (1 << ADPS1) | (1 << ADPS0);  // Prescaler of 128
     //--------------
     ADCSRA |= (1 << ADEN); // Enables ADC
-
     //_delay_ms(200); // Wait for Vref to settle
+
+    uint16_t result = 0;
+    /*
+    Undocumented bug on selecting the reference as an input.
+	The reference has a very high impedance, so it need several conversions to charge the sample&hold stage to the final value.
+	You need at least throw away 7 conversions and trust the last.
+	*/
+    //for(uint8_t i = 0; i < 8; i++) {
+    for(uint8_t i = 0; i < 16; i++) {
     
-    ADCSRA |= (1 << ADSC); // Start conversion by writing 1 to ADSC
+    	ADCSRA |= (1 << ADSC); // Start conversion by writing 1 to ADSC
+    	
+        //uint16_t a = ReadADC(pin);
+        //=============
+        //Take Highest
+        //=============
+        //if (a > m) {
+        //    m = a;
+        //}
+        //=============
+        //Take Lowest
+        //=============
+        //if (a < moisture) {
+        //    m = a;
+        //}
+        //=============
+        //Average
+        //=============
 
-    // Wait conversion is done
-    while (ADCSRA & (1 << ADSC));
-    //while(bit_is_set(ADCSRA, ADSC));
+        // Wait conversion is done
+        while ((ADCSRA & (1 << ADSC)) !=0);	
 
-    // Read values
-    uint16_t result = ADC; // For 10-bit resolution (includes ADCL + ADCH)
-    //--------------
-    //uint8_t low = ADCL;
-    //uint8_t high = ADCH; //(for 8-bit only)
-    //uint16_t result = (high << 8) | low; // Combine two bytes
-    //result = 1125300L / result; // Calculate Vcc (in mV); 1125300 = 1.1*1023*1000
-    //--------------
+        // Read values
+        if(i < 8) { //throw away first 8 conversions
+        	ADC; // For 10-bit resolution (includes ADCL + ADCH)
+    	}else{ //average the other 8 conversions
+    		result += ADC; // For 10-bit resolution (includes ADCL + ADCH)
+    	}
+        //------------------
+        //https://provideyourown.com/2012/secret-arduino-voltmeter-measure-battery-voltage
+        //------------------
+        //uint8_t low = ADCL;
+        //uint8_t high = ADCH; //(for 8-bit only)
+        //result = (high << 8) | low; // Combine two bytes
+        //result = 1125300L / result; // Calculate Vcc (in mV); 1125300 = 1.1*1023*1000
+        //------------------
+    }
 
     ADCSRA &= ~ (1 << ADEN); // Disables ADC
 
-    return result;
+    return (result >> 3); //Average 8
+    //return (result >> 4); //Average 16
+    //return (result);
 }
 
 /**

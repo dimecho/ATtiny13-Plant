@@ -160,8 +160,7 @@
 									fwrite($f, pack('c', $lo_hi[1]));
 				            	}else{
 									fwrite($f, pack('c', intval($value_array[$x])));
-									if($offset_array[$x] > 1)
-										fwrite($f, pack('c', 255));
+									fwrite($f, pack('c', 255));
 				            	}
 				            }
 				        }else{
