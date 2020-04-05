@@ -66,7 +66,7 @@ do                          \
     #define versionID               10 //1.0
 #endif
 #ifndef sensorMoisture
-    #define sensorMoisture          410 //ADC value
+    #define sensorMoisture          484 //ADC value
 #endif
 #ifndef potSize
  #define potSizeTimer               20 //20x2x100 = 4000 miliseconds = 4 seconds
@@ -78,7 +78,7 @@ do                          \
 #define ledPin                      PB2 //Output
 #define solarSensorPin              PB3 //Input/Output
 #define moistureSensorPin           PB4 //Input
-#define delayWatering               0  //8 seconds x 50 = 6.5 min
+#define delayWatering               50  //8 seconds x 50 = 6.5 min
 #define delayBetweenRefillReset     20  //8 seconds x 40 x 20 = 2 hours
 #define delayBetweenOverfloodReset  100 //8 seconds x 40 x 100 = 8 hours
 #define delayBetweenSolarDischarge  4   //8 seconds x 5 = .5 min

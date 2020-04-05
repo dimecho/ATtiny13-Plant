@@ -41,13 +41,13 @@ Monitor soil moisture and water plant. Portable and high efficiency with lithium
 
 ## PCB
 
-![PCB](img/pcb.png?raw=true)
-
 Designed with [EagleCAD](https://www.autodesk.com/products/eagle/free-download)
 
 ## Diagram
 
 ![Diagram](img/diagram.png?raw=true)
+
+![Operational](img/diagram2.png?raw=true)
 
 ![Technical](img/technical.png?raw=true)
 
@@ -112,7 +112,7 @@ programmer
 
 > ATtiny13 Plant
 >
-> [![CC0](http://i.creativecommons.org/l/zero/1.0/88x31.png)](https://creativecommons.org/publicdomain/zero/1.0/)
+> [![CCSA](https://licensebuttons.net/l/by-sa/4.0/88x31.png)](https://creativecommons.org/licenses/by-sa/4.0/legalcode)
 >
 > USBasp / USBtiny
 >

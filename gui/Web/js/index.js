@@ -14,10 +14,10 @@ var solar_adc_offset = 20; //with solar add offset
 var pot_values = [20, 70, 120];
 var pot_labels = ["Small", "Medium", "Large"];
 
-var soil_values = [280, 520];
+var soil_values = [300, 780];
 var soil_labels = ["Dry (Cactus)", "Wet (Tropical)"];
 
-var soil_type_values = [380, 320, 380, 350, 460];
+var soil_type_values = [400, 700, 500, 620, 680];
 var soil_pot_offsets = [[0,-10,-20], [0,0,0], [0,0,0], [5,10,0], [0,0,0]];
 var soil_type_labels = ["Sand", "Clay", "Dirt", "Loam", "Moss"];
 
@@ -110,7 +110,8 @@ $(document).ready(function ()
             }
             var ref = n / 1023;
             var v = 5 * (ref * 1.1); // Calculate Vcc from 5V
-            return (ref * 100).toFixed(0) + "% " + (v).toFixed(2) + "V (" + n + ")";
+            var scientific = (ref * 100) / 1.8 //less scientific value (actual H2O inside soil)
+            return scientific.toFixed(0) + "% " + (v).toFixed(2) + "V (" + n + ")";
         },
         onChange: function (e) {
             clearTimeout(saveReminder);
@@ -125,7 +126,8 @@ $(document).ready(function ()
     $('[data-toggle="tooltip"]').tooltip();
 
     window.addEventListener("beforeunload", function (e) {
-        sendStop();
+        if(debug != 0xEF)
+            sendStop();
     });
 });
 
@@ -248,9 +250,9 @@ function startConsole(hex,delay)
                             var btn = $("#debugConsole");
                             btn.text("Stop Console");
                             btn.attr("onclick","startConsole(0xFF," + deepSleep  + ")");
-                            setTimeout(function () {
-				            	$.notify({ message: "Limited write cycles! Don't forget to Disable" }, { type: "warning" });
-				            }, 4000);
+                            //setTimeout(function () {
+				            //	$.notify({ message: "Limited write cycles! Don't forget to Disable" }, { type: "warning" });
+				            //}, 4000);
                             getEEPROM();
                         }else if(d == parseInt(0xFF)) {
                         	if(debug == 0xEF) {
@@ -365,14 +367,15 @@ function getEEPROMInfo(crc)
 
                     var sl = HexShift(s,e_runSolar);
                     var pt = HexShift(s,e_potSize);
-                    var so = HexShift(s,e_sensorMoisture);
+                    var so = HexShift(s,e_moisture);
+                    var sm = HexShift(s,e_sensorMoisture);
                     var d = s[ee+1]; //+1 to skip debug path
 
                     console.log("Solar: " + sl);
                     console.log("Pot: " + pt);
-                    console.log("Soil: " + so);
+                    console.log("Soil: " + sm + " (" + so + ")");
 
-                    if(sl == 0 && pt == 0 && so == 0 && s[s.length-2] == "255") {
+                    if(sl == 0 && pt == 0 && sm == 0 && s[s.length-2] == "255") {
                         if(crc == undefined) {
                             $.notify({ message: "EEPROM is Corrupt ...Trying to Fix" }, { type: "warning" });
                             checkEEPROM();
@@ -395,6 +398,15 @@ function getEEPROMInfo(crc)
                         $.notify({ message: "EEPROM Fixed!" }, { type: "success" });
                     }else if(data.indexOf("avrdude:") != -1) {
 						$.notify({ message: "Cannot Syncronize (unplug USB and plug back in)" }, { type: "danger" });
+                    }else if(so > 870 && (so-sm) > 400) {
+                        $.notify({ message: "Detecting Excess Moisture!" }, { type: "danger" });
+                        if(pt > 50) {
+                            $.notify({ message: "Lower Pot Size value" }, { type: "success" });
+                            $.notify({ message: "Adjust sensor to soil height" }, { type: "success" });
+                        }else{
+                            $.notify({ message: "Compact soil water channels" }, { type: "success" });
+                            $.notify({ message: "Move sensor away from outlet" }, { type: "success" });
+                        }
                     }
 
                     var instance = $("#slider-solar").data("ionRangeSlider");
@@ -409,7 +421,7 @@ function getEEPROMInfo(crc)
 
                     var instance = $("#slider-soil").data("ionRangeSlider");
                     instance.update({
-                       from: so
+                       from: sm
                     });
                 }
             }else{
@@ -435,19 +447,18 @@ function getEEPROM()
                 var debug = $("#debugOutput").empty();
 
                 var sl = HexShift(s,e_VSolar);
-
                 var so = HexShift(s,e_moisture);
+                var sm = HexShift(s,e_sensorMoisture);
                 //if(so > moistureOffset) { //Calibration Offset
                 //    so -= moistureOffset;
                 //}
-
                 var water = HexShift(s,e_water);
                 var empty = HexShift(s,e_empty);
                 var err = HexShift(s,e_errorCode);
 
                 //console.log(HexShift(s,26));
-                console.log("Solar:" + HexShift(s,e_VSolar));
-                console.log("Sensor:" + HexShift(s,e_moisture) + "(" + HexShift(s,e_sensorMoisture) + ")");
+                console.log("Solar:" + sl);
+                console.log("Sensor:" + so + "(" + sm + ")");
                 console.log("Water:" + water);
                 console.log("Empty:" + empty);
                 console.log("Log:" + HexShift(s,e_log));
@@ -461,7 +472,8 @@ function getEEPROM()
 
                 var ref = so / 1023;
                 var v = 5 * (ref * 1.1); // Calculate Vcc from 5V
-                debug.append("Soil Moisture: " + v.toFixed(2) + "V (" + (ref * 100).toFixed(0) + "%)\n");
+                var scientific = (ref * 100) / 1.8 //less scientific value (actual H2O inside soil)
+                debug.append("Soil Moisture: " + v.toFixed(2) + "V (" + scientific.toFixed(0) + "%)\n");
 
                 if (so < 0.2) {
                     debug.append("Error Code: Sensor not in Soil\n");
@@ -488,6 +500,10 @@ function getEEPROM()
                 if(water > 10 && water < 255) {
                     debug.append("Error Code: Overwater Protection\n");
                 }
+                
+                var p = ((sm - so) / 24); //Predictive AI - soil dries about 24 digits/day
+                if(p > 0)
+                	debug.append("Next Water Cycle: " + p.toFixed(0) + " days " + (p*1000 >> 10) + " hours\n");
 
                 errorCode = err;
 
