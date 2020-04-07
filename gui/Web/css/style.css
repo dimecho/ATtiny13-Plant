@@ -1,14 +1,35 @@
 body {
+  position: relative;
+  margin:0 auto !important;
 	background-size: 40%;
-  	background-repeat: no-repeat;
-  	background-attachment: fixed;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
 	background-position: right; 
 	background-image: url("../img/background.png");
+}
+.hidden {
+  display: none;
 }
 .fancybox-content {
   width:90%;
   border-radius:5px
 }
-.icons {
-  font-size: 4em;
+.chartWrapper {
+  position: relative;
+  opacity: 0.9;
+}
+.chartWrapper > canvas {
+  position: absolute;
+  left: 0;
+  top: 0;
+  pointer-events:none;
+}
+.chartAreaWrapper {
+  overflow-x: scroll;
+  overflow-y: scroll;
+  position: relative;
+  width: 100%;
+}
+.chartAreaWrapper2 {
+  position: relative;
 }

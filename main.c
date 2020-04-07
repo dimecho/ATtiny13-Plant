@@ -25,7 +25,9 @@
                         GND  4|      |5  PB0 [MOSI] (Solar ON (WS78L05) / Sleep (TPL5110))
                               +------+
 */
-
+#ifndef SERIAL
+    #define SERIAL 0 //Serial # (identify multiple devices)
+#endif
 /* HARDWARE CONFIGURATION */
 /*------------------------*/
 #define WS78L05 1 //WS78L05 = cheap
@@ -156,7 +158,7 @@ https://ww1.microchip.com/downloads/en/AppNotes/doc8453.pdf
 
     void EEPROM_save(uint8_t ucAddress, uint16_t ucValue, uint8_t ee)
     {
-        if (ee == 0xEE) //EEPROM wear reduction
+        if (ee == 0xEE || ee == 0xEF) //EEPROM wear reduction
         {
             if(ucValue > 255) //split into two epprom fields -> 388 = 38 + 8
             {
@@ -245,6 +247,8 @@ int main(void)
             #ifdef TPL5110
 				EEPROM_save(0xB,TPL5110,0xEE);
             #endif
+
+            EEPROM_save(0xF,SERIAL,0xEE); //Serial # - not UART
 
         }else{
             suitableMoisture = ee | (uint8_t)EEPROM_read(0x03) << 8;
@@ -410,7 +414,7 @@ int main(void)
                 #ifdef EEPROM_ENABLED
                     EEPROM_save(0x1A,moisture,ee);
                 #endif
-                if(ee == 0xEF) { //LED Monitor enabled
+                if(ee == 0xEA) { //LED Monitor enabled
                     /*
                     int number = 1234;
                     (number) % 10 => 4
@@ -639,7 +643,7 @@ uint16_t sensorRead(uint8_t enablePin, uint8_t readPin)
     PORTB &= ~(1<<enablePin); //OFF
 
     DDRB |= (1<<readPin);   //Digital OUTPUT
-    //PORTB &= ~(1<<readPin); //OFF
+    PORTB &= ~(1<<readPin); //OFF
 
     #ifdef UART_TX_ENABLED
         uart_putc(',');

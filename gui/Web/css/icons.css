@@ -25,5 +25,24 @@
   -webkit-font-smoothing:antialiased;
   -moz-osx-font-smoothing:grayscale
 }
+
+.icon-apple:before { content: '\e800'; }
 .icon-day-and-night:before { content: '\e801'; }
 .icon-chip:before { content: '\e802'; }
+.icon-design:before { content: '\e803'; }
+.icon-leaf:before { content: '\e804'; }
+.icon-power:before { content: '\e805'; }
+.icon-windows:before { content: '\e806'; }
+.icon-cad:before { content: '\e807'; }
+.icon-ubuntu:before { content: '\e808'; }
+.icon-power-1:before { content: '\e809'; }
+.icon-console:before { content: '\e810'; }
+.icon-com:before { content: '\e819'; }
+.icon-settings:before { content: '\e81c'; }
+.icon-csv:before { content: '\e81d'; }
+.icon-magic:before { content: '\e823'; }
+.icon-binary:before { content: '\e824'; }
+.icon-bug:before { content: '\e826'; }
+.icon-png:before { content: '\e82a'; }
+.icon-ok:before { content: '\e84b'; }
+.icon-chip-1:before { content: '\e856'; }

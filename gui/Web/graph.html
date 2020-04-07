@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>ATtiny Plant - Graph</title>
+        <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+        <link rel="stylesheet" type="text/css" media="screen" title="main">
+        <link rel="stylesheet" type="text/css" href="css/preloader.css" />
+        <link rel="stylesheet" type="text/css" href="css/icons.css" />
+        <link rel="stylesheet" type="text/css" href="css/style.css" />
+        <link rel="stylesheet" type="text/css" href="css/animate.css" />
+        <link rel="stylesheet" type="text/css" href="css/ion.rangeSlider.css" />
+        <link rel="stylesheet" type="text/css" href="css/jquery.fancybox.css" />
+        <script src="js/jquery.js"></script>
+        <script src="js/chart.js"></script>
+        <script src="js/preloader.js"></script>
+        <script src="js/bootstrap.js"></script>
+        <script src="js/bootstrap-notify.js"></script>
+        <script src="js/ion.rangeSlider.js"></script>
+        <script src="js/jquery.fancybox.js"></script>
+        <script src="js/eeprom.js"></script>
+        <script src="js/graph.js"></script>
+    </head>
+    <body class="preloader">
+        <div id="preloader"></div>
+        <div class="container-fluid d-flex flex-column">
+            <div class="row d-flex mt-4">
+                <div class="col-auto mr-auto mb-auto mt-auto" id="buildGraphButtons"></div>
+                <div class="col-auto text-right" id="buildGraphExport"></div>
+            </div>
+            <div class="row d-flex mt-4">
+                <div class="col">
+                    <!-- http://jsfiddle.net/jmpxgufu/100/ -->
+                    <div class="chartWrapper bg-light">
+                        <div class="chartAreaWrapper">
+                            <div class="chartAreaWrapper2">
+                                <canvas id="chartCanvas"></canvas>
+                            </div>
+                        </div>
+                        <canvas id="chartAxis" width="0"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="row p-4">
+                <div class="col" id="buildGraphSlider">
+                </div>
+            </div>
+            <div class="row mt-4"></div>
+        </div>
+        <a class="graphSettings" data-fancybox data-src="#graphSettings" href="#"></a>
+        <div class="hidden bg-light" id="graphSettings" style="width:60%;border-radius:5px">
+            <div class="container">
+                <div class="row">
+                    <div class="col">
+                        <fieldset class="form-group">
+                            <legend>Chart Settings:</legend>
+                            <div class="form-check">
+                                <label class="form-check-label">
+                                    <input type="checkbox" name="roundEdges" class="form-check-input"> Round Sharp Edges
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <label class="form-check-label">
+                                    <input type="checkbox" name="showDataLabels" class="form-check-input"> Show Data Labels
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <label class="form-check-label">
+                                    <input type="checkbox" name="showAnimation" class="form-check-input"> Show Animation
+                                </label>
+                            </div>
+                        </fieldset>
+                    </div>
+                </div>
+                <div class="row"><hr></div>
+                <div class="row">
+                    <div class="col">Time Segments</div>
+                    <div class="col">
+                        <input type="text" name="graphDivision" class="form-control">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">Line Width</div>
+                    <div class="col">
+                        <input type="text" name="lineWidth" class="form-control">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">Stream Loop</div>
+                    <div class="col">
+                        <input type="text" name="streamLoop" class="form-control" value=1>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">Max Scroll Pages</div>
+                    <div class="col">
+                        <input type="text" name="pageLimit" class="form-control" value=4>
+                    </div>
+                </div>
+                <div class="row"><hr></div>
+                <div class="row text-center">
+                    <div class="col">
+                        <button class="browse btn btn-primary" type="button" onClick="$.fancybox.close();graphSettings(true);"><i class="icons icon-ok"></i> OK</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

@@ -3,7 +3,6 @@ var debug = 0xFF;
 var refreshTimer;
 var refreshSpeed = 8000;
 var progressTimer;
-var deepSleep = 50; //8seconds x 50 = 6.5 min
 var moistureOffset = 260; //this is caused by double 10k pullup resistor (on both sides "out" and sense "in")
 var saveReminder;
 
@@ -17,7 +16,7 @@ var pot_labels = ["Small", "Medium", "Large"];
 var soil_values = [300, 780];
 var soil_labels = ["Dry (Cactus)", "Wet (Tropical)"];
 
-var soil_type_values = [400, 700, 500, 620, 680];
+var soil_type_values = [420, 700, 500, 480, 640];
 var soil_pot_offsets = [[0,-10,-20], [0,0,0], [0,0,0], [5,10,0], [0,0,0]];
 var soil_type_labels = ["Sand", "Clay", "Dirt", "Loam", "Moss"];
 
@@ -28,23 +27,6 @@ var os = "";
 var chip = "";
 var errorCode = "";
 var xhr;
-
-/*==========
-EEPROM Map
-============*/
-var ee = parseInt(0xA);
-var e_versionID = parseInt(0x00);
-var e_sensorMoisture = parseInt(0x02);
-var e_potSize = parseInt(0x04);
-var e_runSolar = parseInt(0x06);
-var e_deepSleep = parseInt(0x08);
-var e_VReg = parseInt(0xB);
-var e_VSolar = parseInt(0xC);
-var e_moisture = parseInt(0x1A);
-var e_water = parseInt(0x1C);
-var e_errorCode = parseInt(0x2A);
-var e_empty = parseInt(0x38);
-var e_log = parseInt(0x3A);
 
 $(document).ready(function ()
 {
@@ -110,7 +92,7 @@ $(document).ready(function ()
             }
             var ref = n / 1023;
             var v = 5 * (ref * 1.1); // Calculate Vcc from 5V
-            var scientific = (ref * 100) / 1.8 //less scientific value (actual H2O inside soil)
+            var scientific = (ref * 100) / 1.8 //scientific value (actual H2O inside soil)
             return scientific.toFixed(0) + "% " + (v).toFixed(2) + "V (" + n + ")";
         },
         onChange: function (e) {
@@ -123,10 +105,12 @@ $(document).ready(function ()
 
     connectPlant(true);
 
-    $('[data-toggle="tooltip"]').tooltip();
+    $('[data-toggle="tooltip"]').tooltip({
+       container: 'body'
+    });
 
     window.addEventListener("beforeunload", function (e) {
-        if(debug != 0xEF)
+        if(debug != 0xEA)
             sendStop();
     });
 });
@@ -177,7 +161,7 @@ function stopLEDMonitor()
 {
     var btn = $("#ledMonitor");
     btn.text("Enable LED Monitor");
-    btn.attr("onclick","startConsole(0xEF,1)");
+    btn.attr("onclick","startConsole(0xEA,1)");
     btn.removeClass("btn-danger");
     btn.addClass("btn-primary");
 
@@ -201,7 +185,7 @@ function stopConsole()
 function sendStop()
 {
 	if(debug != 0xFF)
-    	$.ajax("usb.php?eeprom=write&offset=" + ee + "," + e_deepSleep + "&value=255," + deepSleep, { async: true});
+    	$.ajax("usb.php?eeprom=write&offset=" + ee + "," + e_deepSleep + "&value=" + parseInt(0xFF) + "," + deepSleep, { async: true});
 };
 
 function startConsole(hex,delay)
@@ -228,11 +212,11 @@ function startConsole(hex,delay)
                         var d = s[ee+1]; //+1 to skip debug path
                         console.log("EEPROM Debug Value:" + d);
 
-                        if(d == parseInt(0xEF)) {
+                        if(d == parseInt(0xEA)) {
                             //console.log(data);
                             $.notify({ message: "LED Monitor Enabled" }, { type: "success" });
                             $.notify({ message: "Battery usage will be higher!" }, { type: "warning" });
-                             setTimeout(function () {
+                            setTimeout(function () {
 				                $.notify({ message: "Read moisture by counting LED blinks" }, { type: "success", delay: 12000});
 				            }, 4000);
                             setTimeout(function () {
@@ -250,12 +234,9 @@ function startConsole(hex,delay)
                             var btn = $("#debugConsole");
                             btn.text("Stop Console");
                             btn.attr("onclick","startConsole(0xFF," + deepSleep  + ")");
-                            //setTimeout(function () {
-				            //	$.notify({ message: "Limited write cycles! Don't forget to Disable" }, { type: "warning" });
-				            //}, 4000);
                             getEEPROM();
                         }else if(d == parseInt(0xFF)) {
-                        	if(debug == 0xEF) {
+                        	if(debug == 0xEA) {
                         		$.notify({ message: "LED Monitor Disabled" }, { type: "warning" });
                         		stopLEDMonitor();
                         	}else{
@@ -273,34 +254,6 @@ function startConsole(hex,delay)
         });
     }else{
         $.notify({ message: connectMessage }, { type: "danger" });
-    }
-};
-
-function EEPROM_T85(offset)
-{
-    console.log("EEPROM Offset: " + offset);
-	/*
-	Strange bug, ATtiny85 eeprom is large (uint16_t) starts write @ address 0x100 (256)
-
-	It is flash-costly to handle uint16_t in attiny ...so offset it here
-
-	Wastefull, but backwards compatible with ATtiny13
-	*/
-
-    if(e_versionID == 0) {
-    	ee += offset;
-    	e_versionID += offset;
-    	e_sensorMoisture += offset;
-    	e_potSize += offset;
-    	e_runSolar += offset;
-    	e_deepSleep += offset;
-    	e_VReg += offset;
-    	e_VSolar += offset;
-    	e_moisture += offset;
-    	e_water += offset;
-    	e_errorCode += offset;
-    	e_empty += offset;
-    	e_log += offset;
     }
 };
 
@@ -334,7 +287,7 @@ function getEEPROMInfo(crc)
                     info.append("Hardware Chip: " + chip + "\n");
 
                     debug = s[ee+1];
-                    if(debug == 0xEF) {
+                    if(debug == 0xEA) {
                         var btn = $("#ledMonitor")
                         btn.text("Disable LED Monitor");
                         btn.attr("onclick","startConsole(0xFF," + deepSleep  + ")");
@@ -472,7 +425,7 @@ function getEEPROM()
 
                 var ref = so / 1023;
                 var v = 5 * (ref * 1.1); // Calculate Vcc from 5V
-                var scientific = (ref * 100) / 1.8 //less scientific value (actual H2O inside soil)
+                var scientific = (ref * 100) / 1.8 //scientific value (actual H2O inside soil)
                 debug.append("Soil Moisture: " + v.toFixed(2) + "V (" + scientific.toFixed(0) + "%)\n");
 
                 if (so < 0.2) {
@@ -523,38 +476,6 @@ function getEEPROM()
             }, refreshSpeed);
         }
     });
-};
-
-function consoleHex(data)
-{
-    var _data = "";
-
-    var s = data.split("\n");
-    for (i = 0; i < s.length-1; i++) {
-        if(s[i].indexOf(".eeprom") != -1) { //debugging path
-            _data +=  s[i] + "\n";
-        }else{
-            _data += "[" +  parseInt(i-1).toString(16) + "] " + s[i] + "\n";
-        }
-    }
-
-    console.log(_data);
-};
-
-function HexShift(hex,bit)
-{
-    if(hex[0].indexOf(".eeprom") != -1) { //debugging path
-        bit++; //move one over
-    }
-
-    if(hex[bit] == 255) {
-        return 0;
-    }else if(hex[bit+1] == 255) {
-        return parseInt(hex[bit]);
-    }else{
-        return hex[bit] | hex[bit+1] << 8;
-    }
-    return 0;
 };
 
 function connectPlant(async)
@@ -654,7 +575,12 @@ function saveSettings()
                     }
                 }else if(data.indexOf("verification error") != -1) {
                     $.notify({ message: "EEPROM Verification Error ..." }, { type: "danger" });
-                    $.notify({ message: "Check MISO Resistor" }, { type: "warning" });
+                    if (navigator.appVersion.indexOf("Linux") !=-1 ) {
+                        $.notify({ message: "AVRDUDE v6.3 is not <a href='https://raw.githubusercontent.com/dimecho/ATtiny13-Plant/master/usbtiny/avrdude-6.3-usbtiny.patch'>patched</a>" }, { type: "warning" });
+                        $.notify({ message: "Patch or downgrade to AVRDUDE v5.11.1" }, { type: "warning" });
+                    }else{
+                        $.notify({ message: "Check MISO Resistor" }, { type: "warning" });
+                    }
                 }else if(data.indexOf("Broken pipe") != -1) {
                     $.notify({ message: "EEPROM Saved ..." }, { type: "success" });
                     $.notify({ message: "Power cycle USB" }, { type: "warning" });
@@ -777,39 +703,4 @@ function progressCounter() {
 
 function saveReminderCounter() {
     $.notify({ message: "Don't forget to Save Settings!" }, { type: "warning" });
-};
-
-function deleteCookie(name, path, domain) {
-
-  if(getCookie(name)) {
-    document.cookie = name + "=" +
-      ((path) ? ";path="+path:"")+
-      ((domain)?";domain="+domain:"") +
-      ";expires=Thu, 01 Jan 1970 00:00:01 GMT";
-  }
-};
-
-function setCookie(name, value, exdays) {
-
-    var exdate = new Date();
-    exdate.setDate(exdate.getDate() + exdays);
-    var c_value = escape(value) + (exdays == null ? "" : "; expires=" + exdate.toUTCString());
-    document.cookie = name + "=" + c_value;
-};
-
-function getCookie(name) {
-    
-    var i,
-        x,
-        y,
-        ARRcookies = document.cookie.split(";");
-
-    for (var i = 0; i < ARRcookies.length; i++) {
-        x = ARRcookies[i].substr(0, ARRcookies[i].indexOf("="));
-        y = ARRcookies[i].substr(ARRcookies[i].indexOf("=") + 1);
-        x = x.replace(/^\s+|\s+$/g, "");
-        if (x == name) {
-            return unescape(y);
-        }
-    }
 };
