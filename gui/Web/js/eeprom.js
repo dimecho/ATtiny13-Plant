@@ -46,11 +46,11 @@ function EEPROM_T85(offset)
     }
 };
 
-function consoleHex(data)
+function consoleHex(response)
 {
     var _data = "";
 
-    var s = data.split("\n");
+    var s = response.split("\n");
     for (i = 0; i < s.length-1; i++) {
         if(s[i].indexOf(".eeprom") != -1) { //debugging path
             _data +=  s[i] + "\n";

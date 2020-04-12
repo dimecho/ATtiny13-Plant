@@ -1,7 +1,7 @@
 var theme = detectTheme();
 var debug = 0xFF;
 var refreshTimer;
-var refreshSpeed = 8000;
+var refreshSpeed = 10000;
 var progressTimer;
 var moistureOffset = 260; //this is caused by double 10k pullup resistor (on both sides "out" and sense "in")
 var saveReminder;
@@ -122,16 +122,14 @@ function autoConfigure()
 
     for (var i = 0; i < soil_type_labels.length; i++) {
         var h = $("<h6>").append(soil_type_labels[i]);
-        var img = $("<img>", { class: "img-thumbnail bg-light rounded-circle", src: "img/" + img_src[i], onClick: "setSoil(" + i + ");$.fancybox.close();"});
+        var img = $("<img>", { class: "img-thumbnail bg-light rounded-circle", src: "img/" + img_src[i], 'data-dismiss': 'modal', onClick: "setSoil(" + i + ")"});
         
         var col = $("<div>", { class: "col" });
         col.append(h);
         col.append(img);
         row.append(col);
     }
-    $("#autoconfig div").empty().append(row);
-    $("#autoconfig").removeClass("d-none");
-    $(".autoconfig").trigger('click');
+    $('#Autoconfig').find('.modal-body').empty().append(row);
 };
 
 function setSoil(value)
@@ -326,7 +324,7 @@ function getEEPROMInfo(crc)
 
                     console.log("Solar: " + sl);
                     console.log("Pot: " + pt);
-                    console.log("Soil: " + sm + " (" + so + ")");
+                    console.log("Soil: " + so + " (" + sm + ")");
 
                     if(sl == 0 && pt == 0 && sm == 0 && s[s.length-2] == "255") {
                         if(crc == undefined) {
@@ -390,7 +388,7 @@ function getEEPROM()
 
     $.ajax("usb.php?eeprom=read", {
         async: true,
-        timeout: refreshSpeed,
+        //timeout: refreshSpeed,
         success: function(data) {
             consoleHex(data);
 
@@ -454,9 +452,8 @@ function getEEPROM()
                     debug.append("Error Code: Overwater Protection\n");
                 }
                 
-                var p = ((sm - so) / 24); //Predictive AI - soil dries about 24 digits/day
-                if(p > 0)
-                	debug.append("Next Water Cycle: " + p.toFixed(0) + " days " + (p*1000 >> 10) + " hours\n");
+                var ai = calcNextWaterCycle(so, sm, $("#slider-pot").data().from); //Predictive AI
+                debug.append("Next Water Cycle: " + ai.toFixed(0) + " days " + (ai * 1000 >> 10) + " hours\n");
 
                 errorCode = err;
 
@@ -476,6 +473,41 @@ function getEEPROM()
             }, refreshSpeed);
         }
     });
+};
+
+function calcNextWaterCycle(start, stop, size)
+{
+    /* All calculations are approximate */
+
+	var days = 0;
+	if((start - stop) > 0) {
+
+		//Calculate Days
+		while (start > stop) {
+			var c = 180;
+			if(start >= 850) { //...slow start
+				c = 24;
+			}else if(start >= 800) {
+				c = 40 + size;
+			}else if(start >= 700) {
+				c = 50 + size;
+			}else if(start >= 600) {
+				c = 80 + size;
+			}else if(start >= 500) { //..faster ending
+				c = 100 + size;
+			}
+			start -= c;
+			days++;
+
+            //Calculate Hours
+            //TODO:
+ 		}
+ 		console.log("Days: " + days);
+ 	
+ 		var hours = Math.abs(start-stop);
+		console.log("Hours: " + hours);
+	}
+	return days;
 };
 
 function connectPlant(async)

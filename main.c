@@ -158,14 +158,11 @@ https://ww1.microchip.com/downloads/en/AppNotes/doc8453.pdf
 
     void EEPROM_save(uint8_t ucAddress, uint16_t ucValue, uint8_t ee)
     {
+    	//if (ee < 0xFF)
         if (ee == 0xEE || ee == 0xEF) //EEPROM wear reduction
         {
             if(ucValue > 255) //split into two epprom fields -> 388 = 38 + 8
             {
-                //uint8_t hi_lo[] = { (uint8_t)(ucValue >> 8), (uint8_t)ucValue }; //0xAAFF = { 0xAA, 0xFF }
-                //EEPROM_write(ucAddress, hi_lo[0]);
-                //EEPROM_write((ucAddress + 1), hi_lo[1]);
-
                 uint8_t lo_hi[] = { (uint8_t)ucValue, (uint8_t)(ucValue >> 8) }; //0xAAFF = { 0xFF, 0xAA }
                 EEPROM_write(ucAddress, lo_hi[0]);
                 EEPROM_write((ucAddress + 1), lo_hi[1]);
@@ -213,14 +210,10 @@ int main(void)
     //=================================
     //AVR I/O pins are input by default
     //=================================
-    DDRB |= (1<<solarPin); //Digital OUTPUT
     DDRB |= (1<<pumpPin); //Digital OUTPUT
     DDRB |= (1<<sensorPin); //Digital OUTPUT
     #ifdef ledPin
         DDRB |= (1<<ledPin); //Digital OUTPUT
-    #endif
-    #ifdef SOLAR_ENABLED
-        DDRB |= (1<<solarPin); //Digital OUTPUT
     #endif
 
     //=============
@@ -307,41 +300,40 @@ int main(void)
     Solution: Write/Read to EEPROM while debugging.
     */
 
-    if(ee == 0xEE) { //DEBUG
-        
-        emptyBottle = EEPROM_read(0x38);
+    if(runSolar == 1 || ee == 0xEE) {
+
+    	#ifdef SOLAR_ENABLED
+        	DDRB |= (1<<solarPin); //Digital OUTPUT
+    	#endif
+
+    	emptyBottle = EEPROM_read(0x38);
         moistureLog = EEPROM_read(0x3A);
+
+        //deepSleep = 0;
+
+        set_sleep_mode(SLEEP_MODE_IDLE);
+        WDTCR |= (0<<WDP3) | (1<<WDP2) | (1<<WDP1) | (1<<WDP0); //Set timer 2s
 
     }else{
 
-        if(runSolar == 1) {
-
-            //deepSleep = 0;
-
-            set_sleep_mode(SLEEP_MODE_IDLE);
-            WDTCR |= (0<<WDP3) | (1<<WDP2) | (1<<WDP1) | (1<<WDP0); //Set timer 2s
-
-        }else{
-
-            set_sleep_mode(SLEEP_MODE_PWR_DOWN);
-            //Table 8-2 page 43
-            WDTCR |= (1<<WDP3) | (0<<WDP2) | (0<<WDP1) | (1<<WDP0); //Set timer 8s (max)
-            //----------------
-            //wdt_enable(WDTO_8S); // 8s
-            // Valid delays:
-            //  WDTO_15MS
-            //  WDTO_30MS
-            //  WDTO_60MS
-            //  WDTO_120MS
-            //  WDTO_250MS
-            //  WDTO_500MS
-            //  WDTO_1S
-            //  WDTO_2S
-            //  WDTO_4S
-            //  WDTO_8S
-        }
-        //sleep_enable();
+        set_sleep_mode(SLEEP_MODE_PWR_DOWN);
+        //Table 8-2 page 43
+        WDTCR |= (1<<WDP3) | (0<<WDP2) | (0<<WDP1) | (1<<WDP0); //Set timer 8s (max)
+        //----------------
+        //wdt_enable(WDTO_8S); // 8s
+        // Valid delays:
+        //  WDTO_15MS
+        //  WDTO_30MS
+        //  WDTO_60MS
+        //  WDTO_120MS
+        //  WDTO_250MS
+        //  WDTO_500MS
+        //  WDTO_1S
+        //  WDTO_2S
+        //  WDTO_4S
+        //  WDTO_8S
     }
+    //sleep_enable();
 
     sei(); // enable all interrupts
  
@@ -433,12 +425,12 @@ int main(void)
                         _delay_ms(1200);
                     }
                     //=======================
-                }else{ //avoid this during the science project (data gathering)
-                	
-                	if((moisture - suitableMoisture) > 300) { //soil is too wet for set threshold, wait longer before checking again
+                }else {
+                    //avoid this during the science project (data gathering)
+                	if(ee == 0xFF && (moisture - suitableMoisture) > 300) { //soil is too wet for set threshold, wait longer before checking again
                 		deepSleep = 255; //8 seconds x 255 = 35 min
                 	}
-                	blink(3,2);
+                    blink(3,2);
                 }
 
                 if(moisture < 4) { //Sensor Not in Soil
@@ -527,8 +519,7 @@ int main(void)
                             uart_putc('P');
                         #endif
 
-                        if(ee != 0xEE) //prevent actual water pumping during debug
-                        {
+                        if(ee != 0xEE) { //prevent actual water pumping during debug
                             PORTB |= (1<<pumpPin); //ON
                         }
                         //_delay_ms(6800); //6.8 seconds;

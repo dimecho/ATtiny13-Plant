@@ -119,7 +119,11 @@ internal static class ATtinyPlant
     	
     	Process php = new Process();
 		php.StartInfo.FileName = appdata + @"php\php.exe";
-		php.StartInfo.Arguments = "-S 127.0.0.1:8080 -t \"" + appdata + "Web\"";
+		if (File.Exists(appdata + "Web\\ip.txt")) {
+			php.StartInfo.Arguments = "-S 0.0.0.0:8080 -t \"" + appdata + "Web\"";
+		}else{
+			php.StartInfo.Arguments = "-S 127.0.0.1:8080 -t \"" + appdata + "Web\"";
+		}
 		php.Start();
 		
         var tcs = new TaskCompletionSource<object>();
@@ -377,7 +381,12 @@ internal static class ATtinyPlant
 							        	}else{
 							        		while (reader.PeekChar() != -1)
     										{
-							        			await sw.WriteAsync(reader.ReadInt8() + "\n");
+    											int b = reader.ReadInt16();
+    											byte lo = byte.Parse(b);
+    											byte hi = (byte.Parse(b) >> 8);
+
+							        			await sw.WriteAsync(lo + "\n");
+							        			await sw.WriteAsync(hi + "\n");
 							        		}
 							        	}
 							        }

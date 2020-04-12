@@ -9,19 +9,23 @@
 	{
 	    $uname = strtolower(php_uname('s'));
 
+        if (strpos($uname, "darwin") !== false) {
+            $command = "\"" .getcwd(). "/avrdude\" -C \"" .getcwd(). "/avrdude.conf\"";
+            //$tmp_dir = "/tmp";
+            $tmp_dir = sys_get_temp_dir();
+        }else if (strpos($uname, "win") !== false) {
+            $command = "avrdude.exe";
+            $tmp_dir = sys_get_temp_dir();
+        }else{
+            $command = "avrdude";
+            $tmp_dir = "/tmp";
+        }
+
 	    if(count($_FILES)) {
 	        
 	        $file = $_FILES['file']['tmp_name'];
 	        $chip = "t13";
 	        $fuses = "";
-
-	        if (strpos($uname, "darwin") !== false) {
-	            $command = getcwd(). "/avrdude -C " .getcwd(). "/avrdude.conf";
-	        }else if (strpos($uname, "win") !== false) {
-	            $command = "avrdude.exe";
-	        }else{
-	            $command = "avrdude";
-	        }
 
 	        if($_SESSION["chip"] == "ATtiny13"){
 	        	$fuses = " -U hfuse:w:0xFF:m -U lfuse:w:0x6A:m"; //CPU @ 1.2Mhz
@@ -55,6 +59,19 @@
 	            echo "</pre>";
 	        }
 	    }
+	    else if(isset($_GET["network"]))
+	    {
+	    	if($_GET["network"] == "ip") {
+				$f = fopen(getcwd(). "/ip.txt", "w") or die();
+				fclose($f);
+				if (strpos($uname, "darwin") !== false) {
+					$output = shell_exec("ifconfig | grep 'inet ' | grep -v '127.0.0.1' | cut -f2 -d' '| awk 'NR==1{print $1}' 2>&1");
+					echo $output;
+				}
+	    	}else if($_GET["network"] == "localhost") {
+	    		@unlink(getcwd(). "/ip.txt");
+	    	}
+	    }
 	    else if(isset($_GET["log"]))
 	    {
 	        $log_file = getcwd(). "/log.txt";
@@ -69,14 +86,6 @@
 	    }
 	    else if(isset($_GET["reset"]))
 	    {
-	        if (strpos($uname, "darwin") !== false) {
-	            $command = getcwd(). "/avrdude -C " .getcwd(). "/avrdude.conf";
-	        }else if (strpos($uname, "win") !== false) {
-	            $command = "avrdude.exe";
-	        }else{
-	            $command = "avrdude";
-	        }
-
 	        $command .= " -c " . $_SESSION["usb"] . " -p t13 -Ulfuse:v:0x00:m";
 	        $output = Run($command);
 
@@ -84,18 +93,6 @@
 	    }
 	    else if(isset($_GET["eeprom"]))
 	    {
-	        if (strpos($uname, "darwin") !== false) {
-	            $command = getcwd(). "/avrdude -C " .getcwd(). "/avrdude.conf";
-	            //$tmp_dir = "/tmp";
-	            $tmp_dir = sys_get_temp_dir();
-	        }else if (strpos($uname, "win") !== false) {
-	            $command = "avrdude.exe";
-	            $tmp_dir = sys_get_temp_dir();
-	        }else{
-	            $command = "avrdude";
-	            $tmp_dir = "/tmp";
-	        }
-
 	        $eeprom_file = "/attiny.eeprom";
 
 	        if($_GET["eeprom"] == "erase") {
@@ -230,7 +227,7 @@
         $uname = strtolower(php_uname('s'));
 
         if (strpos($uname, "darwin") !== false) {
-            $command = getcwd(). "/avrdude -C " .getcwd(). "/avrdude.conf -c " . $programmer . " -p t13 -n";
+            $command = "\"" .getcwd(). "/avrdude\" -C \"" .getcwd(). "/avrdude.conf\" -c " . $programmer . " -p t13 -n";
         }else if (strpos($uname, "win") !== false) {
             $command = "avrdude.exe -c " . $programmer . " -p t13 -n";
         }else{

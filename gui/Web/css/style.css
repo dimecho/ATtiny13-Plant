@@ -10,10 +10,6 @@ body {
 .hidden {
   display: none;
 }
-.fancybox-content {
-  width:90%;
-  border-radius:5px
-}
 .chartWrapper {
   position: relative;
   opacity: 0.9;

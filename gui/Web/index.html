@@ -9,13 +9,11 @@
         <link rel="stylesheet" type="text/css" href="css/style.css" />
         <link rel="stylesheet" type="text/css" href="css/animate.css" />
         <link rel="stylesheet" type="text/css" href="css/ion.rangeSlider.css" />
-        <link rel="stylesheet" type="text/css" href="css/jquery.fancybox.css" />
         <script src="js/jquery.js"></script>
         <script src="js/preloader.js"></script>
         <script src="js/bootstrap.js"></script>
         <script src="js/bootstrap-notify.js"></script>
         <script src="js/ion.rangeSlider.js"></script>
-        <script src="js/jquery.fancybox.js"></script>
         <script src="js/eeprom.js"></script>
         <script src="js/index.js"></script>
     </head>
@@ -41,7 +39,7 @@
                         <div class="row">
                         	<div class="col">
                                 <br/>
-                                <button type="button" class="btn btn-primary" onClick="autoConfigure()"><i class="icons icon-magic"></i> Auto Configure</button>
+                                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#Autoconfig" onClick="autoConfigure()"><i class="icons icon-magic"></i> Auto Configure</button>
                             </div>
                             <div class="col">
                                 <br/>
@@ -83,13 +81,13 @@
                         </div>
                         <div class="row p-2">
                             <div class="col" align="center" >
-                                <a class="text-white" href="#" onClick="startConsole(0xEE,0)" id="debugConsole"><small>Start Console</small></a>
+                                <small><a class="text-white" href="#" onClick="startConsole(0xEE,0)" id="debugConsole">Start Console</a></small>
                             </div>
                             <div class="col" align="center" >
-                                <a class="text-white" href="graph.html"><small>Graph</small></a>
+                                <small><a class="text-white" href="graph.html">Graph</a></small>
                             </div>
                             <div class="col" align="center" >
-                                <a class="text-white" href="usb.php?eeprom=erase"><small>Erase EEPROM</small></a>
+                                <small><a class="text-white" href="usb.php?eeprom=erase">Erase EEPROM</a></small>
                             </div>
                         </div>
                     </div>
@@ -100,15 +98,19 @@
             <input type="file" name="file" class="fileUpload" hidden accept=".hex">
             <input type="submit" hidden>
         </form>
-        <a class="autoconfig" data-fancybox data-src="#autoconfig" href="#"></a>
-        <div class="d-none bg-light" id="autoconfig">
-            <center>
-                <br><br>
-               	<h1>Soil Type</h1>
-                <br>
-                <div class="container">
+        <div class="modal fade" id="Autoconfig" tabindex="-1" role="dialog" aria-labelledby="AutoconfigTitle" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="AutoconfigTitle">Soil Type:</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
                 </div>
-            </center>
+                <div class="modal-body container"></div>
+                <div class="modal-footer"></div>
+            </div>
+        </div>
         </div>
     </body>
 </html>

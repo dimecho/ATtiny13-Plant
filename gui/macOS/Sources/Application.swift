@@ -76,13 +76,17 @@ class Application: NSViewController, NSApplicationDelegate, NSUserNotificationCe
 		
 		let pkill = Process()
 		pkill.launchPath = "/usr/bin/pkill"
-		pkill.arguments =  ["-9" , "php"]
+		pkill.arguments =  ["-9" , "php", "avrdude"]
 		pkill.launch()
 		pkill.waitUntilExit()
 	   
 		let php = Process()
 		php.launchPath = "/usr/bin/php"
-		php.arguments =  ["-S", "127.0.0.1:8080", "-t", webPath]
+		if fileManager.fileExists(atPath: webPath + "/ip.txt") {
+			php.arguments =  ["-S", "0.0.0.0:8080", "-t", webPath]
+		}else{
+			php.arguments =  ["-S", "127.0.0.1:8080", "-t", webPath]
+		}
 		php.launch()
 		/*
 		let browserIdentifier: [String] = ["org.mozilla.firefox","com.apple.Safari"]
