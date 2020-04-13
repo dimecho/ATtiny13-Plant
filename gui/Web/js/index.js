@@ -16,7 +16,7 @@ var pot_labels = ["Small", "Medium", "Large"];
 var soil_values = [300, 780];
 var soil_labels = ["Dry (Cactus)", "Wet (Tropical)"];
 
-var soil_type_values = [420, 700, 500, 480, 640];
+var soil_type_values = [420, 700, 480, 650, 740];
 var soil_pot_offsets = [[0,-10,-20], [0,0,0], [0,0,0], [5,10,0], [0,0,0]];
 var soil_type_labels = ["Sand", "Clay", "Dirt", "Loam", "Moss"];
 

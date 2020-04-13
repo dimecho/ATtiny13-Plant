@@ -76,7 +76,7 @@ class Application: NSViewController, NSApplicationDelegate, NSUserNotificationCe
 		
 		let pkill = Process()
 		pkill.launchPath = "/usr/bin/pkill"
-		pkill.arguments =  ["-9" , "php", "avrdude"]
+		pkill.arguments =  ["-9" , "php", "avrdude"] //if avrdude stuck 90% not enough USB juice
 		pkill.launch()
 		pkill.waitUntilExit()
 	   

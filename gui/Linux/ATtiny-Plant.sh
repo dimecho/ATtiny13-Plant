@@ -3,7 +3,11 @@
 main()
 {
     killall php
-    php -S 127.0.0.1:8080 -t "$(dirname "$0")/Web/" &
+    if [[ -f "$(dirname "$0")/Web/ip.txt" ]]; then
+        php -S 0.0.0.0:8080 -t "$(dirname "$0")/Web/" &
+    else
+        php -S 127.0.0.1:8080 -t "$(dirname "$0")/Web/" &
+    fi
     /usr/bin/firefox http://127.0.0.1:8080;bash
 }
 

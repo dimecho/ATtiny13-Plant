@@ -30,34 +30,39 @@ internal static class ATtinyPlant
 
 		Console.ForegroundColor = ConsoleColor.Green;
 
-		if(!Directory.Exists(appdata) || checkVersion() == false)
+		if(!checkMD5(appdata + @"Web\js\index.js", "2a751fc122c6d961eb3421c4c809b6cb"))
 		{
 			Directory.CreateDirectory(appdata);
 
-			Console.WriteLine("...Installing Web-Interface");
+			Console.WriteLine("\n...Extracting Web-Interface");
 			extractEmbedResource("APP", "Web.zip", temp);
-			ZipFile.ExtractToDirectory(temp + "Web.zip", appdata);
-			File.Delete(temp + "Web.zip");
+			extractZIP(temp + "Web.zip", appdata);
 
 			extractEmbedResource("AVR", "avrdude.conf", appdata + @"Web\");
 			extractEmbedResource("AVR", "avrdude.exe", appdata + @"Web\");
 			//extractEmbedResource("AVR", "libusb0.dll", appdata + @"Web\");
+		}
 
+		if(!checkMD5(appdata + @"Drivers\usbtiny.cat", "cd87c2597f3286090aab6bf4b97f0a2d"))
+		{
+			Console.WriteLine("\n...Extracting Drivers");
 			extractEmbedResource("APP", "Drivers.zip", temp);
-			ZipFile.ExtractToDirectory(temp + "Drivers.zip", appdata);
-			File.Delete(temp + "Drivers.zip");
+			extractZIP(temp + "Drivers.zip", appdata);
 		}
 		
-		if (!File.Exists(appdata + @"php\php.exe")) {
+		if (!checkMD5(appdata + @"php\php.exe", "62e25ef43bf6da65017e5499e837efb6"))
+		{
+			Directory.CreateDirectory(appdata + "php");
 
 			string phpFile = "php-7.4.3-Win32-vc15-x64.zip";
-			extractEmbedResource("PHP",phpFile,temp);
+			extractEmbedResource("PHP", phpFile, temp);
 
 			if (File.Exists(temp + phpFile)) {
-				phpFile = temp + phpFile;
+				Console.WriteLine("\n...Extracting PHP");
+				extractZIP(temp + phpFile, appdata + "php");
 			}else{
 				if (!File.Exists(profile+ @"Downloads\" + phpFile)) {
-			   		Console.WriteLine("...Downloading PHP");
+			   		Console.WriteLine("\n...Downloading PHP");
 
 			   		using (WebClient webClient = new WebClient()) {
 				   		try {
@@ -68,12 +73,10 @@ internal static class ATtinyPlant
 		                }
 		            }
 			   	}
-			   	phpFile = profile + @"Downloads\" + phpFile;
+			   	ZipFile.ExtractToDirectory(profile + @"Downloads\" + phpFile, appdata + "php");
 			}
 
-		   	Console.WriteLine("...Installing PHP");
-
-		  	ZipFile.ExtractToDirectory(phpFile, appdata + "php");
+		   	Console.WriteLine("\n...Installing PHP");
 			File.Move(appdata + @"php\php.ini-production", appdata + @"php\php.ini");
 		}
 
@@ -88,7 +91,7 @@ internal static class ATtinyPlant
 			}else{
 				if (!File.Exists(profile + @"Downloads\" + vcFile)) {
 			   	
-					Console.WriteLine("...Downloading C++ Redistributable for Visual Studio 2019");
+					Console.WriteLine("\n...Downloading C++ Redistributable for Visual Studio 2019");
 
 					using (WebClient webClient = new WebClient()) {
 				   		try {
@@ -108,6 +111,7 @@ internal static class ATtinyPlant
 			{
 			    proc.WaitForExit();
 			}
+			//File.Delete(vcFile);
 		}
 		
 		MainAsync(args).GetAwaiter().GetResult();
@@ -226,42 +230,60 @@ internal static class ATtinyPlant
 		browser.Start();
 	}
 
-	private static bool checkVersion()
+	private static void extractZIP(string zipPath, string extractPath)
 	{
-		try
-        {
-			System.Reflection.Assembly assembly = System.Reflection.Assembly.GetExecutingAssembly();
-            Version version = assembly.GetName().Version;
+		//ZipFile.ExtractToDirectory(zipPath", extractPath);
 
-            StreamReader file = new System.IO.StreamReader(appdata + @"Web\firmware\version.txt");  
-			string line = file.ReadLine();
-			file.Close();
+		using (ZipArchive archive = ZipFile.OpenRead(zipPath))
+		{
+        	foreach (ZipArchiveEntry entry in archive.Entries)
+        	{
+        		string destinationPath = Path.GetFullPath(Path.Combine(extractPath, entry.FullName));
+        		try {
+            		if (destinationPath.EndsWith("\\")) {
+            			Directory.CreateDirectory(destinationPath);
+                	}else{
+            			entry.ExtractToFile(destinationPath, true);
+            		}
+            		Console.WriteLine(destinationPath);
+        		}catch{}
+    		}
+		}
+		File.Delete(zipPath);
+	}
 
-            if (line != version.Major + "." + version.Minor) {
-            	Directory.Delete(appdata + "Web", true);
-            	Directory.Delete(appdata + "php", true);
-            	return false;
-            }
-        }
-        catch
-        {
-        	return false;
-        }
+	private static bool checkMD5(string filename, string sum)
+	{
+    	if (File.Exists(filename)) {
+    		using (var md5 = MD5.Create())
+			{
+			    using (var stream = File.OpenRead(filename))
+			    {
+			    	string hash = BitConverter.ToString(md5.ComputeHash(stream)).Replace("-", "").ToLower();
+			        if(hash == sum) {
+			        	return true;
+			        }
+			        Console.WriteLine("File: " + filename);
+			        Console.WriteLine("MD5: " + hash + " <-> " + sum);
+			    }
+			}
+    	}
 
-		return true;
+		return false;
 	}
 
  	private static void extractEmbedResource(string name, string resource, string destination)
 	{
-	    if (!File.Exists(destination + resource)) {
-			Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(name + "." + resource);
-			if(stream != null) {
-	            FileStream fileStream = new FileStream(destination + resource, FileMode.CreateNew);
-	            for (int i = 0; i < stream.Length; i++)
-	                fileStream.WriteByte((byte)stream.ReadByte());
-	            fileStream.Close();
-        	}
-        }
+	    if (File.Exists(destination + resource)) {
+	    	File.Delete(destination + resource);
+	    }
+		Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(name + "." + resource);
+		if(stream != null) {
+            FileStream fileStream = new FileStream(destination + resource, FileMode.CreateNew);
+            for (int i = 0; i < stream.Length; i++)
+                fileStream.WriteByte((byte)stream.ReadByte());
+            fileStream.Close();
+    	}
 	}
 
     private static bool AcceptAllCertifications(object sender, System.Security.Cryptography.X509Certificates.X509Certificate certification, System.Security.Cryptography.X509Certificates.X509Chain chain, System.Net.Security.SslPolicyErrors sslPolicyErrors)
@@ -382,8 +404,8 @@ internal static class ATtinyPlant
 							        		while (reader.PeekChar() != -1)
     										{
     											int b = reader.ReadInt16();
-    											byte lo = byte.Parse(b);
-    											byte hi = (byte.Parse(b) >> 8);
+    											byte lo = (byte)b;
+    											byte hi = (byte)(b >> 8);
 
 							        			await sw.WriteAsync(lo + "\n");
 							        			await sw.WriteAsync(hi + "\n");

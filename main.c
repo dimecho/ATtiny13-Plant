@@ -400,9 +400,9 @@ int main(void)
                 600 = 4.0V
                 555 = 5.0V
                 */
-                //Just before Brown-Out @ 2.7V
-                if(moisture > 688) {
-                	blink(255,22); //Warn to charge battery with LED
+                //Around 2.9V, just before Brown-Out @ 2.7V
+                if(moisture > 680) {
+                	blink(255,10); //Warn to charge battery with LED
                 }
                 //======================
                 //Prevents false-positive (empty detection)
@@ -437,7 +437,7 @@ int main(void)
                     //for (uint16_t i = 1000 ; i >= 1; i=div10(i)) {
                     for (uint16_t i = 100 ; i >= 1; i /= 10) {
                         uint8_t d = (moisture/i) % 10;
-                        d = d + d;
+                        d = d + d; //on + off timers (double loop)
                         blink(4,d); //blink a zero with a quick pulse
                         _delay_ms(1200);
                     }

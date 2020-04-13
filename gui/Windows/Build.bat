@@ -5,6 +5,7 @@ C:\Windows\Microsoft.NET\Framework\v4.0.30319\csc.exe -optimize+ -nostdlib ATtin
 /resource:AVR\avrdude.conf,AVR.avrdude.conf ^
 /resource:AVR\avrdude.exe,AVR.avrdude.exe ^
 /reference:System.dll ^
+/reference:System.IO.Compression.dll ^
 /reference:System.IO.Compression.FileSystem.dll ^
 /reference:System.Security.Cryptography.X509Certificates.dll ^
 /reference:mscorlib.dll ^

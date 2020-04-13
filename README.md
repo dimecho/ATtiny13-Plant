@@ -69,21 +69,21 @@ avr-objcopy -O ihex main.o main.hex
 
 ### Option 1 - USBTiny (Recommended)
 ```
-avrdude -p t13 -c usbtiny -Uhfuse:w:0xFF:m -Ulfuse:w:0x6A:m -U flash:w:main.hex:i
+avrdude -p t13 -c usbtiny -Uhfuse:w:0xFB:m -Ulfuse:w:0x6A:m -U flash:w:main.hex:i
 ```
 
 ![USBTINY](img/attiny_programmer_usbtiny.png?raw=true)
 
 ### Option 2 - USBasp
 ```
-avrdude -p t13 -c usbasp -Uhfuse:w:0xFF:m -Ulfuse:w:0x6A:m -U flash:w:main.hex:i
+avrdude -p t13 -c usbasp -Uhfuse:w:0xFB:m -Ulfuse:w:0x6A:m -U flash:w:main.hex:i
 ```
 
 ![USBASP](img/attiny_programmer_usbasp.png?raw=true)
 
 ### Option 3 - Raspberry Pi (Using linuxgpio)
 ```
-avrdude -p t13 -c linuxgpio -Uhfuse:w:0xFF:m -Ulfuse:w:0x6A:m -U flash:w:main.hex:i
+avrdude -p t13 -c linuxgpio -Uhfuse:w:0xFB:m -Ulfuse:w:0x6A:m -U flash:w:main.hex:i
 ```
 
 ![PI](img/attiny_programmer_pi.png?raw=true)

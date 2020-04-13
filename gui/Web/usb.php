@@ -28,12 +28,12 @@
 	        $fuses = "";
 
 	        if($_SESSION["chip"] == "ATtiny13"){
-	        	$fuses = " -U hfuse:w:0xFF:m -U lfuse:w:0x6A:m"; //CPU @ 1.2Mhz
+	        	$fuses = " -U hfuse:w:0xFB:m -U lfuse:w:0x6A:m"; //CPU @ 1.2Mhz
 	            //$fuses = " -U hfuse:w:0xFF:m -U lfuse:w:0x7B:m"; //CPU @ 128Khz
 	        }else if($_SESSION["chip"] == "ATtiny45"){
-	        	$fuses = " -U hfuse:w:0xDF:m -U lfuse:w:0x62:m";
+	        	$fuses = " -U hfuse:w:0xDD:m -U lfuse:w:0x62:m";
 	        }else if($_SESSION["chip"] == "ATtiny85"){
-	        	$fuses = " -U hfuse:w:0xDF:m -U lfuse:w:0x62:m";
+	        	$fuses = " -U hfuse:w:0xDD:m -U lfuse:w:0x62:m";
 	        }
 
 	        if($_SESSION["chip"] !== "")
