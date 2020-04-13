@@ -1,21 +1,22 @@
 /*  
     FUSE_L=0x6A (Clock divide fuse enabled = 8Mhz CPU frequency is actually 1MHz)
-    FUSE_H=0xFF (0xFE (no bootloader) / 0xEE (bootloader) = RSTDISBL -> CATION: If enabled chip can only be programmed once)
+    FUSE_H=0xFF (0xFF (no bootloader) / 0xEE (bootloader) = RSTDISBL + SELFPRGEN -> CATION: If enabled chip can only be programmed once)
     FUSE_H=0xFB (BODLEVEL 0xFD = 1.8V, 0xFB = 2.7V, 0xFF = BOD Disabled)
+
+    ** The brown-out detector is designed to put the chip into reset when the voltage gets too low,
+        and hold it in reset until the voltage returns back to a safe operating level.
 */
 #ifndef F_CPU
     #if defined __AVR_ATtiny45__ || defined __AVR_ATtiny85__
         #define F_CPU 1000000 //CPU @ 8Mhz / 8 = 1 Mhz
     #else
         #define F_CPU 1200000 //CPU @ 9.6Mhz / 8 = 1.2Mhz
-        
         //#define F_CPU 128000 //CPU @ 128Khz (no clock divide)
 
         //WARNING: @128Khz do not divide clock by 8 (LFUSE:6B) - ATtiny 13 will be bricked
         //Recovery: See "arduino_isp_boot-selectable_serial-config_slow_spi.cpp"
     #endif
 #endif
-
 /*
                              [ATtiny13A]
                               +------+
@@ -116,7 +117,7 @@ do                          \
 
 static void blink(uint8_t time, uint8_t duration);
 static uint16_t sensorRead(uint8_t enablePin,uint8_t readPin);
-static uint16_t ReadADC(uint8_t pin);
+static uint16_t ReadADC(uint8_t pin, uint8_t vref);
 
 static uint16_t div3(uint16_t n);
 //static uint16_t div10(uint16_t n);
@@ -210,11 +211,14 @@ int main(void)
     //=================================
     //AVR I/O pins are input by default
     //=================================
+    /*
     DDRB |= (1<<pumpPin); //Digital OUTPUT
+    DDRB |= (1<<solarPin); //Digital OUTPUT
     DDRB |= (1<<sensorPin); //Digital OUTPUT
-    #ifdef ledPin
-        DDRB |= (1<<ledPin); //Digital OUTPUT
-    #endif
+    DDRB |= (1<<ledPin); //Digital OUTPUT
+    */
+    DDRB = 0xFF; //All Pins as OUTPUT
+    PORTB = 0x00; //All Pins OFF
 
     //=============
     //EEPROM
@@ -302,10 +306,6 @@ int main(void)
 
     if(runSolar == 1 || ee == 0xEE) {
 
-    	#ifdef SOLAR_ENABLED
-        	DDRB |= (1<<solarPin); //Digital OUTPUT
-    	#endif
-
     	emptyBottle = EEPROM_read(0x38);
         moistureLog = EEPROM_read(0x3A);
 
@@ -390,6 +390,21 @@ int main(void)
             }else{
                 sleepLoop = 0;
                 //======================
+                // Low Voltage Warning
+                //======================
+                uint16_t moisture = ReadADC(PB5, 5); //Self-VCC @ 5Vref
+                /*
+                694 = 2.8V
+                673 = 3.0V
+                655 = 3.2V
+                600 = 4.0V
+                555 = 5.0V
+                */
+                //Just before Brown-Out @ 2.7V
+                if(moisture > 688) {
+                	blink(255,22); //Warn to charge battery with LED
+                }
+                //======================
                 //Prevents false-positive (empty detection)
                 //Moisture sensor (too accurate) triggers exactly same value when dry
                 //======================
@@ -401,7 +416,9 @@ int main(void)
                 }
                 */
                 //======================
-                uint16_t moisture = sensorRead(sensorPin,moistureSensorPin);
+                //Get Sensor Moisture
+                //======================
+                moisture = sensorRead(sensorPin,moistureSensorPin);
 
                 #ifdef EEPROM_ENABLED
                     EEPROM_save(0x1A,moisture,ee);
@@ -558,7 +575,7 @@ int main(void)
                 */
 
                 //DDRB &= ~(1<<solarSensorPin); //Shared pin with Sensor, Set Analog INPUT
-                uint16_t solarVoltage = ReadADC(solarSensorPin); //Detect Solar intensity - 300R inline + 10k pullup
+                uint16_t solarVoltage = ReadADC(solarSensorPin, 1); //Detect Solar intensity - 300R inline + 10k pullup
                 //DDRB |= (1<<solarSensorPin); //Shared pin with Sensor, set Digital OUTPUT
                 
                 #ifdef UART_TX_ENABLED
@@ -629,8 +646,7 @@ uint16_t sensorRead(uint8_t enablePin, uint8_t readPin)
     DDRB &= ~(1<<readPin); //Analog INPUT
 
     PORTB |= (1<<enablePin); //ON
-    //uint16_t value = ReadADC(readPin);
-    uint16_t value = ReadADC(readPin);
+    uint16_t value = ReadADC(readPin, 1);
     PORTB &= ~(1<<enablePin); //OFF
 
     DDRB |= (1<<readPin);   //Digital OUTPUT
@@ -666,23 +682,24 @@ void blink(uint8_t time, uint8_t duration)
             } while (i);
             duration--;
         } while (duration);
-        //DDRB &= ~(1<<ledPin); //Analog INPUT (Act as RESET sense)
     #endif
 }
 
-uint16_t ReadADC(uint8_t pin)
+uint16_t ReadADC(uint8_t pin, uint8_t vref)
 {
 	/*
 	Set VCC as internal reference voltage
     http://maxembedded.com/2011/06/the-adc-of-the-avr/
 	*/
     #if defined __AVR_ATtiny45__ || defined __AVR_ATtiny85__
-       ADMUX = ((0 << REFS2) | (1 << REFS1) | (0 << REFS0)); // 1.1V
+    	ADMUX = ((0 << REFS2) | (1 << REFS1) | (0 << REFS0)); // 1.1V
        //ADMUX = ((1 << REFS2) | (1 << REFS1) | (0 << REFS0)); // 2.56V
-       //ADMUX = ((0 << REFS2) | (0 << REFS1) | (0 << REFS0)); // 5.0V
+       if(vref == 5)
+       		ADMUX = ((0 << REFS2) | (0 << REFS1) | (0 << REFS0)); // 5.0V
     #else
-    	ADMUX = (1 << REFS0);  // 1.1V
-        //ADMUX = (0 << REFS0);  // 5.0V
+       	ADMUX = (1 << REFS0);  // 1.1V
+    	if(vref == 5)
+        	ADMUX = (0 << REFS0);  // 5.0V
     #endif
 
     /*
@@ -741,11 +758,11 @@ uint16_t ReadADC(uint8_t pin)
         //=============
 
         // Wait conversion is done
-        while ((ADCSRA & (1 << ADSC)) !=0);	
+        while ((ADCSRA & (1 << ADSC)) != 0);
 
         // Read values
         if(i < 8) { //throw away first 8 conversions
-        	ADC; // For 10-bit resolution (includes ADCL + ADCH)
+        	ADC;
     	}else{ //average the other 8 conversions
     		result += ADC; // For 10-bit resolution (includes ADCL + ADCH)
     	}
@@ -757,6 +774,7 @@ uint16_t ReadADC(uint8_t pin)
         //result = (high << 8) | low; // Combine two bytes
         //result = 1125300L / result; // Calculate Vcc (in mV); 1125300 = 1.1*1023*1000
         //------------------
+        //Vcc_value = (0x400 * 1.1 ) / (ADC * 0x100); // Calculate Vcc
     }
 
     ADCSRA &= ~ (1 << ADEN); // Disables ADC
