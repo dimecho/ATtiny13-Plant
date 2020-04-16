@@ -69,7 +69,7 @@ do                          \
     #define versionID               10 //1.0
 #endif
 #ifndef sensorMoisture
-    #define sensorMoisture          484 //ADC value
+    #define sensorMoisture          500 //ADC value
 #endif
 #ifndef potSize
  #define potSizeTimer               20 //20x2x100 = 4000 miliseconds = 4 seconds
@@ -176,8 +176,11 @@ https://ww1.microchip.com/downloads/en/AppNotes/doc8453.pdf
     }
 #endif
 
-ISR(WDT_vect)
-{
+//Wake Up CPU From Sleep Mode
+ISR(WDT_vect) {
+}
+//ADC interrupt (must be in the code for the interrupt to work correctly)
+ISR(ADC_vect) {
 }
 
 int main(void)
@@ -217,8 +220,9 @@ int main(void)
     DDRB |= (1<<sensorPin); //Digital OUTPUT
     DDRB |= (1<<ledPin); //Digital OUTPUT
     */
-    DDRB = 0xFF; //All Pins as OUTPUT
-    PORTB = 0x00; //All Pins OFF
+    
+    DDRB = 0xFF;	//All Pins as OUTPUT
+    PORTB = 0x00;   //All Pins OFF
 
     //=============
     //EEPROM
@@ -234,6 +238,7 @@ int main(void)
             EEPROM_save(0x04,potSize,0xEE);
             EEPROM_save(0x06,runSolar,0xEE);
             EEPROM_save(0x08,deepSleep,0xEE);
+            //EEPROM_save(0xA,0xFF,0xEE);
 
             #ifdef WS78L05
             	EEPROM_save(0xB,WS78L05,0xEE);
@@ -310,13 +315,11 @@ int main(void)
         moistureLog = EEPROM_read(0x3A);
 
         //deepSleep = 0;
-
-        set_sleep_mode(SLEEP_MODE_IDLE);
+        //set_sleep_mode(SLEEP_MODE_IDLE);
         WDTCR |= (0<<WDP3) | (1<<WDP2) | (1<<WDP1) | (1<<WDP0); //Set timer 2s
 
     }else{
-
-        set_sleep_mode(SLEEP_MODE_PWR_DOWN);
+        //set_sleep_mode(SLEEP_MODE_PWR_DOWN);
         //Table 8-2 page 43
         WDTCR |= (1<<WDP3) | (0<<WDP2) | (0<<WDP1) | (1<<WDP0); //Set timer 8s (max)
         //----------------
@@ -333,12 +336,11 @@ int main(void)
         //  WDTO_4S
         //  WDTO_8S
     }
-    //sleep_enable();
 
-    sei(); // enable all interrupts
- 
+    sei(); // enable all interrupts or we never wake
+
     for (;;) {
-        
+
        /*
         uint8_t resetAVR = ReadADC(ledPin);
         if(resetAVR > 250) {
@@ -357,14 +359,15 @@ int main(void)
             soft_reset();
         }
         */
-        
+        set_sleep_mode(SLEEP_MODE_PWR_DOWN);
         //power_all_disable(); // turn power off to ADC, TIMER 1 and 2, Serial Interface
         //power_adc_disable();
         //-------------
-        sleep_mode(); //makes a call to three routines:  sleep_enable(); sleep_cpu(); sleep_disable();
-        //sleep_enable(); //sets the Sleep Enable bit in the MCUCR register
-        //sleep_cpu(); //issues the SLEEP command
-        //sleep_disable(); //clears the SE bit
+        //sleep_mode(); //makes a call to three routines:  sleep_enable(); sleep_cpu(); sleep_disable();
+        //-------------
+        sleep_enable(); //sets the Sleep Enable bit in the MCUCR register
+        sleep_cpu(); //issues the SLEEP command
+        sleep_disable(); //clears the SE bit
         //-------------
         //power_all_enable(); // put everything on again
         //power_adc_enable();
@@ -401,8 +404,8 @@ int main(void)
                 555 = 5.0V
                 */
                 //Around 2.9V, just before Brown-Out @ 2.7V
-                if(moisture > 680) {
-                	blink(255,10); //Warn to charge battery with LED
+                if(moisture > 680 && moisture < 980) { //avoid when USB is plugged in
+                	blink(255,22); //Warn to charge battery with LED
                 }
                 //======================
                 //Prevents false-positive (empty detection)
@@ -649,8 +652,8 @@ uint16_t sensorRead(uint8_t enablePin, uint8_t readPin)
     uint16_t value = ReadADC(readPin, 1);
     PORTB &= ~(1<<enablePin); //OFF
 
-    DDRB |= (1<<readPin);   //Digital OUTPUT
-    PORTB &= ~(1<<readPin); //OFF
+    //DDRB |= (1<<readPin);   //Digital OUTPUT
+    //PORTB &= ~(1<<readPin); //OFF
 
     #ifdef UART_TX_ENABLED
         uart_putc(',');
@@ -692,14 +695,14 @@ uint16_t ReadADC(uint8_t pin, uint8_t vref)
     http://maxembedded.com/2011/06/the-adc-of-the-avr/
 	*/
     #if defined __AVR_ATtiny45__ || defined __AVR_ATtiny85__
-    	ADMUX = ((0 << REFS2) | (1 << REFS1) | (0 << REFS0)); // 1.1V
-       //ADMUX = ((1 << REFS2) | (1 << REFS1) | (0 << REFS0)); // 2.56V
-       if(vref == 5)
-       		ADMUX = ((0 << REFS2) | (0 << REFS1) | (0 << REFS0)); // 5.0V
+    	//ADMUX = ((0 << REFS2) | (0 << REFS1) | (0 << REFS0)); // 5.0V
+    	//ADMUX = ((1 << REFS2) | (1 << REFS1) | (0 << REFS0)); // 2.56V
+    	if(vref == 1)
+       		ADMUX = ((0 << REFS2) | (1 << REFS1) | (0 << REFS0)); // 1.1V
     #else
-       	ADMUX = (1 << REFS0);  // 1.1V
-    	if(vref == 5)
-        	ADMUX = (0 << REFS0);  // 5.0V
+       	//ADMUX = (0 << REFS0);  // 5.0V
+    	if(vref == 1)
+        	ADMUX = (1 << REFS0);  // 1.1V
     #endif
 
     /*
@@ -727,8 +730,21 @@ uint16_t ReadADC(uint8_t pin, uint8_t vref)
     //ADCSRA = (1 << ADPS2) | (1 << ADPS1) | (1 << ADPS0);  // Prescaler of 128
     //--------------
     ADCSRA |= (1 << ADEN); // Enables ADC
-    //_delay_ms(200); // Wait for Vref to settle
 
+    //========================
+    //ADC Noise Reduction Mode
+    //========================
+    ADCSRA |= (1 << ADIE); //ADIE bit 1 means when the ADC is done a measurement it generates an interrupt, the interrupt will wake the chip up from low noise sleep
+    set_sleep_mode(SLEEP_MODE_ADC); //ADC noise reduction sleep mode, the chip automatically starts an ADC measurement once the chip enters sleep mode
+    sleep_enable();
+    sleep_cpu(); //Enter low ADC noise sleep mode, this action turns off certain clocks and other modules in the chip so they do not generate noise that affects the accuracy of the ADC measurement
+    //The chip remains in sleep mode until the ADC measurement is complete and executes an interrupt which wakes the chip from sleep
+    sleep_disable();
+    return ADC;
+
+    //========================
+    //ADC Regular Mode
+    //========================
     uint16_t result = 0;
     /*
     Undocumented bug on selecting the reference as an input.
@@ -777,107 +793,10 @@ uint16_t ReadADC(uint8_t pin, uint8_t vref)
         //Vcc_value = (0x400 * 1.1 ) / (ADC * 0x100); // Calculate Vcc
     }
 
+    ACSR |= (1 << ACD);   //Analog comparator OFF
     ADCSRA &= ~ (1 << ADEN); // Disables ADC
 
     return (result >> 3); //Average 8
     //return (result >> 4); //Average 16
     //return (result);
 }
-
-/**
- * Copyright (c) 2017, Łukasz Marcin Podkalicki <lpodkalicki@gmail.com>
- * Software UART for ATtiny13
- */
-
-#ifdef UART_TX_ENABLED
-void uart_putc(char c)
-{
-    uint8_t sreg;
-    sreg = SREG;
-
-    cli(); // disable all interrupts
-    PORTB |= (1 << UART_TX);
-    DDRB |= (1 << UART_TX);
-    asm volatile(
-        " cbi %[uart_port], %[uart_pin] \n\t" // start bit
-        " in r0, %[uart_port] \n\t"
-        " ldi r30, 3 \n\t" // stop bit + idle state
-        " ldi r28, %[txdelay] \n\t"
-        "TxLoop: \n\t"
-        // 8 cycle loop + delay - total = 7 + 3*r22
-        " mov r29, r28 \n\t"
-        "TxDelay: \n\t"
-        // delay (3 cycle * delayCount) - 1
-        " dec r29 \n\t"
-        " brne TxDelay \n\t"
-        " bst %[ch], 0 \n\t"
-        " bld r0, %[uart_pin] \n\t"
-        " lsr r30 \n\t"
-        " ror %[ch] \n\t"
-        " out %[uart_port], r0 \n\t"
-        " brne TxLoop \n\t"
-        :
-        : [uart_port] "I" (_SFR_IO_ADDR(PORTB)),
-        [uart_pin] "I" (UART_TX),
-        [txdelay] "I" (TXDELAY),
-        [ch] "r" (c)
-        : "r0","r28","r29","r30"
-    );
-    SREG = sreg;
-}
-
-void uart_putu(uint16_t x)
-{
-    char buff[8] = {0};
-    char *p = buff+6;
-    do { *(p--) = (x % 10) + '0'; x /= 10; } while(x);
-    uart_puts((const char *)(p+1));
-}
-
-void uart_puts(const char *s)
-{
-    while (*s) uart_putc(*(s++));
-}
-#endif
-
-#ifdef UART_RX_ENABLED
-
-char uart_getc(void)
-{
-    char c;
-    uint8_t sreg;
-    sreg = SREG;
-
-    cli(); // disable all interrupts
-    PORTB &= ~(1 << UART_RX);
-    DDRB &= ~(1 << UART_RX);
-    asm volatile(
-        " ldi r18, %[rxdelay2] \n\t" // 1.5 bit delay
-        " ldi %0, 0x80 \n\t" // bit shift counter
-        "WaitStart: \n\t"
-        " sbic %[uart_port]-2, %[uart_pin] \n\t" // wait for start edge
-        " rjmp WaitStart \n\t"
-        "RxBit: \n\t"
-        // 6 cycle loop + delay - total = 5 + 3*r22
-        // delay (3 cycle * r18) -1 and clear carry with subi
-        " subi r18, 1 \n\t"
-        " brne RxBit \n\t"
-        " ldi r18, %[rxdelay] \n\t"
-        " sbic %[uart_port]-2, %[uart_pin] \n\t" // check UART PIN
-        " sec \n\t"
-        " ror %0 \n\t"
-        " brcc RxBit \n\t"
-        "StopBit: \n\t"
-        " dec r18 \n\t"
-        " brne StopBit \n\t"
-        : "=r" (c)
-        : [uart_port] "I" (_SFR_IO_ADDR(PORTB)),
-        [uart_pin] "I" (UART_RX),
-        [rxdelay] "I" (RXDELAY),
-        [rxdelay2] "I" (RXDELAY2)
-        : "r0","r18","r19"
-    );
-    SREG = sreg;
-    return c;
-}
-#endif
