@@ -527,7 +527,7 @@ function updateChart() {
             var adc = HexShift(s,e_moisture);
             var ref = adc / 1023;
             var v = 5 * (ref * 1.1); // Calculate Vcc from 5V
-            var h2o = Math.round(ref * 100 / 1.8); //scientific value (actual H2O inside soil)
+            var h2o = Math.round(ref * 100 / 2.0); //scientific value (actual H2O inside soil)
             console.log(adc + ' ' + h2o);
 
             data.datasets[0].data.push(adc);

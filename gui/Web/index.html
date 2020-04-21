@@ -87,6 +87,9 @@
                                 <small><a class="text-white" href="graph.html">Graph</a></small>
                             </div>
                             <div class="col" align="center" >
+                                <small><a class="text-white" href="#" onClick="testPump()">Test Pump</a></small>
+                            </div>
+                            <div class="col" align="center" >
                                 <small><a class="text-white" href="usb.php?eeprom=erase">Erase EEPROM</a></small>
                             </div>
                         </div>
@@ -98,6 +101,30 @@
             <input type="file" name="file" class="fileUpload" hidden accept=".hex">
             <input type="submit" hidden>
         </form>
+        <div class="modal fade" id="USBTinyFirmware" tabindex="-1" role="dialog" aria-labelledby="USBTinyFirmwareTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="USBTinyFirmwareTitle">USBTiny Firmware</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                	<ol>
+					  <li>Flash USBTiny Firmware</li>
+					  <li>Set 16.5Mhz PLL Clock</li>
+					  <li>Seal Firmware (Reset Fuse)</li>
+					</ol>
+                </div>
+                <div class="modal-footer">
+                	<button class="btn btn-primary" type="button" onClick="USBTinyFirmware(1,this)">Flash Firmware</button>
+                	<button class="btn btn-secondary" type="button" onClick="USBTinyFirmware(2,this)">Set Clock</button>
+                	<button class="btn btn-secondary" type="button" onClick="USBTinyFirmware(3,this)">Reset Fuse</button>
+                </div>
+            </div>
+        </div>
+        </div>
         <div class="modal fade" id="Autoconfig" tabindex="-1" role="dialog" aria-labelledby="AutoconfigTitle" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
             <div class="modal-content">

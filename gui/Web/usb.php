@@ -88,7 +88,18 @@
 	    {
 	        $command .= " -c " . $_SESSION["usb"] . " -p t13 -Ulfuse:v:0x00:m";
 	        $output = Run($command);
-
+		    echo $command. "\n" .$output;
+		}
+	    else if(isset($_GET["fuse"]))
+	    {
+	    	$command .= " -c " . $_SESSION["usb"] . " -p " .strtolower($_SESSION["chip"]);
+	    	if(isset($_GET["h"])) {
+	    		$command .= " -U hfuse:w:" .$_GET["h"]. ":m";
+	    	}
+	    	if(isset($_GET["l"])) {
+	    		$command .= " -U lfuse:w:" .$_GET["l"]. ":m";
+	    	}
+	    	$output = Run($command);
 		    echo $command. "\n" .$output;
 	    }
 	    else if(isset($_GET["eeprom"]))
@@ -112,11 +123,11 @@
 				}
 				fclose($f);
 
-	            $command .= " -c " . $_SESSION["usb"] . " -p " .strtolower($_SESSION["chip"]). " -V -U eeprom:w:" . $tmp_dir . $eeprom_file .":r";
+	            $command .= " -c " . $_SESSION["usb"] . " -p " .strtolower($_SESSION["chip"]). " -V -U eeprom:w:" .$tmp_dir . $eeprom_file.":r";
 	        }else if($_GET["eeprom"] == "flash") {
-	            $command .= " -c " . $_SESSION["usb"] . " -p " .strtolower($_SESSION["chip"]). " -V -U flash:w:" . dirname(__FILE__) . "/firmware/" . strtolower($_SESSION["chip"]) . ".hex:i";
+	            $command .= " -c " . $_SESSION["usb"] . " -p " .strtolower($_SESSION["chip"]). " -V -U flash:w:" .getcwd(). "/firmware/" .strtolower($_GET["firmware"]). ".hex:i";
 	        }else{
-	            $command .= " -c " . $_SESSION["usb"] . " -p " .strtolower($_SESSION["chip"]). " -U eeprom:r:" . $tmp_dir . $eeprom_file .":r";
+	            $command .= " -c " . $_SESSION["usb"] . " -p " .strtolower($_SESSION["chip"]). " -U eeprom:r:" .$tmp_dir . $eeprom_file.":r";
 	        }
 	        
 	        if(!file_exists($tmp_dir . $eeprom_file) || $_GET["eeprom"] == "read")
@@ -271,6 +282,11 @@
             }
             return $output;
         }
-        return $_SESSION["chip"];
+        $output = $_SESSION["chip"];
+        
+        if($programmer == "usbasp" && ($_SESSION["chip"] == "ATtiny45" || $_SESSION["chip"] == "ATtiny85")) {
+        	$output .= "\nUSBTiny";
+        }
+        return $output;
     }
 ?>

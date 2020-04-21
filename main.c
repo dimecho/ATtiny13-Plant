@@ -69,7 +69,7 @@ do                          \
     #define versionID               10 //1.0
 #endif
 #ifndef sensorMoisture
-    #define sensorMoisture          500 //ADC value
+    #define sensorMoisture          577 //ADC value
 #endif
 #ifndef potSize
  #define potSizeTimer               20 //20x2x100 = 4000 miliseconds = 4 seconds
@@ -197,8 +197,6 @@ int main(void)
     uint8_t ee = 0xFF;
     uint16_t errorCode = 0;
 
-    blink(10,4); //Delay before setting IO pins
-
     //=============
     //WATCHDOG
     //=============
@@ -220,9 +218,13 @@ int main(void)
     DDRB |= (1<<sensorPin); //Digital OUTPUT
     DDRB |= (1<<ledPin); //Digital OUTPUT
     */
-    
-    DDRB = 0xFF;	//All Pins as OUTPUT
-    PORTB = 0x00;   //All Pins OFF
+
+    //Page 57 ATtiny13 Manual
+    //MCUCR = 0x40;	//All Pins Pull-up disabled
+    PORTB = 0x00;   //All Pins (0-0-PB5-PB4-PB3-PB2-PB1-PB0)		ON = 1 | OFF = 0
+    DDRB = 0xFF;	//All Pins (0-0-DDB5-DDB4-DDB3-DDB2-DDB1-DDB0)	OUTPUT = 1 | INPUT = 0
+
+    blink(10,4); //Alive blink
 
     //=============
     //EEPROM
@@ -241,19 +243,19 @@ int main(void)
             //EEPROM_save(0xA,0xFF,0xEE);
 
             #ifdef WS78L05
-            	EEPROM_save(0xB,WS78L05,0xEE);
+            	EEPROM_save(0xC,WS78L05,0xEE);
             #endif
             #ifdef LM2731
-            	EEPROM_save(0xB,LM2731,0xEE);
+            	EEPROM_save(0xC,LM2731,0xEE);
             #endif
             #ifdef TPL5110
-				EEPROM_save(0xB,TPL5110,0xEE);
+				EEPROM_save(0xC,TPL5110,0xEE);
             #endif
 
-            EEPROM_save(0xF,SERIAL,0xEE); //Serial # - not UART
+			EEPROM_save(0xE,SERIAL,0xEE); //Serial # - not UART
 
         }else{
-            suitableMoisture = ee | (uint8_t)EEPROM_read(0x03) << 8;
+            suitableMoisture = ee | EEPROM_read(0x03) << 8;
             //suitableMoisture = eeprom_read_word((uint16_t*)0x02);
 
             potSize = EEPROM_read(0x04);
@@ -393,21 +395,6 @@ int main(void)
             }else{
                 sleepLoop = 0;
                 //======================
-                // Low Voltage Warning
-                //======================
-                uint16_t moisture = ReadADC(PB5, 5); //Self-VCC @ 5Vref
-                /*
-                694 = 2.8V
-                673 = 3.0V
-                655 = 3.2V
-                600 = 4.0V
-                555 = 5.0V
-                */
-                //Around 2.9V, just before Brown-Out @ 2.7V
-                if(moisture > 680 && moisture < 980) { //avoid when USB is plugged in
-                	blink(255,22); //Warn to charge battery with LED
-                }
-                //======================
                 //Prevents false-positive (empty detection)
                 //Moisture sensor (too accurate) triggers exactly same value when dry
                 //======================
@@ -421,7 +408,7 @@ int main(void)
                 //======================
                 //Get Sensor Moisture
                 //======================
-                moisture = sensorRead(sensorPin,moistureSensorPin);
+                uint16_t moisture = sensorRead(sensorPin,moistureSensorPin);
 
                 #ifdef EEPROM_ENABLED
                     EEPROM_save(0x1A,moisture,ee);
@@ -445,6 +432,10 @@ int main(void)
                         _delay_ms(1200);
                     }
                     //=======================
+                }else if(ee == 0xEB) { //Test Pump
+                	ee = 255; //only once
+                	moisture = 8; //set low number
+                	//EEPROM_save(0xA,ee,0xEE);
                 }else {
                     //avoid this during the science project (data gathering)
                 	if(ee == 0xFF && (moisture - suitableMoisture) > 300) { //soil is too wet for set threshold, wait longer before checking again
@@ -461,9 +452,9 @@ int main(void)
                         //uart_putc('\n');
                     #endif
 
-                    _delay_ms(3000);
+                    //_delay_ms(3000);
                     blink(1,18);
-
+                
                 #ifdef EEPROM_ENABLED
                 }else if(moisture >= 1021) { //Sensor Manual Calibrate (cross/short both sensor leads)
 
@@ -489,7 +480,6 @@ int main(void)
 
                     EEPROM_save(0x02,suitableMoisture,0xEE);
                 #endif
-                
                 }else if (moisture < suitableMoisture) { //Water Plant
 
                     //===================
@@ -563,6 +553,8 @@ int main(void)
         }
 
         #ifdef SOLAR_ENABLED
+            uint8_t voltage = 0;
+            
             if(runSolar == 1) {
                 /*
                 (Optional TPL5110 = extreme efficiency 50nA! (nano-amp) sleep. Bypasses ATtiny ligic. Solar pin = DONE pin = Turnoff ATtiny)
@@ -578,18 +570,14 @@ int main(void)
                 */
 
                 //DDRB &= ~(1<<solarSensorPin); //Shared pin with Sensor, Set Analog INPUT
-                uint16_t solarVoltage = ReadADC(solarSensorPin, 1); //Detect Solar intensity - 300R inline + 10k pullup
+                voltage = ReadADC(solarSensorPin, 1); //Detect Solar intensity - 300R inline + 10k pullup
                 //DDRB |= (1<<solarSensorPin); //Shared pin with Sensor, set Digital OUTPUT
                 
                 #ifdef UART_TX_ENABLED
                     uart_putc(',');
-                    uart_putu(solarVoltage);
+                    uart_putu(voltage);
                 #endif
-
-                #ifdef EEPROM_ENABLED
-                    EEPROM_save(0xC,solarVoltage,ee);
-                #endif
-
+                
                 /*
                 Regulators
 
@@ -600,7 +588,7 @@ int main(void)
                 */
 
                 //420(@4.2V) = start, over 510(@5V) = direct sunlight ...go to else and stay ON
-                if(solarVoltage > 420 && solarVoltage < 510) //Regulator OFF (Charge capacitor)
+                if(voltage > 42 && voltage < 51) //Regulator OFF (Charge capacitor)
                 {
                     //when sleep mode this creates 8 second pulse
                     #ifdef WS78L05
@@ -613,7 +601,26 @@ int main(void)
                     DDRB |= (1<<solarPin); //Digital
                     PORTB &= ~(1<<solarPin); //Low (GND)
                 }
+            }else{
+                //======================
+                // Low Voltage Warning
+                //======================
+                voltage = ReadADC(PB5, 5); //Self-VCC @ 5Vref
+                /*
+                694 = 2.8V
+                673 = 3.0V
+                655 = 3.2V
+                600 = 4.0V
+                555 = 5.0V
+                */
+                //Around 2.9V, just before Brown-Out @ 2.7V
+                if(voltage > 69 && voltage < 98) { //Avoid when USB is plugged-in
+                    blink(255,22); //Warn to charge battery with LED
+                }
             }
+            #ifdef EEPROM_ENABLED
+                EEPROM_save(0x1E,voltage,ee);
+            #endif
         #endif
             
         sleepLoop++;
