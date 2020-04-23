@@ -67,46 +67,15 @@ avr-objcopy -O ihex main.o main.hex
 
 ## Flash
 
-### Option 1 - USBTiny (Recommended)
 ```
 avrdude -p t13 -c usbtiny -Uhfuse:w:0xFB:m -Ulfuse:w:0x6A:m -U flash:w:main.hex:i
 ```
 
-![USBTINY](img/attiny_programmer_usbtiny.png?raw=true)
+There are 3 options to flash ATtiny13 chip.
 
-### Option 2 - USBasp
-```
-avrdude -p t13 -c usbasp -Uhfuse:w:0xFB:m -Ulfuse:w:0x6A:m -U flash:w:main.hex:i
-```
-
-![USBASP](img/attiny_programmer_usbasp.png?raw=true)
-
-### Option 3 - Raspberry Pi (Using linuxgpio)
-```
-avrdude -p t13 -c linuxgpio -Uhfuse:w:0xFB:m -Ulfuse:w:0x6A:m -U flash:w:main.hex:i
-```
-
-![PI](img/attiny_programmer_pi.png?raw=true)
-
-Install AVRDude.
-```
-sudo apt-get install avrdude
-```
-Open AVRDude configuration file for editing.
-```
-sudo nano /etc/avrdude.conf
-```
-In Nano, use ctrl-w to search for linuxgpio. This is the section that controls the GPIO pins used for programming. The section needs to be uncommented. Set the MOSI, MISO and SCK entries to the GPIO pins on the Pi.
-```
-programmer
-  id    = "linuxgpio";
-  desc  = "Use the Linux sysfs interface to bitbang GPIO lines";
-  type  = "linuxgpio";
-  reset = 12;
-  sck   = 11;
-  mosi  = 10;
-  miso  = 9;
-```
+1. [USBtiny](usbtiny) (built-in)
+2. [USBasp](usbasp)
+3. [Raspberry Pi](usbpi)
 
 ## Licenses
 

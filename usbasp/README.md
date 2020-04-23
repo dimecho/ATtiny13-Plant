@@ -9,14 +9,6 @@ which can be found on:
 
 http://www.fischl.de/usbasp/
 
-License
--------
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 2 of the License, or
-(at your option) any later version.
-
 Contents
 --------
 
@@ -49,3 +41,17 @@ Hardware
 
 All hardware files (schematic, layout and libraries) are in CadSoft Eagle
 format.
+
+```
+avrdude -p t13 -c usbasp -Uhfuse:w:0xFB:m -Ulfuse:w:0x6A:m -U flash:w:main.hex:i
+```
+
+![USBASP](avr_programmer_usbasp.png?raw=true)
+
+License
+-------
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 2 of the License, or
+(at your option) any later version.

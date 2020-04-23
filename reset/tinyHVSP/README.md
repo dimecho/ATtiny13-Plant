@@ -31,7 +31,7 @@ Parts List
 Schematic
 -------
 
-![Schematic](reset/tinyHVSP/tinyHVSP.png?raw=true)
+![Schematic](tinyHVSP.png?raw=true)
 
 
 Project FUSE Setting

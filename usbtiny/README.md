@@ -26,7 +26,7 @@ Features
 * Powers target device
 
 
-note that the io lines to the target mcus are not protected. you can add 1k-2k resistors to SCK and MOSI and protect against possible wrong connections
+Note that the IO lines to the target MCUS are not protected. you can add 1k-2k resistors to SCK and MOSI and protect against possible wrong connections
 
 
 References
@@ -73,6 +73,8 @@ Application Notes
 
 Schematic
 -------
+
+![USBTINY](avr_programmer_usbtiny.png?raw=true)
 
 
 Building and Flashing
