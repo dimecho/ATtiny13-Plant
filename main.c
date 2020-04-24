@@ -69,10 +69,10 @@ do                          \
     #define versionID               10 //1.0
 #endif
 #ifndef sensorMoisture
-    #define sensorMoisture          577 //ADC value
+    #define sensorMoisture          660 //ADC value
 #endif
 #ifndef potSize
- #define potSizeTimer               20 //20x2x100 = 4000 miliseconds = 4 seconds
+ #define potSizeTimer               25 //25x2x100 = 5000 miliseconds (minus 2 seconds prime) = 3 seconds pump
 #endif
 
 #define pumpPin                     PB1 //Output
@@ -221,8 +221,8 @@ int main(void)
 
     //Page 57 ATtiny13 Manual
     //MCUCR = 0x40;	//All Pins Pull-up disabled
-    PORTB = 0x00;   //All Pins (0-0-PB5-PB4-PB3-PB2-PB1-PB0)		ON = 1 | OFF = 0
     DDRB = 0xFF;	//All Pins (0-0-DDB5-DDB4-DDB3-DDB2-DDB1-DDB0)	OUTPUT = 1 | INPUT = 0
+    PORTB = 0x00;   //All Pins (0-0-PB5-PB4-PB3-PB2-PB1-PB0)        ON = 1 | OFF = 0
 
     blink(10,4); //Alive blink
 
@@ -343,7 +343,13 @@ int main(void)
 
     for (;;) {
 
-       /*
+        //===========================
+        //Preventative Measure - Always Shut OFF!
+        //In rare cases if code skips (watchdog jump) and pump does not turn off, we force shut-off each sleep cycle
+        //===========================
+        PORTB &= ~(1<<pumpPin); //OFF
+        
+       	/*
         uint8_t resetAVR = ReadADC(ledPin);
         if(resetAVR > 250) {
             //EEPROM_save(0x2A,resetAVR,ee); //DEBUG
@@ -433,7 +439,7 @@ int main(void)
                     }
                     //=======================
                 }else if(ee == 0xEB) { //Test Pump
-                	ee = 255; //only once
+                    ee = 255; //only once
                 	moisture = 8; //set low number
                 	//EEPROM_save(0xA,ee,0xEE);
                 }else {
@@ -534,10 +540,9 @@ int main(void)
                         }
                         //_delay_ms(6800); //6.8 seconds;
                         blink(potSize,2);
-                        PORTB &= ~(1<<pumpPin); //OFF
+                        //PORTB &= ~(1<<pumpPin); //OFF
 
-                        //When battery < 3V (without regulator) ADC readouts are unstable
-                        emptyBottle++;
+                        emptyBottle++; //Sensorless Empty Detection
                     }
                 }else{
                     emptyBottle = 0;
@@ -569,7 +574,7 @@ int main(void)
                 Do solar with ATtiny (Highly NOT recommened ...TPL5110 is the way to go)
                 */
 
-                //DDRB &= ~(1<<solarSensorPin); //Shared pin with Sensor, Set Analog INPUT
+                DDRB &= ~(1<<solarSensorPin); //Shared pin with Sensor, Set Analog INPUT
                 voltage = ReadADC(solarSensorPin, 1); //Detect Solar intensity - 300R inline + 10k pullup
                 //DDRB |= (1<<solarSensorPin); //Shared pin with Sensor, set Digital OUTPUT
                 
@@ -607,14 +612,15 @@ int main(void)
                 //======================
                 voltage = ReadADC(PB5, 5); //Self-VCC @ 5Vref
                 /*
-                694 = 2.8V
-                673 = 3.0V
-                655 = 3.2V
-                600 = 4.0V
-                555 = 5.0V
+                78 = 2.7V
+                67 = 2.8V
+                47 = 3.0V
+                22 = 3.3V
+                10 = 4.0V
+                0  = 5.0V
                 */
-                //Around 2.9V, just before Brown-Out @ 2.7V
-                if(voltage > 69 && voltage < 98) { //Avoid when USB is plugged-in
+                //Around 2.8V, just before Brown-Out @ 2.7V
+                if(voltage > 60 && voltage < 80) {
                     blink(255,22); //Warn to charge battery with LED
                 }
             }
@@ -687,6 +693,7 @@ void blink(uint8_t time, uint8_t duration)
             PORTB ^= (1<<ledPin); //Toggle ON/OFF
             uint8_t i = time;
             do {
+                wdt_reset(); // keep the watchdog happy
                 _delay_ms(100);
                 i--;
             } while (i);

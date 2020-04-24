@@ -15,7 +15,7 @@ var pot_labels = ['Small', 'Medium', 'Large'];
 var soil_values = [300, 780];
 var soil_labels = ['Dry (Cactus)', 'Wet (Tropical)'];
 
-var soil_type_values = [420, 700, 480, 650, 740];
+var soil_type_values = [420, 700, 580, 680, 740];
 var soil_pot_offsets = [[0,-10,-20], [0,0,0], [0,0,0], [5,10,0], [0,0,0]];
 var soil_type_labels = ['Sand', 'Clay', 'Dirt', 'Loam', 'Moss'];
 
@@ -68,7 +68,7 @@ $(document).ready(function ()
             }else if(n == pot_values[2]){
                 return pot_labels[2];
             }
-            return ((n - 10) * 2 / 10) + ' Second Pump'; //-10 is for extra 'wasted' time to prime
+            return ((n - 10) * 2 / 10) + ' Seconds Pump'; //-10 is for extra 'wasted' time to prime
         },
         onChange: function (e) {
             clearTimeout(saveReminder);
@@ -216,16 +216,26 @@ function USBTinyFirmwareSuccess(step, element)
     $('<i>', { class: 'icons icon-ok text-success' }).appendTo(n);
 };
 
-function testPump()
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function testPump()
 {
     $.ajax('usb.php?eeprom=write&offset=' + ee + ',' + e_deepSleep + '&value=' + parseInt(0xEB) + ',0', {
         success: function(data) {
-            debug != 0xEB;
-            $.notify({ message: 'Pump will run next wake-up cycle (8 seconds)' }, { type: 'success' });
-            setTimeout(function () {
-                $.notify({ message: 'Self Test Complete' }, { type: 'success'});
-                sendStop();
-            }, 10000 + ($('#slider-pot').data().from * 2 / 10) * 1000);
+            debug = 0xEB;
+            $.notify({ message: 'Pump Test Ready ...' }, { type: 'success' });
+            setTimeout(async function () {
+                for (var i = 8; i > 0; i--) {
+                    $.notify({ message: i }, { type: 'warning'});
+                    await sleep(1000);
+                }
+                setTimeout(async function () {
+                    $.notify({ message: 'Self Test Complete' }, { type: 'success'});
+                    sendStop();
+                }, refreshSpeed + ($('#slider-pot').data().from * 2 / 10) * 1000);
+            }, 4000);
         }
     });
 };
@@ -311,7 +321,9 @@ function checkEEPROM()
         success: function(data) {
             consoleHex(data);
             if(data.length >= 64) {
-               getEEPROMInfo(1);
+                setTimeout(function () {
+                    getEEPROMInfo(1);
+                }, refreshSpeed);
             }else{
                 $.notify({ message: 'Cannot read EEPROM' }, { type: 'danger' });
             }
