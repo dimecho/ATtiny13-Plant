@@ -27,17 +27,11 @@ Monitor soil moisture and water plant. Portable and high efficiency with lithium
 | T1A/B | 2N4401 NPN | TO-92 or SOT-23     | Pump     |
 | R1    | 100R       | 0805 or 0603 (101)  | Pump     |
 | R2    | 10k        | 0805 or 0603 (103)  | Pump     |
-| R3    | 330R       | 0805 or 0603 (331)  | Solar    |
-| T2A/B | 2N4401 NPN | TO-92 or SOT-23     | Solar    |
-| REG1  | 78L05 (5V) | TO-92               | Solar    |
-| C2    | 1000uF     | 7x7 mm              | Solar    |
-| R5    | 10k        | 0805 or 0603 (103)  | Solar    |
 | R6    | 10k        | 0805 or 0603 (103)  | Sensor   |
 | LED1  | Red        | 0805 or DIP-2       | LED      |
 | R7    | 1k         | 0805 or 0603 (102)  | LED      |
-| -     | 3.7-4.2V   | Lithium Cell 18650  | Battery  |
+| -     | 3.7-4.2V   | Lithium 18650       | Battery  |
 | -     | TP4056     | Lithium Charger     | Charger  |
-| -     | 10V+       | 2x 5V Solar Cells   | Solar    |
 
 ## PCB
 

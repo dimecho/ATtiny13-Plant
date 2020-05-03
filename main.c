@@ -52,18 +52,38 @@
 #include <avr/power.h>
 
 /*
-Enable the watchdog and wait in an infinite loop for software reset
-https://www.microchip.com/webdoc/AVRLibcReferenceManual/FAQ_1faq_softreset.html
+www.mtcnet.net/~henryvm/wdt/wd.h
+The watchdog has a timeout period. If you do not set a flag before a timeout period has elapsed then the watchdog
+will reset the uC and your program will start at the beginning. An automatic "reboot"
 */
 #define soft_reset()        \
 do                          \
 {                           \
-    /*cli();*/              \
+    cli();				 	\
     WDTCR |= (0<<WDP3) | (0<<WDP2) | (0<<WDP1) | (0<<WDP0); \
-    for(;;)                 \
-    {                       \
-    }                       \
-} while(0)
+    while(1);               \
+}while(0)
+
+/*
+CAUTION!
+Older AVRs will have the watchdog timer disabled on a reset.
+Newer AVRs once the watchdog is enabled, it stays enabled even after a reset!
+For these newer AVRs a function needs to be added to the .init3 section (i.e. during the startup code, before main())
+to disable the watchdog early enough so it does not continually reset the AVR.
+*/
+/*
+void wdt_init(void) __attribute__((naked)) __attribute__((section(".init3")));
+void wdt_init(void) {
+	/
+    In safety level 1, WDE is overridden by WDRF in MCUSR. See “MCUSR – MCU Status Regis-ter” on page 46 for description of WDRF.
+    This means that WDE is always set when WDRF is set. To clear WDE, WDRF must be cleared before disabling the Watchdog.
+    This feature ensures multiple resets during conditions causing failure, and a safe start-up after the failure.
+	/
+    MCUSR = 0;
+    wdt_disable();
+    return;
+}
+*/
 
 #ifndef versionID
     #define versionID               10 //1.0
@@ -72,7 +92,7 @@ do                          \
     #define sensorMoisture          660 //ADC value
 #endif
 #ifndef potSize
- #define potSizeTimer               25 //25x2x100 = 5000 miliseconds (minus 2 seconds prime) = 3 seconds pump
+ #define potSizeTimer               20 //20x2x100 = 4000 miliseconds (minus 1 seconds prime) = 3 seconds pump
 #endif
 
 #define pumpPin                     PB1 //Output
@@ -200,9 +220,6 @@ int main(void)
     //=============
     //WATCHDOG
     //=============
-    //wdt_reset();
-    //MCUSR = 0; //Clear reset register
-    //----------------
     #if defined __AVR_ATtiny45__ || defined __AVR_ATtiny85__
     	WDTCR = (1<<WDIE);  // Enable watchdog timer interrupts
     #else
@@ -223,8 +240,7 @@ int main(void)
     //MCUCR = 0x40;	//All Pins Pull-up disabled
     DDRB = 0xFF;	//All Pins (0-0-DDB5-DDB4-DDB3-DDB2-DDB1-DDB0)	OUTPUT = 1 | INPUT = 0
     PORTB = 0x00;   //All Pins (0-0-PB5-PB4-PB3-PB2-PB1-PB0)        ON = 1 | OFF = 0
-
-    blink(10,4); //Alive blink
+    blink(10,4);	//Alive blink
 
     //=============
     //EEPROM
@@ -439,12 +455,12 @@ int main(void)
                     }
                     //=======================
                 }else if(ee == 0xEB) { //Test Pump
-                    ee = 255; //only once
+                    ee = 0xFF; //only once
                 	moisture = 8; //set low number
                 	//EEPROM_save(0xA,ee,0xEE);
                 }else {
                     //avoid this during the science project (data gathering)
-                	if(ee == 0xFF && (moisture - suitableMoisture) > 300) { //soil is too wet for set threshold, wait longer before checking again
+                	if(ee == 0xFF && (moisture - suitableMoisture) > 100) { //soil is too wet for set threshold, wait longer before checking again
                 		deepSleep = 255; //8 seconds x 255 = 35 min
                 	}
                     blink(3,2);
@@ -535,10 +551,9 @@ int main(void)
                             uart_putc('P');
                         #endif
 
-                        if(ee != 0xEE) { //prevent actual water pumping during debug
+                        if(ee != 0xEE) { //prevent actual water pumping during web-console
                             PORTB |= (1<<pumpPin); //ON
                         }
-                        //_delay_ms(6800); //6.8 seconds;
                         blink(potSize,2);
                         //PORTB &= ~(1<<pumpPin); //OFF
 

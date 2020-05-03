@@ -198,7 +198,7 @@
 	                    }
 	                }
 	                fclose($f);
-	                //unlink($tmp_dir . $eeprom_file);
+	                unlink($tmp_dir . $eeprom_file);
 	            }else{
 	                echo $command;
 	            }

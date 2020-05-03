@@ -9,7 +9,7 @@ var solar_values = [0, 1];
 var solar_labels = ['OFF', 'ON'];
 var solar_adc_offset = 20; //with solar add offset
 
-var pot_values = [20, 70, 120];
+var pot_values = [10, 70, 120];
 var pot_labels = ['Small', 'Medium', 'Large'];
 
 var soil_values = [300, 780];
@@ -68,7 +68,7 @@ $(document).ready(function ()
             }else if(n == pot_values[2]){
                 return pot_labels[2];
             }
-            return ((n - 10) * 2 / 10) + ' Seconds Pump'; //-10 is for extra 'wasted' time to prime
+            return ((n - 5) * 2 / 10) + ' Seconds Pump'; //-5 is for extra 'wasted' time to prime
         },
         onChange: function (e) {
             clearTimeout(saveReminder);
