@@ -63,7 +63,6 @@ do                          \
     WDTCR |= (0<<WDP3) | (0<<WDP2) | (0<<WDP1) | (0<<WDP0); \
     while(1);               \
 }while(0)
-
 /*
 CAUTION!
 Older AVRs will have the watchdog timer disabled on a reset.
@@ -249,7 +248,7 @@ int main(void)
     #ifdef EEPROM_ENABLED
         ee = EEPROM_read(0x02);
         //uint8_t ee = eeprom_read_byte((uint8_t*)0x02);
-        if (ee == 255) //EEPROM is blank
+        if (ee == 0xFF) //EEPROM is blank
         {
             EEPROM_save(0x00,versionID,0xEE);
             EEPROM_save(0x02,sensorMoisture,0xEE);
@@ -403,17 +402,15 @@ int main(void)
                 blink(9,254);
 
                 //Retry every 2 hours ...when someone refilled the bottle but did not cycle power.
-                if(ee == 0xFF)
-                {
-                    if((emptyBottle > 10 && sleepLoop > delayBetweenRefillReset) || (emptyBottle < 10 && sleepLoop > delayBetweenOverfloodReset))
-                    {
-                        soft_reset();
-                    }
-                }else{
+                /*
+                if((emptyBottle > 10 && sleepLoop > delayBetweenRefillReset) || (emptyBottle < 10 && sleepLoop > delayBetweenOverfloodReset)) {
+                    soft_reset();
+                }
+                */
+                if(ee != 0xFF || (emptyBottle > 10 && sleepLoop > delayBetweenRefillReset) || (emptyBottle < 10 && sleepLoop > delayBetweenOverfloodReset)) {
                     emptyBottle = 0;
                     moistureLog = 0;
                 }
-                
             }else{
                 sleepLoop = 0;
                 //======================
@@ -706,14 +703,13 @@ void blink(uint8_t time, uint8_t duration)
         //DDRB |= (1<<ledPin); //Digital OUTPUT
         do {
             PORTB ^= (1<<ledPin); //Toggle ON/OFF
-            uint8_t i = time;
             do {
                 wdt_reset(); // keep the watchdog happy
                 _delay_ms(100);
-                i--;
-            } while (i);
+                time--;
+            } while (time > 0);
             duration--;
-        } while (duration);
+        } while (duration > 0);
     #endif
 }
 

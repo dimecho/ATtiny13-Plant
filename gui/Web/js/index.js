@@ -61,14 +61,7 @@ $(document).ready(function ()
         step: 5,
         prettify: function (n) {
             //console.log(n);
-            if(n == pot_values[0]){
-                return pot_labels[0];
-            //}else if(n == pot_values[1]){
-            //	return pot_labels[1];
-            }else if(n == pot_values[2]){
-                return pot_labels[2];
-            }
-            return ((n - 5) * 2 / 10) + ' Seconds Pump'; //-5 is for extra 'wasted' time to prime
+            return (n * 2 / 10) + ' Seconds Pump'; //-1 extra 'wasted' time to prime
         },
         onChange: function (e) {
             clearTimeout(saveReminder);
@@ -391,7 +384,12 @@ function getEEPROMInfo(crc)
                     if(sl == 0 && pt == 0 && sm == 0 && s[s.length-2] == '255') {
                         if(crc == undefined) {
                             $.notify({ message: 'EEPROM is Corrupt ...Trying to Fix' }, { type: 'warning' });
-                            checkEEPROM();
+							$.ajax('usb.php?eeprom=write&offset=' + e_runSolar + ',' + e_potSize + ',' + e_moistureLimit + '&value=0,20,660', {
+					            success: function(data) {
+					            	getEEPROMInfo(1);
+					            }
+					        });
+                            //checkEEPROM();
                         }else{
                             $.notify({ message: 'Cannot fix EEPROM' }, { type: 'danger' });
                             $.notify({ message: 'Flashing Firmware ...' }, { type: 'warning' });
@@ -586,8 +584,9 @@ function connectPlant(async)
                 		EEPROM_T85(256);
                 		refreshSpeed = 12000; //EEPROM takes longer to read, do not force early interrupt
                 	}
-                    chip = data;
-                    $('.icon-chip').attr('data-original-title', '<h6 class="text-white">' + data + '</h6>');
+                    var s = data.split('\n');
+                    chip = s[0];
+                    $('.icon-chip').attr('data-original-title', '<h6 class="text-white">' + chip + '</h6>');
 
                     if(data.indexOf('USBTiny') != -1) {
                         $('#USBTinyFirmware').modal();

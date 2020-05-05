@@ -3,7 +3,7 @@
     set_time_limit(12);
     error_reporting(E_ALL);
 
-    Request(0);
+    echo Request(0);
 
 	function Request($timeout)
 	{
@@ -51,12 +51,13 @@
 
 	        if (strpos($output, "flash verified") !== false) {
 	            header("Refresh:4; url=index.html");
-	            echo "Firmware Updated!";
+	            return "Firmware Updated!";
 	        }else{
-	            echo "<pre>";
-	            echo $command. "\n";
-	            echo $output;
-	            echo "</pre>";
+	            $html = "<pre>";
+	            $html .= $command. "\n";
+	            $html .= $output;
+	            $html .=  "</pre>";
+	            return $html;
 	        }
 	    }
 	    else if(isset($_GET["network"]))
@@ -66,7 +67,7 @@
 				fclose($f);
 				if (strpos($uname, "darwin") !== false) {
 					$output = shell_exec("ifconfig | grep 'inet ' | grep -v '127.0.0.1' | cut -f2 -d' '| awk 'NR==1{print $1}' 2>&1");
-					echo $output;
+					return $output;
 				}
 	    	}else if($_GET["network"] == "localhost") {
 	    		@unlink(getcwd(). "/ip.txt");
@@ -77,18 +78,18 @@
 	        $log_file = getcwd(). "/log.txt";
 
 	        if (file_exists($log_file)) {
-	            echo file_get_contents($log_file);
+	            return file_get_contents($log_file);
 	        }
 	    }
 	    else if(isset($_GET["connect"]))
 	    {
-	        echo Connect("usbtiny",0);
+	        return Connect("usbtiny",0);
 	    }
 	    else if(isset($_GET["reset"]))
 	    {
 	        $command .= " -c " . $_SESSION["usb"] . " -p t13 -Ulfuse:v:0x00:m";
 	        $output = Run($command);
-		    echo $command. "\n" .$output;
+		    return $command. "\n" .$output;
 		}
 	    else if(isset($_GET["fuse"]))
 	    {
@@ -100,7 +101,7 @@
 	    		$command .= " -U lfuse:w:" .$_GET["l"]. ":m";
 	    	}
 	    	$output = Run($command);
-		    echo $command. "\n" .$output;
+		    return $command. "\n" .$output;
 	    }
 	    else if(isset($_GET["eeprom"]))
 	    {
@@ -124,6 +125,7 @@
 				fclose($f);
 
 	            $command .= " -c " . $_SESSION["usb"] . " -p " .strtolower($_SESSION["chip"]). " -V -U eeprom:w:" .$tmp_dir . $eeprom_file.":r";
+	            $output = Run($command);
 	        }else if($_GET["eeprom"] == "flash") {
 	            $command .= " -c " . $_SESSION["usb"] . " -p " .strtolower($_SESSION["chip"]). " -V -U flash:w:" .getcwd(). "/firmware/" .strtolower($_GET["firmware"]). ".hex:i";
 	        }else{
@@ -143,7 +145,7 @@
 	                $binary = fread($f, $fsize);
 	                $unpacked = unpack('C*', $binary);
 
-	                echo $tmp_dir . $eeprom_file . "\n";
+	                $output = $tmp_dir . $eeprom_file . "\n";
 	 
 	                if($_GET["eeprom"] == "write") {
 
@@ -161,8 +163,8 @@
 				            	if(intval($value_array[$x]) > 255) { //too big for uint8, split
 
 				            		$lo_hi = [(intval($value_array[$x]) & 0xFF), (intval($value_array[$x]) >> 8)]; //0xAAFF = { 0xFF, 0xAA }
-				            		print_r($lo_hi);
-									echo "Bitwise: " .($lo_hi[0] | $lo_hi[1] << 8) . "\n";
+				            		//print_r($lo_hi);
+									$output .= "Bitwise: " .($lo_hi[0] | $lo_hi[1] << 8) . "\n";
 									
 									fwrite($f, pack('c', $lo_hi[0]));
 									fwrite($f, pack('c', $lo_hi[1]));
@@ -181,29 +183,38 @@
 	                    $binary = fread($f, $fsize);
 	                    $unpacked = unpack('C*', $binary);
 	                    foreach($unpacked as $value) {
-	                        echo $value. "\n";
+	                        $output .= $value. "\n";
 	                    }
 
 	                    //sleep(1);
 	                    //$command = str_replace("-U eeprom:r:", "-v -U eeprom:w:", $command);
 	                    //$command = str_replace("-U eeprom:r:", "-B5 -v -U eeprom:w:", $command);
 	                    $command = str_replace("-U eeprom:r:", $_SESSION["bitrate"]. "-U eeprom:w:", $command);
-	                    $output = Run($command);
+	                    $output .= Run($command);
 
-	                    echo $command. "\n";
-	                    echo $output;
+	                    if($timeout < 4) {
+	                    	if(strpos($output, "rc=-1") !== false) {
+	                    		sleep(1);
+	                    		$timeout++;
+	                    		$output = Request($timeout);
+	                    	}
+	                	}
+
+	                	fclose($f);
+	                	unlink($tmp_dir . $eeprom_file);
+	                    return $command. "\n". $output;
 	                }else{
 	                    foreach($unpacked as $value) {
-	                        echo $value. "\n";
+	                        $output .= $value. "\n";
 	                    }
+	                    fclose($f);
+	                    return $output;
 	                }
-	                fclose($f);
-	                unlink($tmp_dir . $eeprom_file);
 	            }else{
-	                echo $command;
+	                return $command;
 	            }
 	        } else {
-	            echo $output;
+	            return $output;
 	        }
 	    }
 	}
@@ -269,11 +280,14 @@
             if($timeout < 4) {
             	if(strpos(strtolower($output), "error:") !== false) {
             		$_SESSION["bitrate"] = "-B250 ";
-	                if($programmer == "usbtiny") { //try another programmer
-	                	$programmer = "usbasp";
-	                }else{
-	                	$programmer = "usbtiny";
-	                }
+            		if($timeout > 2) {
+		                if($programmer == "usbtiny") { //try another programmer
+		                	$programmer = "usbasp";
+		                }else{
+		                	$programmer = "usbtiny";
+		                }
+	            	}
+	                sleep(1);
 	                $timeout++;
 	                $output = Connect($programmer,$timeout);
 				}
@@ -282,7 +296,7 @@
             }
             return $output;
         }
-        $output = $_SESSION["chip"];
+        $output = $_SESSION["chip"] . "\n" . $_SESSION["usb"];
         
         if($programmer == "usbasp" && ($_SESSION["chip"] == "ATtiny45" || $_SESSION["chip"] == "ATtiny85")) {
         	$output .= "\nUSBTiny";
