@@ -263,7 +263,9 @@ function startConsole(hex,delay)
                         var d = s[ee+1]; //+1 to skip debug path
                         console.log('EEPROM Debug Value:' + d);
 
-                        if(d == parseInt(0xEA)) {
+                        if(d == undefined) {
+                            $.notify({ message: 'EEPROM Error, Try again.' }, { type: 'danger' });
+                        }else if(d == parseInt(0xEA)) {
                             //console.log(data);
                             $.notify({ message: 'LED Monitor Enabled' }, { type: 'success' });
                             $.notify({ message: 'Battery usage will be higher!' }, { type: 'warning' });
@@ -381,15 +383,10 @@ function getEEPROMInfo(crc)
                     console.log('Pot: ' + pt);
                     console.log('Soil: ' + so + ' (' + sm + ')');
 
-                    if(sl == 0 && pt == 0 && sm == 0 && s[s.length-2] == '255') {
+                    if(sl == 0 && pt == 0 && sm == 0 && s[s.length-3] == '255') {
                         if(crc == undefined) {
                             $.notify({ message: 'EEPROM is Corrupt ...Trying to Fix' }, { type: 'warning' });
-							$.ajax('usb.php?eeprom=write&offset=' + e_runSolar + ',' + e_potSize + ',' + e_moistureLimit + '&value=0,20,660', {
-					            success: function(data) {
-					            	getEEPROMInfo(1);
-					            }
-					        });
-                            //checkEEPROM();
+                            checkEEPROM();
                         }else{
                             $.notify({ message: 'Cannot fix EEPROM' }, { type: 'danger' });
                             $.notify({ message: 'Flashing Firmware ...' }, { type: 'warning' });
@@ -397,8 +394,9 @@ function getEEPROMInfo(crc)
                             $.ajax('usb.php?eeprom=flash&firmware=' + chip, {
     				            success: function(data) {
     				                console.log(data);
-                                    if(data.indexOf('flash verified') != -1) {
+                                    if(data.indexOf('flash written') != -1) {
                                         $.notify({ message: 'Firmware Fixed!' }, { type: 'success' });
+                                        getEEPROMInfo();
                                     }else{
                                         $.notify({ message: 'Cannot fix Firmware, try manually (.hex File)' }, { type: 'danger' });
                                     }

@@ -22,7 +22,7 @@
         }
 
 	    if(count($_FILES)) {
-	        
+	    	
 	        $file = $_FILES['file']['tmp_name'];
 	        $chip = "t13";
 	        $fuses = "";
@@ -192,38 +192,25 @@
 	                    $command = str_replace("-U eeprom:r:", $_SESSION["bitrate"]. "-U eeprom:w:", $command);
 	                    $output .= Run($command);
 
-	                    if($timeout < 4) {
-	                    	if(strpos($output, "rc=-1") !== false) {
-	                    		sleep(1);
-	                    		$timeout++;
-	                    		$output = Request($timeout);
-	                    	}
-	                	}
-
-	                	fclose($f);
-	                	unlink($tmp_dir . $eeprom_file);
-	                    return $command. "\n". $output;
 	                }else{
 	                    foreach($unpacked as $value) {
 	                        $output .= $value. "\n";
 	                    }
-	                    fclose($f);
-	                    return $output;
 	                }
-	            }else{
-	                return $command;
+	                fclose($f);
+	                unlink($tmp_dir . $eeprom_file);
 	            }
-	        } else {
-	            return $output;
 	        }
+
+	        return $output . "\n" . $command;
 	    }
 	}
 
 	function Run($command)
     {
     	$output = "";
-    	$timeout = 3;
-    	$retry = array("timed out", "output error", "libusb: debug", "initialization failed", "Broken pipe");
+    	$timeout = 2;
+    	$retry = array("rc=-1", "timed out", "output error", "libusb: debug", "initialization failed", "Broken pipe");
 
     	while ($timeout > 0) {
     		$output = shell_exec($command. " 2>&1");
@@ -237,7 +224,7 @@
     		if ($run == true) {
     			return $output;
     		}
-    		//sleep(1);
+    		sleep(4);
     		$timeout--;
     	}
 

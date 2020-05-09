@@ -270,7 +270,7 @@ int main(void)
 			EEPROM_save(0xE,SERIAL,0xEE); //Serial # - not UART
 
         }else{
-            suitableMoisture = ee | EEPROM_read(0x03) << 8;
+            suitableMoisture = ee | (EEPROM_read(0x03) << 8);
             //suitableMoisture = eeprom_read_word((uint16_t*)0x02);
 
             potSize = EEPROM_read(0x04);
@@ -444,7 +444,7 @@ int main(void)
                     //DEBUG (LED MORSE CODE)
                     //=======================
                     //for (uint16_t i = 1000 ; i >= 1; i=div10(i)) {
-                    for (uint16_t i = 100 ; i >= 1; i /= 10) {
+                    for (uint8_t i = 100 ; i >= 1; i /= 10) {
                         uint8_t d = (moisture/i) % 10;
                         d = d + d; //on + off timers (double loop)
                         blink(4,d); //blink a zero with a quick pulse
@@ -458,7 +458,7 @@ int main(void)
                 }else {
                     //avoid this during the science project (data gathering)
                 	if(ee == 0xFF && (moisture - suitableMoisture) > 100) { //soil is too wet for set threshold, wait longer before checking again
-                		deepSleep = 255; //8 seconds x 255 = 35 min
+                		deepSleep = 254; //8 seconds x 254 = 35 min
                 	}
                     blink(3,2);
                 }
@@ -623,17 +623,30 @@ int main(void)
                 // Low Voltage Warning
                 //======================
                 voltage = ReadADC(PB5, 5); //Self-VCC @ 5Vref
+                //DEBUG
+                /*for (uint8_t i = 100 ; i >= 1; i /= 10) {
+                    uint8_t d = (voltage/i) % 10;
+                    d = d + d; //on + off timers (double loop)
+                    blink(4,d); //blink a zero with a quick pulse
+                    _delay_ms(1200);
+                }*/
                 /*
-                78 = 2.7V
-                67 = 2.8V
-                47 = 3.0V
-                22 = 3.3V
-                10 = 4.0V
-                0  = 5.0V
+                187 = 2.7V
+                177 = 2.8V
+                167 = 2.9V
+                157 = 3.0V
+                147 = 3.1V
+                140 = 3.2V
+                130 = 3.3V
+                110 = 3.6V
+                96  = 3.8V
+                86  = 4.0V
+                42  = 5.0V
+                255 = USB connected
                 */
                 //Around 2.8V, just before Brown-Out @ 2.7V
-                if(voltage > 60 && voltage < 80) {
-                    blink(255,22); //Warn to charge battery with LED
+                if(voltage > 164 && voltage < 180) {
+                    blink(254,22); //Warn to charge battery with LED
                 }
             }
             #ifdef EEPROM_ENABLED
@@ -703,13 +716,14 @@ void blink(uint8_t time, uint8_t duration)
         //DDRB |= (1<<ledPin); //Digital OUTPUT
         do {
             PORTB ^= (1<<ledPin); //Toggle ON/OFF
+            uint8_t i = time;
             do {
-                wdt_reset(); // keep the watchdog happy
+            	wdt_reset(); // keep the watchdog happy
                 _delay_ms(100);
-                time--;
-            } while (time > 0);
+                i--;
+            } while (i);
             duration--;
-        } while (duration > 0);
+        } while (duration);
     #endif
 }
 
@@ -765,6 +779,8 @@ uint16_t ReadADC(uint8_t pin, uint8_t vref)
     sleep_cpu(); //Enter low ADC noise sleep mode, this action turns off certain clocks and other modules in the chip so they do not generate noise that affects the accuracy of the ADC measurement
     //The chip remains in sleep mode until the ADC measurement is complete and executes an interrupt which wakes the chip from sleep
     sleep_disable();
+    ADCSRA &= ~ (1 << ADEN); // Disables ADC
+
     return ADC;
 
     //========================
