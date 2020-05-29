@@ -51,7 +51,7 @@
 
 	        if (strpos($output, "flash verified") !== false) {
 	            header("Refresh:4; url=index.html");
-	            return "Firmware Updated!";
+	            return "Chip Resetting ...";
 	        }else{
 	            $html = "<pre>";
 	            $html .= $command. "\n";
@@ -149,35 +149,38 @@
 	 
 	                if($_GET["eeprom"] == "write") {
 
-		        		if (strpos($_GET["offset"],",") !== false) //Multi-value support
-		        		{
-		            		$offset_array = explode(",",$_GET["offset"]);
-			          		$value_array = explode(",",$_GET["value"]);
+						if(isset($_GET["offset"]))
+						{
+			        		if (strpos($_GET["offset"],",") !== false) //Multi-value support
+			        		{
+			            		$offset_array = explode(",",$_GET["offset"]);
+				          		$value_array = explode(",",$_GET["value"]);
 
-				            for ($x = 0; $x < count($offset_array); $x++)
-				            {
-				            	//echo "> " .$offset_array[$x]. " " .$value_array[$x]. "\n";
+					            for ($x = 0; $x < count($offset_array); $x++)
+					            {
+					            	//echo "> " .$offset_array[$x]. " " .$value_array[$x]. "\n";
 
-				            	fseek($f, intval($offset_array[$x]), SEEK_SET);
+					            	fseek($f, intval($offset_array[$x]), SEEK_SET);
 
-				            	if(intval($value_array[$x]) > 255) { //too big for uint8, split
+					            	if(intval($value_array[$x]) > 255) { //too big for uint8, split
 
-				            		$lo_hi = [(intval($value_array[$x]) & 0xFF), (intval($value_array[$x]) >> 8)]; //0xAAFF = { 0xFF, 0xAA }
-				            		//print_r($lo_hi);
-									$output .= "Bitwise: " .($lo_hi[0] | $lo_hi[1] << 8) . "\n";
-									
-									fwrite($f, pack('c', $lo_hi[0]));
-									fwrite($f, pack('c', $lo_hi[1]));
-				            	}else{
-									fwrite($f, pack('c', intval($value_array[$x])));
-									fwrite($f, pack('c', 255));
-				            	}
-				            }
-				        }else{
-							fseek($f, intval($_GET["offset"]), SEEK_SET);
-							fwrite($f, pack('c', intval($_GET["value"])));
-							//fwrite($f, pack('c', 255));
-				        }
+					            		$lo_hi = [(intval($value_array[$x]) & 0xFF), (intval($value_array[$x]) >> 8)]; //0xAAFF = { 0xFF, 0xAA }
+					            		//print_r($lo_hi);
+										$output .= "Bitwise: " .($lo_hi[0] | $lo_hi[1] << 8) . "\n";
+										
+										fwrite($f, pack('c', $lo_hi[0]));
+										fwrite($f, pack('c', $lo_hi[1]));
+					            	}else{
+										fwrite($f, pack('c', intval($value_array[$x])));
+										fwrite($f, pack('c', 255));
+					            	}
+					            }
+					        }else{
+								fseek($f, intval($_GET["offset"]), SEEK_SET);
+								fwrite($f, pack('c', intval($_GET["value"])));
+								//fwrite($f, pack('c', 255));
+					        }
+				    	}
 
 	                    rewind($f);
 	                    $binary = fread($f, $fsize);
@@ -198,7 +201,10 @@
 	                    }
 	                }
 	                fclose($f);
-	                unlink($tmp_dir . $eeprom_file);
+
+	                if($_GET["eeprom"] != "backup") {
+	                	unlink($tmp_dir . $eeprom_file);
+	            	}
 	            }
 	        }
 

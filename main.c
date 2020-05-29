@@ -210,7 +210,7 @@ int main(void)
     //VARIABLE
     //=============
     uint16_t suitableMoisture = sensorMoisture; //Analog value with 10k pull-up resistor
-    uint8_t deepSleep = delayWatering;
+    uint16_t deepSleep = delayWatering;
     uint8_t potSize = potSizeTimer;
     uint8_t runSolar = 0;
     uint8_t ee = 0xFF;
@@ -280,9 +280,8 @@ int main(void)
             //runSolar = eeprom_read_byte((uint8_t*)0x06);
         }
         
-        deepSleep = EEPROM_read(0x08);
+        deepSleep = EEPROM_read(0x08) | (EEPROM_read(0x09) << 8);
         //deepSleep = eeprom_read_byte((uint8_t*)0x08);
-        //EEPROM_save(0x08,delayWatering,0xEE); //reset for next time
 
         ee = EEPROM_read(0xA);
         //ee = eeprom_read_byte((uint8_t*)0xA);
@@ -451,15 +450,20 @@ int main(void)
                         _delay_ms(1200);
                     }
                     //=======================
-                }else if(ee == 0xEB) { //Test Pump
-                    ee = 0xFF; //only once
+                }else if(ee == 0xEB || deepSleep > 255) { //Test Pump or Timer Trigger
+                	emptyBottle = 0; //for timer trigger, disables flood prevention (otherwise 3 day will be 9 day sleep)
+                    ee = 0xFF; //for test, run once
                 	moisture = 8; //set low number
                 	//EEPROM_save(0xA,ee,0xEE);
                 }else {
                     //avoid this during the science project (data gathering)
+                    /*
                 	if(ee == 0xFF && (moisture - suitableMoisture) > 100) { //soil is too wet for set threshold, wait longer before checking again
-                		deepSleep = 254; //8 seconds x 254 = 35 min
-                	}
+                		deepSleep = 250; //8 seconds x 250 = 30 min
+                	}else{
+                        deepSleep = delayWatering; //Reset to regular monitoring
+                    }
+                    */
                     blink(3,2);
                 }
 

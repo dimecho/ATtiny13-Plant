@@ -4,6 +4,7 @@ var refreshTimer;
 var refreshSpeed = 10000;
 var progressTimer;
 var saveReminder;
+var notifyTimer;
 
 var solar_values = [0, 1];
 var solar_labels = ['OFF', 'ON'];
@@ -14,6 +15,9 @@ var pot_labels = ['Small', 'Medium', 'Large'];
 
 var soil_values = [300, 780];
 var soil_labels = ['Dry (Cactus)', 'Wet (Tropical)'];
+
+var timer_values = [0, 86400, 172800, 259200];
+var timer_labels = ['Dynamic', 'Once a Day', 'Every 2nd Day', 'Every 3rd Day'];
 
 var soil_type_values = [420, 700, 580, 680, 740];
 var soil_pot_offsets = [[0,-10,-20], [0,0,0], [0,0,0], [5,10,0], [0,0,0]];
@@ -57,11 +61,16 @@ $(document).ready(function ()
         skin: 'big',
         from: pot_values[0],
         min: pot_values[0],
-        max: pot_values[2],
+        max: pot_values[pot_values.length-1],
         step: 5,
         prettify: function (n) {
             //console.log(n);
-            return (n * 2 / 10) + ' Seconds Pump'; //-1 extra 'wasted' time to prime
+            var s = n * 2 / 10;
+            if(s > 9) {
+                return s + ' Seconds Pump';
+            }else{
+                return s + ' Second Pump';
+            }
         },
         onChange: function (e) {
             clearTimeout(saveReminder);
@@ -73,7 +82,7 @@ $(document).ready(function ()
         skin: 'big',
         from: soil_values[0],
         min: soil_values[0],
-        max: soil_values[1],
+        max: soil_values[soil_values.length-1],
         step: 1,
         prettify: function (n) {
             //console.log(n);
@@ -93,9 +102,66 @@ $(document).ready(function ()
         }
     });
 
-    checkFirmwareUpdates();
+    $('#slider-timer').ionRangeSlider({
+        skin: 'big',
+        from: timer_values[0],
+        min: timer_values[0],
+        max: timer_values[timer_values.length-1],
+        step: 60*60,
+        prettify: function (n) {
+            //console.log(n);
+            if(n == timer_values[0]){
+                return timer_labels[0];
+            }else if(n == timer_values[1]){
+                return timer_labels[1];
+            }else if(n == timer_values[2]){
+                return timer_labels[2];
+            }else if(n == timer_values[3]){
+                return timer_labels[3];
+            }
+            return Math.round(n/60/60) + ' Hours';
+        },
+        onChange: function (e) {
+            if(e.from > 255) {
+                deepSleep = Math.round(e.from/8); //account for additional 8 second microchip sleep cycle
+                clearTimeout(notifyTimer);
+                notifyTimer = setTimeout(function () {
+                    $.notify({ message: 'Timer disables Soil Sensor' }, { type: 'danger' });
+                    if(e.from < (8*60*60)) //less than 8 hours
+                        $.notify({ message: 'Timer is Low! No Overwater protection' }, { type: 'warning', delay: 10000});
+                    $.notify({ message: 'Enable only when issues with Sensor' }, { type: 'warning', delay: 10000 });
+                }, 4000);
+                enableTimer();
+            }else{
+                deepSleep = 50; //default
+                clearTimeout(notifyTimer);
+                disableTimer();
+            }
+            console.log(deepSleep);
+            clearTimeout(saveReminder);
+            saveReminder = setInterval(saveReminderCounter, 20000);
+        }
+    });
 
-    connectPlant(true);
+    var restore = getCookie('restore');
+    if(restore == undefined) {
+        checkFirmwareUpdates();
+        connectPlant(true);
+    }else{
+        $.notify({ message: 'Firmware Updated!' }, { type: 'success' });
+        setTimeout(function () {
+            $.notify({ message: 'Restore Settings ...' }, { type: 'warning' });
+        }, 500);
+        $.ajax('usb.php?eeprom=write', {
+            success: function(data) {
+                $.notify({ message: 'Restore Complete' }, { type: 'success' });
+                deleteCookie('restore');
+                setTimeout(function () {
+                    connectPlant(true);
+                }, 4000);
+            }
+        });
+    }
 
     $('[data-toggle="tooltip"]').tooltip({
        container: 'body'
@@ -106,6 +172,22 @@ $(document).ready(function ()
             sendStop();
     });
 });
+
+function enableTimer() {
+    document.getElementById('text-timer').innerHTML='Manual Timer';
+    document.getElementById('text-soil').innerHTML='<del>Soil Moisture</del>';
+    $('#slider-soil').data("ionRangeSlider").update({
+        disable: true
+    });
+};
+
+function disableTimer() {
+    document.getElementById('text-soil').innerHTML='Soil Moisture';
+    document.getElementById('text-timer').innerHTML='<del>Manual Timer</del>';
+    $('#slider-soil').data("ionRangeSlider").update({
+        disable: false
+    });
+};
 
 function autoConfigure()
 {
@@ -373,6 +455,7 @@ function getEEPROMInfo(crc)
 	                	info.append('1.0');
 	                }
 
+                    var sleep = HexShift(s,e_deepSleep);
                     var sl = HexShift(s,e_runSolar);
                     var pt = HexShift(s,e_potSize);
                     var so = HexShift(s,e_moisture);
@@ -432,6 +515,14 @@ function getEEPROMInfo(crc)
                     instance.update({
                        from: sm
                     });
+
+                    if(sleep > 255) {
+                        enableTimer();
+                        var instance = $('#slider-timer').data('ionRangeSlider');
+                        instance.update({
+                           from: Math.round(sleep*8)
+                        });
+                    }
                 }
             }else{
                 $.notify({ message: 'Cannot read EEPROM' }, { type: 'danger' });
@@ -629,9 +720,16 @@ function updateFirmware(emergency)
         //stopConsole();
         $('.fileUpload').trigger('click');
         $('.fileUpload').change(function() {
-            p = 0;
-            progressTimer = setInterval(progressCounter, 60);
-            $('#formFirmware').submit();
+            $.notify({ message: 'Backup Settings ...' }, { type: 'warning' });
+            $.ajax('usb.php?eeprom=backup', {
+                success: function(data) {
+                    $.notify({ message: 'Backup Complete' }, { type: 'success' });
+                    setCookie('restore', 1, 1);
+                    p = 0;
+                    progressTimer = setInterval(progressCounter, 60);
+                    $('#formFirmware').submit();
+                }
+            });
         });
     }else{
         $.notify({ message: connectMessage }, { type: 'danger' });
@@ -652,7 +750,7 @@ function saveSettings()
         var moisture = $('#slider-soil').data().from;
         if($('#slider-solar').data().from > 0){ moisture += solar_adc_offset; }
         
-        $.ajax('usb.php?eeprom=write&offset=' + e_runSolar + ',' + e_potSize + ',' + e_moistureLimit + '&value=' + $('#slider-solar').data().from + ',' + $('#slider-pot').data().from + ',' + moisture , {
+        $.ajax('usb.php?eeprom=write&offset=' + e_runSolar + ',' + e_potSize + ',' + e_moistureLimit + ',' + e_deepSleep + '&value=' + $('#slider-solar').data().from + ',' + $('#slider-pot').data().from + ',' + moisture + ',' + deepSleep, {
             success: function(data) {
                 consoleHex(data);
                 if(data.indexOf('initialization failed') != -1) {
