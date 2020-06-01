@@ -292,7 +292,7 @@ int main(void)
     Note: Global variables cost a lot of flash size only use if needed.
     https://ww1.microchip.com/downloads/en/AppNotes/doc8453.pdf
     */
-    uint8_t sleepLoop = 0;  //Track the passage of time
+    uint16_t sleepLoop = 0;  //Track the passage of time
     uint8_t emptyBottle = 0;
 
     #ifdef UART_TX_ENABLED
