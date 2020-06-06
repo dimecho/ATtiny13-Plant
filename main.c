@@ -188,7 +188,7 @@ https://ww1.microchip.com/downloads/en/AppNotes/doc8453.pdf
                 EEPROM_write((ucAddress + 1), lo_hi[1]);
             }else{
                 EEPROM_write(ucAddress, ucValue);
-                EEPROM_write((ucAddress + 1), 255);
+                EEPROM_write((ucAddress + 1), 0); //255);
                 //eeprom_write_word((uint16_t*)ucAddress, ucValue);
             }
         }

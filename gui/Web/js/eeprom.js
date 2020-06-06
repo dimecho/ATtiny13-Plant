@@ -68,6 +68,8 @@ function HexShift(hex,bit)
         bit++; //move one over
     }
 
+    return hex[bit] | hex[bit+1] << 8;
+    /*
     if(hex[bit] == 255) {
         return 0;
     }else if(hex[bit+1] == 255) {
@@ -76,6 +78,7 @@ function HexShift(hex,bit)
         return hex[bit] | hex[bit+1] << 8;
     }
     return 0;
+    */
 };
 
 function deleteCookie(name, path, domain) {

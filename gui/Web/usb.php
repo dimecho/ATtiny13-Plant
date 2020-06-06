@@ -172,13 +172,13 @@
 										fwrite($f, pack('c', $lo_hi[1]));
 					            	}else{
 										fwrite($f, pack('c', intval($value_array[$x])));
-										fwrite($f, pack('c', 255));
+										fwrite($f, pack('c', 0)); //255));
 					            	}
 					            }
 					        }else{
 								fseek($f, intval($_GET["offset"]), SEEK_SET);
 								fwrite($f, pack('c', intval($_GET["value"])));
-								//fwrite($f, pack('c', 255));
+								fwrite($f, pack('c', 0)); //255));
 					        }
 				    	}
 
